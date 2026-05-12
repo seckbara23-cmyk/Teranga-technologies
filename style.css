@@ -362,36 +362,6 @@ section { padding: 96px 0; }
 .btn-secondary:hover { border-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.08); }
 
 /* ============================================================
-   STATS BAR
-   ============================================================ */
-.stats-bar {
-  padding: 52px 0;
-  background: var(--white);
-  border-bottom: 1px solid var(--border);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  text-align: center;
-}
-
-.stat-number {
-  font-size: 2.25rem;
-  font-weight: 800;
-  color: var(--primary);
-  line-height: 1;
-  margin-bottom: 8px;
-}
-
-.stat-label {
-  font-size: 0.85rem;
-  color: var(--muted);
-  font-weight: 500;
-}
-
-/* ============================================================
    SERVICES
    ============================================================ */
 .services { background: var(--bg); }
@@ -1298,8 +1268,6 @@ body.qm-open { overflow: hidden; }
   .header-cta { display: none; }
 
   .menu-toggle { display: flex; }
-
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
 
   .about-grid { grid-template-columns: 1fr; gap: 40px; }
   .about-img-wrap img,

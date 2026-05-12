@@ -19,11 +19,6 @@ const i18n = {
     'hero.cta1':   'Get a Free Quote',
     'hero.cta2':   'See Our Work',
 
-    'stats.p':     '30+',  'stats.p.l':  'Projects Delivered',
-    'stats.y':     '3+',   'stats.y.l':  'Years of Expertise',
-    'stats.r':     '<24h', 'stats.r.l':  'Average Response',
-    'stats.s':     '100%', 'stats.s.l':  'Client Satisfaction',
-
     'svc.label': 'What We Do',
     'svc.h2':    'Services That Move Businesses Forward',
     'svc.sub':   'End-to-end digital solutions tailored to startups, SMEs, and growing companies.',
@@ -267,11 +262,6 @@ const i18n = {
     'hero.sub':    "Des sites web aux applications mobiles et plateformes SaaS — Teranga Technologies livre des solutions rapides et de qualité pour les startups et PME.",
     'hero.cta1':   'Obtenir un devis gratuit',
     'hero.cta2':   'Voir nos réalisations',
-
-    'stats.p':     '30+',  'stats.p.l':  'Projets livrés',
-    'stats.y':     '3+',   'stats.y.l':  "Années d'expertise",
-    'stats.r':     '<24h', 'stats.r.l':  'Temps de réponse',
-    'stats.s':     '100%', 'stats.s.l':  'Satisfaction client',
 
     'svc.label': 'Ce que nous faisons',
     'svc.h2':    'Des Services Qui Propulsent les Entreprises',
