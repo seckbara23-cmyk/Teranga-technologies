@@ -529,11 +529,38 @@ section { padding: 96px 0; }
 .project-status--active { color: #1D4ED8; background: #EFF6FF; border: 1px solid #BFDBFE; }
 .project-status--planned{ color: #64748B; background: #F8FAFC; border: 1px solid #E2E8F0; }
 
+.project-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.project-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition);
+}
+
+.project-view-btn::after  { content: '↗'; font-size: 0.75rem; }
+.project-view-btn:hover   { background: var(--primary-dark); transform: translateY(-1px); }
+
 .project-demo-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-top: 14px;
   padding: 8px 16px;
   border: 1.5px solid var(--primary);
   border-radius: 7px;
@@ -546,8 +573,7 @@ section { padding: 96px 0; }
   transition: all var(--transition);
 }
 
-.project-demo-btn::after  { content: '→'; }
-.project-demo-btn:hover   { background: var(--primary); color: var(--white); }
+.project-demo-btn:hover { background: var(--primary); color: var(--white); }
 
 /* ============================================================
    PROCESS
