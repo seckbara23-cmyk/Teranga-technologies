@@ -470,13 +470,28 @@ section { padding: 96px 0; }
 .project-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: transparent; }
 
 .project-thumb {
-  height: 190px;
+  height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 3.25rem;
   position: relative;
+  overflow: hidden;
+  background: var(--bg);
 }
+
+.project-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  transition: transform 0.45s ease;
+}
+
+.project-card:hover .project-img { transform: scale(1.04); }
 
 .project-thumb.bg-blue   { background: linear-gradient(135deg, #EFF6FF, #BFDBFE); }
 .project-thumb.bg-green  { background: linear-gradient(135deg, #F0FDF4, #BBF7D0); }
