@@ -504,20 +504,50 @@ section { padding: 96px 0; }
 .project-body h3 { font-size: 1.05rem; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
 .project-body p  { font-size: 0.875rem; color: var(--muted); margin-bottom: 16px; line-height: 1.65; }
 
-.project-outcome {
+.project-status {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #166534;
-  background: #F0FDF4;
-  border: 1px solid #BBF7D0;
-  padding: 5px 12px;
-  border-radius: 6px;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 100px;
+  margin-top: 2px;
 }
 
-.project-outcome::before { content: '✓'; }
+.project-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.project-status--ready  { color: #166534; background: #F0FDF4; border: 1px solid #BBF7D0; }
+.project-status--active { color: #1D4ED8; background: #EFF6FF; border: 1px solid #BFDBFE; }
+.project-status--planned{ color: #64748B; background: #F8FAFC; border: 1px solid #E2E8F0; }
+
+.project-demo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 8px 16px;
+  border: 1.5px solid var(--primary);
+  border-radius: 7px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--transition);
+}
+
+.project-demo-btn::after  { content: '→'; }
+.project-demo-btn:hover   { background: var(--primary); color: var(--white); }
 
 /* ============================================================
    PROCESS
