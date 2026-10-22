@@ -10,8 +10,9 @@
 (function () {
   'use strict';
 
-  // If a booking page (e.g. Calendly / Cal.com) is set up later, put its URL here:
-  // every "Book a discovery call" button will then open it directly instead of the form.
+  // There is no scheduling integration yet: discovery-call buttons open the request form,
+  // and the team replies to schedule. If a booking page (e.g. Calendly / Cal.com) is set up
+  // later, put its URL here: the buttons will then say "Book…" and open it directly.
   var BOOKING_URL = '';
 
   var NB = ' '; // non-breaking space for French punctuation
@@ -37,8 +38,10 @@
       'nav.process':  'Process',
       'nav.faq':      'FAQ',
 
-      'cta.call':       'Book a discovery call',
-      'cta.call.short': 'Book a discovery call',
+      'cta.call':       'Request a discovery call',
+      'cta.call.short': 'Request a call',
+      'cta.book':       'Book a discovery call',
+      'cta.book.short': 'Book a call',
       'cta.work':       'See our work',
 
       'hero.kicker': 'Software engineering for startups, SMEs and enterprise teams',
@@ -279,8 +282,10 @@
       'nav.process':  'Méthode',
       'nav.faq':      'FAQ',
 
-      'cta.call':       'Réserver un appel découverte',
-      'cta.call.short': 'Réserver un appel',
+      'cta.call':       'Demander un appel découverte',
+      'cta.call.short': 'Demander un appel',
+      'cta.book':       'Réserver un appel découverte',
+      'cta.book.short': 'Réserver un appel',
       'cta.work':       'Voir nos réalisations',
 
       'hero.kicker': 'Ingénierie logicielle pour startups, PME et grands groupes',
@@ -696,13 +701,15 @@
       });
     });
 
-    // Optional external booking page
+    // Optional external booking page: only then do the buttons promise booking.
     if (BOOKING_URL) {
       document.querySelectorAll('a[href="#contact"][data-cta]').forEach(function (a) {
         a.setAttribute('href', BOOKING_URL);
         a.setAttribute('target', '_blank');
         a.setAttribute('rel', 'noopener noreferrer');
       });
+      document.querySelectorAll('[data-i18n="cta.call"]').forEach(function (el) { el.setAttribute('data-i18n', 'cta.book'); });
+      document.querySelectorAll('[data-i18n="cta.call.short"]').forEach(function (el) { el.setAttribute('data-i18n', 'cta.book.short'); });
     }
 
     // Service-specific CTAs pre-select the service in the form

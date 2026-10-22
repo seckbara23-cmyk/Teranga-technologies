@@ -16,7 +16,7 @@ Marketing site for Teranga Technologies (teranga-tech.com): a single bilingual (
 │   ├── brand/            # Interim logo mark (SVG), touch icon, social share image
 │   ├── fonts/            # Self-hosted Bricolage Grotesque + Inter (SIL OFL)
 │   └── portfolio/        # Product screenshots (PNG + WebP)
-├── Pictures/             # Original image files (no longer referenced by the page; see docs report)
+├── Pictures/             # Original image files: not used by the page and excluded from deploys (.vercelignore)
 ├── docs/                 # Internal documents — excluded from deployment by .vercelignore
 ├── robots.txt, sitemap.xml
 └── vercel.json           # Function settings, security headers, caching
@@ -44,7 +44,7 @@ npm start                 # http://localhost:3000
 - All visible text lives in `main.js` under `i18n.en` and `i18n.fr`, keyed by the `data-i18n` attribute in `index.html`. When you change English text, change it in **both** `index.html` and `i18n.en` (the HTML copy is what search engines and no-JS visitors see).
 - Attributes are translated with `data-i18n-attr="aria-label:key;alt:key"`.
 - Language order: `?lang=fr|en` in the URL → the visitor's saved choice → browser language → English.
-- Booking link: set `BOOKING_URL` at the top of `main.js` (e.g. a Calendly or Cal.com page) to make every "Book a discovery call" button open it directly instead of the form.
+- Booking link: there is no scheduling integration, so the buttons say "Request a discovery call" and open the form. If you set `BOOKING_URL` at the top of `main.js` (e.g. a Calendly or Cal.com page), the buttons switch to "Book a discovery call" and open that page directly.
 - After changing `style.css` or `main.js`, bump the `?v=` query in `index.html` so returning visitors get the new files.
 
 ## API
