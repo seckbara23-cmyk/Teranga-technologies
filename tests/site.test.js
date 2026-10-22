@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { SERVICES } = require('../api/_lib/contact');
+const { SERVICES, INQUIRY_TYPES } = require('../api/_lib/contact');
 
 const root = path.join(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
@@ -34,7 +34,7 @@ function loadI18n() {
 }
 
 const i18n = loadI18n();
-const text = (s) => s.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+const text = (s) => s.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, '\u00A0').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
 const attrValues = (name) => [...html.matchAll(new RegExp(`${name}="([^"]*)"`, 'g'))].map((m) => m[1]);
 const ids = new Set(attrValues('id'));
 
@@ -72,7 +72,7 @@ test('French text uses a non-breaking space before ? ! : ;', () => {
 
 test('no unapproved promises or broken-flow labels are published', () => {
   const visible = text(html) + ' ' + Object.values(i18n.en).concat(Object.values(i18n.fr)).map(text).join(' ');
-  assert.doesNotMatch(visible, /24 hours|24 heures|24 heures|guarantee|garanti/i);
+  assert.doesNotMatch(visible, /24 hours|24\u00A0heures|24 heures|guarantee|garanti/i);
   assert.doesNotMatch(visible, /Get a (Free )?Quote|Request Submitted/i);
   // "Book…" labels exist for a future booking page but are not used while BOOKING_URL is empty.
   assert.match(read('main.js'), /var BOOKING_URL = '';/);
@@ -93,6 +93,24 @@ test('every discovery-call CTA opens the form and pre-selects a real service', (
   for (const s of attrValues('data-service')) assert.ok(SERVICES[s], `unknown service ${s}`);
   const options = [...html.matchAll(/<option value="([^"]+)"/g)].map((m) => m[1]);
   for (const s of Object.keys(SERVICES)) assert.ok(options.includes(s), `form lacks option ${s}`);
+});
+
+test('every lead goes to the API: no console-only quote wizard remains', () => {
+  const js = read('main.js');
+  assert.doesNotMatch(js, /console\.(log|info|debug|table)\(/);
+  assert.doesNotMatch(js + html, /quote-modal|Quote Submission|api\/quote|q\.success/i);
+  assert.match(js, /fetch\('\/api\/contact'/);
+  const type = /type:\s+'([a-z]+)'/.exec(js)[1];
+  assert.ok(INQUIRY_TYPES[type], `form sends unknown inquiry type ${type}`);
+});
+
+test('form validation, success and error messages exist in both languages', () => {
+  for (const k of ['f.success', 'f.error', 'v.name', 'v.email', 'v.service', 'v.message']) {
+    assert.ok(i18n.en[k] && i18n.fr[k], k);
+    assert.notEqual(i18n.en[k], i18n.fr[k], `${k} is not translated`);
+  }
+  assert.match(i18n.en['f.error'], /data-fallback="email"[\s\S]*data-fallback="whatsapp"/);
+  assert.match(i18n.fr['f.error'], /data-fallback="email"[\s\S]*data-fallback="whatsapp"/);
 });
 
 test('links that open a new tab do not expose the opener', () => {
