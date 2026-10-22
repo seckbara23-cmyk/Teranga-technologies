@@ -247,7 +247,7 @@
       'f.submit':   'Request a discovery call',
       'f.note':     'We use your details only to reply to this request.',
       'f.success':  'Request sent. We’ll reply within 24 hours to schedule your discovery call.',
-      'f.error':    'We couldn’t send your request. Please email <a href="mailto:seckbara23@gmail.com">seckbara23@gmail.com</a> or message us on <a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer">WhatsApp</a>.',
+      'f.error':    'We couldn’t send your request, but your message is not lost. Send it to <a href="mailto:seckbara23@gmail.com" data-fallback="email">seckbara23@gmail.com</a> or on <a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-fallback="whatsapp">WhatsApp</a>: both open with your message already filled in.',
       'v.name':    'Enter your name.',
       'v.email':   'Enter a valid email address, like name@company.com.',
       'v.service': 'Choose the service closest to your need.',
@@ -491,7 +491,7 @@
       'f.submit':   'Demander un appel découverte',
       'f.note':     'Vos informations servent uniquement à répondre à cette demande.',
       'f.success':  'Demande envoyée. Nous vous répondons sous 24' + NB + 'heures pour planifier votre appel découverte.',
-      'f.error':    'Votre demande n’a pas pu être envoyée. Écrivez-nous à <a href="mailto:seckbara23@gmail.com">seckbara23@gmail.com</a> ou sur <a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer">WhatsApp</a>.',
+      'f.error':    'Votre demande n’a pas pu être envoyée, mais votre message n’est pas perdu. Envoyez-le à <a href="mailto:seckbara23@gmail.com" data-fallback="email">seckbara23@gmail.com</a> ou sur <a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-fallback="whatsapp">WhatsApp</a>' + NB + ': les deux s’ouvrent avec votre message déjà rempli.',
       'v.name':    'Indiquez votre nom.',
       'v.email':   'Indiquez une adresse e-mail valide, par exemple nom@entreprise.com.',
       'v.service': 'Choisissez le service le plus proche de votre besoin.',
@@ -773,6 +773,7 @@
     var submit   = document.getElementById('f-submit');
     var feedback = document.getElementById('f-feedback');
     var started  = false;
+    var sending  = false;
 
     function setError(name, key) {
       var el = fields[name];
@@ -823,8 +824,39 @@
       feedback.innerHTML = html;
     }
 
+    function optionText(select) {
+      var opt = select.options[select.selectedIndex];
+      return opt && opt.value ? opt.text : '';
+    }
+
+    // If sending fails, the email and WhatsApp links open with the visitor's request filled in,
+    // so nothing has to be typed again.
+    function prefillFallback() {
+      var company = fields.company.value.trim();
+      var summary = [
+        fields.name.value.trim() + (company ? ' — ' + company : ''),
+        [optionText(fields.service), optionText(fields.timeline)].filter(Boolean).join(' · '),
+        ''
+      ].join('\n');
+      var message = fields.message.value.trim();
+      var mail = feedback.querySelector('a[data-fallback="email"]');
+      var wa   = feedback.querySelector('a[data-fallback="whatsapp"]');
+      if (mail) {
+        mail.href = 'mailto:seckbara23@gmail.com?subject=' +
+          encodeURIComponent(t('f.title') + ' — ' + optionText(fields.service)) +
+          '&body=' + encodeURIComponent(summary + message.slice(0, 1200));
+      }
+      if (wa) wa.href = 'https://wa.me/221707157070?text=' + encodeURIComponent(summary + message.slice(0, 600));
+    }
+
+    feedback.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[data-fallback]');
+      if (a) track('lead_fallback', { channel: a.getAttribute('data-fallback') });
+    });
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (sending) return;
       feedback.className = 'form-feedback';
       feedback.textContent = '';
 
@@ -835,6 +867,7 @@
         return;
       }
 
+      sending = true;
       setLoading(true);
       var controller = ('AbortController' in window) ? new AbortController() : null;
       var timeout = setTimeout(function () { if (controller) controller.abort(); }, 15000);
@@ -866,10 +899,12 @@
         })
         .catch(function (err) {
           show('error', t('f.error'));
+          prefillFallback();
           track('lead_failed', { reason: String(err && err.message || err) });
         })
         .then(function () {
           clearTimeout(timeout);
+          sending = false;
           setLoading(false);
           feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         });
