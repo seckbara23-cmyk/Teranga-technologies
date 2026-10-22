@@ -3,6 +3,8 @@
 Branch `feat/teranga-01-ai-first-website` · prepared 2026-10-22 · production (teranga-tech.com, commit `e52bdd8`) untouched.
 Internal document (not deployed).
 
+> **Release status, final validation evidence and the GO/NO-GO recommendation are in `docs/TERANGA-01-release-readiness.md`** (2026-10-22, 17:15 UTC). Sections D–F below reflect the first delivery pass.
+
 ---
 
 ## A. Executive summary and baseline audit

@@ -61,6 +61,10 @@ Replace the "Results" paragraph in `index.html` (comment `OWNER-VERIFY (Radiora)
 
 ## 2. EduSen
 
+> **Naming conflict found 2026-10-22 17:07 UTC — owner decision required before release.**
+> The linked product (https://senegal-school-management-system.vercel.app) is now branded **ScolaTech**: its title, header and metadata say ScolaTech, its canonical/OG URL is https://scolatech.app, and the name "EduSen" no longer appears (its dashboard mock-up still shows `app.edus.sn`). https://scolatech.app is a public marketing page.
+> Options: (a) rename the case study to "ScolaTech (formerly EduSen)" and link https://scolatech.app; (b) keep "EduSen" if ScolaTech is a different product, and change the link.
+
 **Sector:** Education, SaaS
 **Public URL:** https://senegal-school-management-system.vercel.app (French interface, locale fr_SN)
 **Positioning on the site:** School management SaaS designed for private schools in Senegal.
