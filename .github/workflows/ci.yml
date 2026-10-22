@@ -1,9 +1,9 @@
 name: CI
 
+# Every branch push is checked; pull requests from this repository show the
+# result on their head commit.
 on:
-  pull_request:
   push:
-    branches: [master]
 
 permissions:
   contents: read
