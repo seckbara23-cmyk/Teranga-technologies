@@ -104,6 +104,13 @@ test('every lead goes to the API: no console-only quote wizard remains', () => {
   assert.ok(INQUIRY_TYPES[type], `form sends unknown inquiry type ${type}`);
 });
 
+test('no Resend key, configuration or API address reaches browser code', () => {
+  for (const [name, content] of [['index.html', html], ['main.js', read('main.js')], ['style.css', read('style.css')]]) {
+    assert.doesNotMatch(content, /re_[A-Za-z0-9]{8,}|RESEND|LEAD_NOTIFICATION|api\.resend\.com|notifications@teranga-tech\.com/, name);
+  }
+  assert.match(read('.vercelignore'), /^tests\/\r?$/m);
+});
+
 test('form validation, success and error messages exist in both languages', () => {
   for (const k of ['f.success', 'f.error', 'v.name', 'v.email', 'v.service', 'v.message']) {
     assert.ok(i18n.en[k] && i18n.fr[k], k);

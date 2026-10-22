@@ -129,55 +129,104 @@ function validate(body) {
   return { ok: true, status: 200, data };
 }
 
+// Where a submission came from. Anything other than production is labelled as a test in the
+// subject and the body, so preview or local checks are never mistaken for real leads.
+const DEPLOYMENTS = {
+  production:  { site: 'teranga-tech.com', test: false },
+  unknown:     { site: 'teranga-tech.com (environment not reported)', test: false },
+  preview:     { site: 'Vercel preview deployment', test: true },
+  development: { site: 'vercel dev', test: true },
+  local:       { site: 'local development server', test: true },
+};
+const FORMS = {
+  discovery: 'Website discovery-call form',
+  contact:   'Previous website contact form (cached page)',
+};
+
+function deploymentOf(env) {
+  if (DEPLOYMENTS[env.VERCEL_ENV]) return env.VERCEL_ENV;
+  return env.VERCEL ? 'unknown' : 'local';
+}
+
 function buildEmail(d, meta) {
+  const deployment = DEPLOYMENTS[meta.deployment] ? meta.deployment : 'production';
+  const where = DEPLOYMENTS[deployment];
   const received = meta.received.toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
   const source = d.source || 'Direct or unknown';
+  const who = d.company || d.name;
+  const kind = d.type === 'contact' ? 'Contact Message' : 'Inquiry';
+  const submittedFrom = `${FORMS[d.type]} — ${where.site}`;
+
   const rows = [
-    ['Inquiry type', escapeHtml(d.typeLabel)],
-    ['Reference', escapeHtml(meta.ref)],
-    ['Received', received],
     ['Name', escapeHtml(d.name)],
-    ['Email', `<a href="mailto:${escapeHtml(d.email)}">${escapeHtml(d.email)}</a>`],
+    ['Email', `<a href="mailto:${escapeHtml(d.email)}" style="color:#2251CC">${escapeHtml(d.email)}</a>`],
     d.company ? ['Company', escapeHtml(d.company)] : null,
     d.phone ? ['Phone', escapeHtml(d.phone)] : null,
     ['Service', escapeHtml(d.serviceLabel)],
     d.timelineLabel ? ['Timeline', escapeHtml(d.timelineLabel)] : null,
-    ['Site language', d.lang === 'fr' ? 'French' : 'English'],
+    ['Inquiry type', escapeHtml(d.typeLabel)],
+    ['Submitted', received],
+    ['Submitted from', escapeHtml(submittedFrom)],
+    ['Language', d.lang === 'fr' ? 'French' : 'English'],
     ['Source', escapeHtml(source)],
+    ['Reference', escapeHtml(meta.ref)],
     d.subject ? ['Subject', escapeHtml(d.subject)] : null,
-    ['Message', `<span style="white-space:pre-wrap">${escapeHtml(d.message)}</span>`],
   ].filter(Boolean);
 
-  const cell = 'padding:10px 12px;border:1px solid #D8DEE7;vertical-align:top';
-  const html = `
-    <h2 style="font-family:Arial,sans-serif;color:#0B1F3A;margin:0 0 16px">${escapeHtml(d.typeLabel)} — Teranga Technologies</h2>
-    <table style="font-family:Arial,sans-serif;font-size:14px;border-collapse:collapse;width:100%;max-width:640px">
-      ${rows.map(([k, v]) => `<tr><td style="${cell};font-weight:600;background:#F3F5F8;width:130px">${k}</td><td style="${cell}">${v}</td></tr>`).join('')}
+  const font = 'font-family:Arial,Helvetica,sans-serif';
+  const preheader = `${d.serviceLabel} — ${who}: ${d.message.replace(/\s+/g, ' ').slice(0, 90)}`;
+  const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHtml(kind)}</title></head>
+<body style="margin:0;padding:0;background:#F3F5F8">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0">${escapeHtml(preheader)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3F5F8;padding:24px 12px"><tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#FFFFFF;border:1px solid #D8DEE7;border-radius:10px;${font}">
+  <tr><td style="background:#0B1F3A;padding:20px 24px;border-radius:10px 10px 0 0">
+    <div style="font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#F5A524;font-weight:700">Teranga Technologies</div>
+    <div style="font-size:20px;line-height:28px;color:#FFFFFF;font-weight:700;margin-top:6px">New ${escapeHtml(kind.toLowerCase())} — ${escapeHtml(d.serviceLabel)}</div>
+  </td></tr>
+  ${where.test ? `<tr><td style="background:#FFF4DF;color:#7A4B00;padding:10px 24px;font-size:13px;font-weight:700">Test submission from a ${escapeHtml(where.site)} — not a real lead.</td></tr>` : ''}
+  <tr><td style="padding:20px 24px 4px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;line-height:20px;color:#0B1F3A">
+      ${rows.map(([k, v]) => `<tr><td style="padding:6px 12px 6px 0;color:#53627A;width:130px;vertical-align:top">${k}</td><td style="padding:6px 0;vertical-align:top">${v}</td></tr>`).join('')}
     </table>
-    <p style="font-family:Arial,sans-serif;font-size:13px;color:#53627A">Reply to this email to answer ${escapeHtml(d.name)} directly. Target: first reply within one business day. Log it in the lead tracker as NEW with reference ${escapeHtml(meta.ref)}.</p>`;
+  </td></tr>
+  <tr><td style="padding:12px 24px 4px">
+    <div style="font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#53627A;font-weight:700;margin-bottom:6px">Message</div>
+    <div style="background:#F8FAFC;border-left:4px solid #F5A524;padding:12px 14px;font-size:14px;line-height:21px;color:#0B1F3A;white-space:pre-wrap">${escapeHtml(d.message)}</div>
+  </td></tr>
+  <tr><td style="padding:16px 24px 20px;font-size:14px;line-height:20px;color:#0B1F3A">Reply to this email to answer ${escapeHtml(d.name)} directly. Target: first reply within one business day.</td></tr>
+  <tr><td style="padding:12px 24px;background:#F8FAFC;border-top:1px solid #D8DEE7;border-radius:0 0 10px 10px;font-size:12px;line-height:18px;color:#53627A">Sent by the teranga-tech.com website · Reference ${escapeHtml(meta.ref)} · Log it in the lead tracker as NEW.</td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
 
   const text = [
-    `${d.typeLabel} — Teranga Technologies`,
+    where.test ? 'TEST SUBMISSION — not a real lead' : null,
+    where.test ? '' : null,
+    `New Teranga Technologies ${kind.toLowerCase()} — ${d.serviceLabel}`,
     '',
-    `Inquiry type: ${d.typeLabel}`,
-    `Reference: ${meta.ref}`,
-    `Received: ${received}`,
     `Name: ${d.name}`,
     `Email: ${d.email}`,
     d.company ? `Company: ${d.company}` : null,
     d.phone ? `Phone: ${d.phone}` : null,
     `Service: ${d.serviceLabel}`,
     d.timelineLabel ? `Timeline: ${d.timelineLabel}` : null,
-    `Site language: ${d.lang === 'fr' ? 'French' : 'English'}`,
+    `Inquiry type: ${d.typeLabel}`,
+    `Submitted: ${received}`,
+    `Submitted from: ${submittedFrom}`,
+    `Language: ${d.lang === 'fr' ? 'French' : 'English'}`,
     `Source: ${source}`,
+    `Reference: ${meta.ref}`,
     d.subject ? `Subject: ${d.subject}` : null,
     '',
+    'Message:',
     d.message,
     '',
-    'Reply to this email to answer the sender directly.',
+    `Reply to this email to answer ${d.name} directly. Target: first reply within one business day.`,
   ].filter((l) => l !== null).join('\n');
 
-  const subject = `[Teranga] ${d.typeLabel} — ${d.serviceLabel} — ${d.company || d.name} · ${meta.ref}`;
+  const subject = `${where.test ? `[TEST · ${deployment}] ` : ''}New Teranga Technologies ${kind} — ${d.serviceLabel} — ${who} · ${meta.ref}`;
   return { subject, html, text };
 }
 
@@ -205,7 +254,8 @@ function mailConfig(env) {
   if (!from) return { problem: 'RESEND_FROM_EMAIL must look like "Name <address@domain>"' };
   const to = parseRecipients(env.LEAD_NOTIFICATION_EMAIL);
   if (!to) return { problem: 'LEAD_NOTIFICATION_EMAIL must be an email address (or a comma-separated list of up to 5)' };
-  return { apiKey: String(env.RESEND_API_KEY).trim(), from, to };
+  const fromDomain = (/@([^>\s]+)>?$/.exec(from) || [])[1] || '';
+  return { apiKey: String(env.RESEND_API_KEY).trim(), from, to, fromDomain, deployment: deploymentOf(env) };
 }
 
 // Tag values may only contain ASCII letters, numbers, underscores and dashes.
@@ -214,23 +264,42 @@ function tagValue(v) {
 }
 
 // ── Delivery ─────────────────────────────────────────────────
-// Rate limits, provider errors, network failures and an in-progress idempotent request are retried;
-// configuration and validation errors (401, 403, 422…) are not.
-const RETRYABLE = new Set(['rate_limit_exceeded', 'application_error', 'internal_server_error', 'concurrent_idempotent_requests']);
+// Rate limits, provider errors, network failures, timeouts and an in-progress idempotent request are
+// retried; configuration and validation errors (401, 403, 422…) are not.
+const RETRYABLE = new Set(['rate_limit_exceeded', 'application_error', 'internal_server_error', 'concurrent_idempotent_requests', 'timeout']);
 
-async function sendOnce(client, payload, idempotencyKey) {
+// Two attempts of at most 4 s plus the pause between them stay inside the function's 10 s limit.
+const ATTEMPT_TIMEOUT_MS = 4000;
+
+async function sendOnce(client, payload, idempotencyKey, timeoutMs) {
+  const controller = new AbortController();
+  let timer;
+  // The abort signal cancels the HTTP request; the timer bounds the attempt even if it is ignored.
+  const timedOut = new Promise((resolve) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      resolve({ error: { name: 'timeout', statusCode: null } });
+    }, timeoutMs);
+  });
+  const attempt = (async () => {
+    try {
+      const res = await client.emails.send(payload, { idempotencyKey, signal: controller.signal });
+      if (res && res.data && res.data.id) return { id: res.data.id };
+      return { error: (res && res.error) || { name: 'application_error', statusCode: null } };
+    } catch {
+      // The SDK reports API errors in `error`; this only catches aborts and unexpected failures.
+      return { error: { name: controller.signal.aborted ? 'timeout' : 'application_error', statusCode: null } };
+    }
+  })();
   try {
-    const res = await client.emails.send(payload, { idempotencyKey });
-    if (res && res.data && res.data.id) return { id: res.data.id };
-    return { error: (res && res.error) || { name: 'application_error', statusCode: null } };
-  } catch {
-    // The SDK reports API errors in `error`; this only catches unexpected failures.
-    return { error: { name: 'application_error', statusCode: null } };
+    return await Promise.race([attempt, timedOut]);
+  } finally {
+    clearTimeout(timer);
   }
 }
 
 async function deliver(data, cfg, deps) {
-  const meta = { ref: leadRef(), received: new Date() };
+  const meta = { ref: leadRef(), received: new Date(), deployment: cfg.deployment };
   const mail = buildEmail(data, meta);
   const client = deps.client || new Resend(cfg.apiKey);
   const payload = {
@@ -250,18 +319,25 @@ async function deliver(data, cfg, deps) {
   const idempotencyKey = `lead/${meta.ref}-${crypto.randomUUID()}`;
   const attempts = deps.attempts || 2;
   const delay = deps.retryDelayMs == null ? 700 : deps.retryDelayMs;
+  const timeoutMs = deps.timeoutMs || ATTEMPT_TIMEOUT_MS;
 
   /** @type {{ id?: string, error?: { name: string, statusCode: number | null } }} */
   let result = { error: { name: 'application_error', statusCode: null } };
+  let tries = 0;
   for (let i = 1; i <= attempts; i++) {
-    result = await sendOnce(client, payload, idempotencyKey);
+    tries = i;
+    result = await sendOnce(client, payload, idempotencyKey, timeoutMs);
     if (result.id || !RETRYABLE.has(result.error.name) || i === attempts) break;
     await new Promise((r) => setTimeout(r, delay * i));
   }
 
   // Delivery evidence for the logs, without personal data. Acceptance by Resend is not proof of
   // inbox delivery: look the id up in the Resend dashboard (Emails) for delivered/bounced.
-  const diag = { ref: meta.ref, type: data.type, service: data.service, lang: data.lang, sourced: Boolean(data.source) };
+  // Sender domain and recipient count show the configuration resolved without logging addresses.
+  const diag = {
+    ref: meta.ref, type: data.type, service: data.service, lang: data.lang, sourced: Boolean(data.source),
+    deployment: cfg.deployment, fromDomain: cfg.fromDomain, recipients: cfg.to.length, attempts: tries,
+  };
   if (result.id) {
     console.log('[Teranga] Lead accepted by Resend', JSON.stringify({ ...diag, id: result.id }));
     return { status: 200, body: { message: 'Request sent.' } };

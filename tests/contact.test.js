@@ -18,6 +18,8 @@ const ENV = {
   RESEND_API_KEY: 're_test_not_a_real_key',
   RESEND_FROM_EMAIL: 'Teranga Technologies <notifications@teranga-tech.com>',
   LEAD_NOTIFICATION_EMAIL: 'owner@example.com',
+  VERCEL: '1',
+  VERCEL_ENV: 'production',
 };
 
 // Fake Resend client: answers each send with the next scripted response ({ data, error } like the SDK).
@@ -37,7 +39,7 @@ function fakeClient(...responses) {
 }
 const ACCEPTED = { data: { id: '4ef9a417-02e9-4d39-ad75-9611e0fcc33c' }, error: null };
 const providerError = (name, statusCode) => ({ data: null, error: { name, statusCode, message: name } });
-const deps = (client) => ({ client, retryDelayMs: 0 });
+const deps = (client, extra = {}) => ({ client, retryDelayMs: 0, ...extra });
 let n = 0;
 const unique = (extra = {}) => ({ ...VALID, message: `${VALID.message} (case ${++n})`, ...extra });
 
@@ -134,9 +136,9 @@ test('notification escapes visitor HTML and has a readable plain-text part', () 
   assert.doesNotMatch(mail.html, /<script>|<img |<b>|<a href="javascript/);
   assert.match(mail.html, /&lt;script&gt;/);
   assert.match(mail.html, /&lt;img src=x onerror=alert\(1\)&gt;/);
-  assert.match(mail.subject, /^\[Teranga\] Discovery call request — SaaS development — .* · TT-20261022-ABCD$/);
+  assert.match(mail.subject, /^New Teranga Technologies Inquiry — SaaS development — .* · TT-20261022-ABCD$/);
   assert.doesNotMatch(mail.subject, /[\r\n]/);
-  for (const line of ['Inquiry type: Discovery call request', 'Reference: TT-20261022-ABCD', 'Received: 2026-10-22 09:05 UTC', 'Service: SaaS development', 'Timeline: Within 1–3 months', 'Site language: English', 'Source: utm_source=newsletter', 'Hello <b>team</b> & <a href="javascript:x">click</a>']) {
+  for (const line of ['Inquiry type: Discovery call request', 'Reference: TT-20261022-ABCD', 'Submitted: 2026-10-22 09:05 UTC', 'Submitted from: Website discovery-call form — teranga-tech.com', 'Service: SaaS development', 'Timeline: Within 1–3 months', 'Language: English', 'Source: utm_source=newsletter', 'Hello <b>team</b> & <a href="javascript:x">click</a>']) {
     assert.ok(mail.text.includes(line), line);
   }
 });
@@ -152,10 +154,11 @@ test('fields that were not supplied are left out, never invented', () => {
 test('contact-form notifications are labelled differently from discovery requests', () => {
   const v = contact.validate({ name: 'Moussa Diop', email: 'moussa@example.com', service: 'Website Development', subject: 'Quote <please>', message: 'Hello, I need a website for my shop.', lang: 'fr' });
   const mail = contact.buildEmail(v.data, { ref: 'TT-20261022-ABCD', received: new Date() });
-  assert.match(mail.subject, /^\[Teranga\] Contact message — Website Development — Moussa Diop · TT-/);
+  assert.match(mail.subject, /^New Teranga Technologies Contact Message — Website Development — Moussa Diop · TT-/);
+  assert.ok(mail.text.includes('Submitted from: Previous website contact form (cached page)'));
   assert.ok(mail.text.includes('Subject: Quote <please>'));
   assert.match(mail.html, /Quote &lt;please&gt;/);
-  assert.ok(mail.text.includes('Site language: French'));
+  assert.ok(mail.text.includes('Language: French'));
 });
 
 // ── Configuration ────────────────────────────────────────────
@@ -212,12 +215,13 @@ test('a lead accepted by Resend returns 200 with the expected message', async ()
     assert.equal(payload.bcc, undefined);
     assert.equal(payload.cc, undefined);
     assert.ok(payload.html && payload.text, 'HTML and plain text');
-    assert.match(payload.subject, /^\[Teranga\] Discovery call request — SaaS development — Acme SA · TT-\d{8}-[0-9A-F]{4}$/);
+    assert.match(payload.subject, /^New Teranga Technologies Inquiry — SaaS development — Acme SA · TT-\d{8}-[0-9A-F]{4}$/);
+    assert.doesNotMatch(payload.html + payload.text, /TEST|not a real lead/);
     for (const tag of payload.tags) assert.match(tag.value, /^[A-Za-z0-9_-]+$/, tag.name);
     assert.match(options.idempotencyKey, /^lead\/TT-\d{8}-[0-9A-F]{4}-[0-9a-f-]{36}$/);
     // Diagnostics: reference and Resend id, no personal data or message text.
     const log = lines.join('\n');
-    assert.match(log, /Lead accepted by Resend.*"ref":"TT-\d{8}-[0-9A-F]{4}".*"id":"4ef9a417/);
+    assert.match(log, /Lead accepted by Resend.*"ref":"TT-\d{8}-[0-9A-F]{4}".*"deployment":"production","fromDomain":"teranga-tech\.com","recipients":1,"attempts":1,"id":"4ef9a417/);
     assert.doesNotMatch(log, /@|Ndiaye|Acme|booking SaaS|re_test/);
   });
 });
@@ -328,4 +332,62 @@ test('different requests from the same person are both delivered', async () => {
     await contact.handleSubmission({ ...VALID, message: 'Second project: a mobile app.' }, ENV, deps(client));
   });
   assert.equal(client.calls.length, 2);
+});
+
+// ── Timeouts and environments ────────────────────────────────
+
+test('a provider call that hangs is cut off and retried, then reported as a failure', async () => {
+  const calls = [];
+  const client = { emails: { send: (payload, options) => { calls.push(options); return new Promise(() => {}); } } };
+  await captureLogs(async (lines) => {
+    const started = Date.now();
+    const r = await contact.handleSubmission(unique(), ENV, deps(client, { timeoutMs: 30 }));
+    assert.equal(r.status, 502);
+    assert.ok(Date.now() - started < 2000, 'bounded');
+    assert.equal(calls.length, 2);
+    assert.ok(calls.every((o) => o.signal && o.signal.aborted), 'requests aborted');
+    assert.equal(calls[0].idempotencyKey, calls[1].idempotencyKey);
+    assert.match(lines.join('\n'), /"attempts":2.*"error":"timeout"/);
+  });
+});
+
+test('a slow first attempt followed by acceptance succeeds', async () => {
+  let call = 0;
+  const client = fakeClient(() => (++call === 1 ? new Promise(() => {}) : ACCEPTED));
+  await captureLogs(async () => {
+    const r = await contact.handleSubmission(unique(), ENV, deps(client, { timeoutMs: 30 }));
+    assert.equal(r.status, 200);
+    assert.equal(client.calls.length, 2);
+    assert.equal(client.calls[0].options.idempotencyKey, client.calls[1].options.idempotencyKey);
+  });
+});
+
+test('preview and local submissions are marked as tests; production ones are not', async () => {
+  const cases = [
+    [{ VERCEL_ENV: 'preview' }, /^\[TEST · preview\] New Teranga Technologies Inquiry — /, /Vercel preview deployment/, true],
+    [{ VERCEL: '', VERCEL_ENV: '' }, /^\[TEST · local\] New Teranga Technologies Inquiry — /, /local development server/, true],
+    [{ VERCEL_ENV: '' }, /^New Teranga Technologies Inquiry — /, /environment not reported/, false],
+  ];
+  for (const [patch, subject, site, isTest] of cases) {
+    const client = fakeClient(ACCEPTED);
+    await captureLogs(async () => {
+      await contact.handleSubmission(unique(), { ...ENV, ...patch }, deps(client));
+    });
+    const { payload } = client.calls[0];
+    assert.match(payload.subject, subject, JSON.stringify(patch));
+    assert.match(payload.text, site);
+    assert.equal(/^TEST SUBMISSION — not a real lead/.test(payload.text), isTest);
+    assert.equal(/not a real lead/.test(payload.html), isTest);
+  }
+});
+
+test('the HTML notification is a complete branded document with a hidden preview line', () => {
+  const v = contact.validate({ ...VALID, message: 'Line one\nLine <two>' });
+  const mail = contact.buildEmail(v.data, { ref: 'TT-20261022-ABCD', received: new Date('2026-10-22T09:05:00Z'), deployment: 'production' });
+  assert.match(mail.html, /^<!DOCTYPE html>/);
+  assert.match(mail.html, />Teranga Technologies<\/div>/);
+  assert.match(mail.html, /New inquiry — SaaS development/);
+  assert.match(mail.html, /display:none[^>]*>SaaS development — Acme SA: Line one Line &lt;two&gt;/);
+  assert.match(mail.html, /white-space:pre-wrap">Line one\nLine &lt;two&gt;<\/div>/);
+  assert.doesNotMatch(mail.html, /<img|<script|\ssrc=/i, 'no remote images or scripts');
 });
