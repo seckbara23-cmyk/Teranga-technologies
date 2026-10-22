@@ -106,7 +106,7 @@ Not verified here: the live SMTP settings on Vercel (the Vercel connector refuse
 
 ## F. Open decisions and risks
 
-1. **Grant GitHub access** (install the Claude GitHub App on the repository), so the branch can be pushed, a PR opened and the Vercel preview validated, including a real form submission.
+1. **Merge approval.** PR #1 is open. Review the Vercel preview on a phone (EN and FR), submit a real request, then approve the merge to put the site live.
 2. **Logo.** The interim SVG mark replaces a watermarked stock image. Supply the official logo. Consider removing `Pictures/Logo Teranga` (watermarked) and `Pictures/Pic1.jpg` (stock photo, licence unknown) from the repository.
 3. **Contact email.** A Gmail address on a premium B2B site weakens trust. Recommended: `contact@teranga-tech.com` (or similar) once a mailbox exists, then update the page, JSON-LD and `EMAIL_TO`.
 4. **SMTP on Vercel.** Confirm `EMAIL_HOST/USER/PASS/TO` are set for Production and Preview. Without them the form shows the email/WhatsApp fallback.
@@ -122,7 +122,7 @@ Not verified here: the live SMTP settings on Vercel (the Vercel connector refuse
 
 ## G. Recommended next phase
 
-1. **Release (days 1–3):** grant GitHub access → push → open PR → validate the Vercel preview on real phones (EN and FR), submit a real request → owner approval → merge.
+1. **Release (days 1–3):** validate the Vercel preview on real phones (EN and FR), submit a real request → owner approval → merge PR #1.
 2. **Proof (weeks 1–4):** fill the measured outcomes and permissions in `docs/case-studies.md`; replace the logo; switch to a domain email; add higher-resolution screenshots.
 3. **Reach (weeks 2–6):** start outreach with `docs/growth-assets.md` using `?lang=fr` links; install analytics and track `lead_submitted` by source.
 4. **Search (weeks 4–8):** bilingual URL structure (`/en/`, `/fr/`, `hreflang`), then the first pillar page from the SEO cluster.
