@@ -113,6 +113,9 @@ test('required form fields are labelled and announce their errors', () => {
 test('SEO metadata points at the production domain', () => {
   assert.match(html, /<html lang="en">/);
   assert.equal((html.match(/<h1\b/g) || []).length, 1);
+  // Search results truncate long titles; keep both languages within 70 characters.
+  assert.equal(/<title>([^<]*)<\/title>/.exec(html)[1], i18n.en['meta.title']);
+  for (const l of ['en', 'fr']) assert.ok(i18n[l]['meta.title'].length <= 70, `${l} title too long`);
   assert.match(html, /<link rel="canonical" href="https:\/\/teranga-tech\.com\/">/);
   assert.match(html, /property="og:url"\s+content="https:\/\/teranga-tech\.com\/"/);
   assert.match(html, /property="og:image"\s+content="https:\/\/teranga-tech\.com\/assets\/brand\/og-image\.png"/);

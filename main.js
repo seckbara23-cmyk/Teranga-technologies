@@ -20,7 +20,7 @@
   // ── Translations ───────────────────────────────────────────
   var i18n = {
     en: {
-      'meta.title': 'Teranga Technologies — SaaS, AI integration and app development | Dakar, Senegal',
+      'meta.title': 'Teranga Technologies — SaaS, AI integration and apps | Dakar',
       'meta.desc':  'Teranga Technologies designs and builds SaaS platforms, AI integrations, and web and mobile apps for startups, growing SMEs and enterprise teams. Bilingual French/English delivery from Dakar, Senegal.',
 
       'a11y.skip':        'Skip to content',
@@ -264,7 +264,7 @@
     },
 
     fr: {
-      'meta.title': 'Teranga Technologies — Développement SaaS, intégration d’IA et applications | Dakar, Sénégal',
+      'meta.title': 'Teranga Technologies — Développement SaaS, IA et applications, Dakar',
       'meta.desc':  'Teranga Technologies conçoit et développe des plateformes SaaS, des intégrations d’IA et des applications web et mobiles pour startups, PME en croissance et grands groupes. Accompagnement bilingue français/anglais depuis Dakar.',
 
       'a11y.skip':        'Aller au contenu',
