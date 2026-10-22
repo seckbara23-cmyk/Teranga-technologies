@@ -24,17 +24,17 @@ function call({ method = 'POST', body = VALID, ip = '203.0.113.10', headers = {}
   return Promise.resolve(handler(req, res)).then(() => res);
 }
 
-// No SMTP settings in tests: a valid request reaches the mail step and stops with 503.
-const SMTP_KEYS = ['EMAIL_HOST', 'EMAIL_USER', 'EMAIL_PASS', 'ALLOWED_ORIGIN'];
+// No Resend settings in tests: a valid request reaches the mail step and stops with 503.
+const ENV_KEYS = ['RESEND_API_KEY', 'RESEND_FROM_EMAIL', 'LEAD_NOTIFICATION_EMAIL', 'ALLOWED_ORIGIN'];
 const saved = {};
 const consoleError = console.error;
 test.beforeEach(() => {
   handler._test.hits.clear();
-  for (const k of SMTP_KEYS) { saved[k] = process.env[k]; delete process.env[k]; }
+  for (const k of ENV_KEYS) { saved[k] = process.env[k]; delete process.env[k]; }
   console.error = () => {};
 });
 test.afterEach(() => {
-  for (const k of SMTP_KEYS) if (saved[k] !== undefined) process.env[k] = saved[k];
+  for (const k of ENV_KEYS) if (saved[k] !== undefined) process.env[k] = saved[k];
   console.error = consoleError;
 });
 
@@ -68,7 +68,7 @@ test('invalid input is a 400 with a field message', async () => {
   assert.match(res.body.message, /valid email/);
 });
 
-test('missing SMTP settings give a generic 503', async () => {
+test('missing Resend settings give a generic 503', async () => {
   const res = await call();
   assert.equal(res.statusCode, 503);
   assert.equal(res.body.message, 'Unable to send your request. Please try again later.');
