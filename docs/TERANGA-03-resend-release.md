@@ -1,25 +1,25 @@
 # TERANGA-03 — Resend lead delivery: verification and GO/NO-GO
 
 Branch `feat/teranga-03-resend-leads` (from `master` `d730dcd`) · production untouched.
-Verification run: 2026-10-22, 22:55–23:45 UTC. Internal document (not deployed).
+Run 1: 2026-10-22, 22:55–23:20 UTC (integration, Resend not connected). Run 2: 23:20–23:55 UTC (owner connected Resend; timeouts, branded email, controlled UAT). Internal document (not deployed).
 Operations and owner setup steps: `docs/commercial-operating-guide.md` §1.
 
 ---
 
-## Status dashboard
+## Status dashboard (run 2)
 
 | Area | Status | Evidence |
 |---|---|---|
-| Code | 🟢 Ready | Resend integration; 45/45 `npm test`; type check 0 errors; browser suite 34/34 local through the real SDK |
-| Security | 🟢 | Key server-side only, never logged; no client exposure on the preview; HTML escaped; 0 npm vulnerabilities |
-| Resend | 🔴 **Not connected** | No Resend API key exists in Vercel; domain not added in Resend (owner account) |
-| DNS | 🔴 **Records not created** | Vercel DNS zone has no Resend (DKIM/SPF/return-path) records; exact values only come from Resend |
-| Real delivery test | ⚪ Not possible yet | Blocked by the two rows above. Preview fails honestly (503 + pre-filled fallback) |
-| GitHub | 🟡 | Branch pushed, CI green; PR not opened from this session (no GitHub API access) |
-| Vercel preview | 🟢 | `dpl_D11BKhERSxehMjK8fG2f7sRGnNmH`, READY, SHA `d6ab541`; 29/29 browser journeys |
-| **Production** | 🔴 **Misconfigured** | Production branch is `main` (does not exist); `master` merges never reach production. Live = `e52bdd8` (pre-TERANGA-01) |
+| Code | 🟢 Ready | 50/50 `npm test`; type check against Resend types 0 errors; browser suite 34/34 local through the real SDK |
+| Security | 🟢 | Key server-side only (Preview, Sensitive), never logged, absent from all served files; HTML escaped; 0 npm vulnerabilities |
+| Resend | 🟢 Connected (Preview) | Owner reports `teranga-tech.com` verified (EU West); DNS records resolve publicly; preview send accepted (§12) |
+| DNS | 🟢 | DKIM TXT `resend._domainkey`, CNAME `send` (MX + SPF behind it), CNAME `rsend` (EU West) on Vercel DNS; no conflicting records; no DMARC yet (optional) |
+| Real delivery test | 🟡 **Accepted by Resend; inbox not yet confirmed** | One controlled submission, Resend id `01a165fc-3326-7670-8744-8b91607ae278`; owner to confirm Gmail + Resend "Delivered" (§12) |
+| GitHub | 🟡 | Branch pushed, CI green on `b7ebcfe`; PR not opened from this session (no GitHub API access) |
+| Vercel preview | 🟢 | `dpl_4ARVBKLAaCftscXdnKSYzK8XozkE`, READY, SHA `b7ebcfe` |
+| **Production** | 🔴 | `RESEND_API_KEY` not set for Production; production branch `main` (does not exist); live = `e52bdd8` |
 
-**Verdict: NO-GO** — Resend domain verification and API key are owner actions, and production deployment needs the branch setting fixed with approval.
+**Verdict: NO-GO for production today.** Code, preview and Resend acceptance pass. Remaining: owner confirmation of inbox delivery, Production API key, production branch setting, PR review and explicit approval.
 
 ---
 
@@ -54,7 +54,10 @@ TERANGA-02 (`d730dcd`) was approved and merged but is **not live**. Releasing TE
 | `3955ecc` feat(contact) | nodemailer → **resend 6.32.1** (newest release > 2 weeks old). Config from `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `LEAD_NOTIFICATION_EMAIL` only; missing/malformed → generic 503 + log naming the variable. Success only when Resend returns an email id. SDK `{ data, error }` handled explicitly; 429/5xx/network/concurrent retried once with the same per-submission idempotency key; 401/403/422/quota not retried → 502. Duplicate submissions (10 min, per instance) reuse the first attempt; "already received" only if it was accepted. Inquiry type (`discovery` / `contact`) in subject, body and Resend tag. Logs: ref, type, service, lang, Resend id or error name/status only |
 | `e69edd2` test(site) | Guards: no console logging and no quote-wizard path in `main.js`; the form's inquiry type is accepted by the API; EN/FR success, error and validation messages exist and differ |
 | `d6ab541` docs | Operating guide §1 (where leads arrive, replying, failure detection, inquiry types, Resend/DNS/key setup, recipient change), README |
-| (this commit) docs | This record |
+| `4abd9a6` docs | This record (run 1) |
+| `812cb80` feat(contact) | Bounded Resend calls (4 s per attempt, AbortSignal + timer, same-key retry); subject "New Teranga Technologies Inquiry — <service> — <company or name> · <ref>"; branded image-free HTML + plain text; "Submitted from"; `[TEST · <env>]` marking outside production; log fields `deployment`, `fromDomain`, `recipients`, `attempts`; 5 new tests |
+| `b7ebcfe` docs(guide) | Subjects, filters, log fields and current Resend status |
+| (this commit) docs | Run-2 evidence in this record |
 
 `main.js`, `index.html` and `style.css` are unchanged: the form already sent `type: 'discovery'`, waited for the server's answer and showed EN/FR success/error states with the pre-filled fallback.
 
@@ -78,28 +81,27 @@ TERANGA-02 (`d730dcd`) was approved and merged but is **not live**. Releasing TE
 | Check | Command / tool | Result |
 |---|---|---|
 | Syntax | `node --check` ×4 (in `npm test`) | pass |
-| Unit + integration | `npm test` (node:test, 45 cases) | **45/45** locally; GitHub Actions run 39870286621 ✅ |
+| Unit + integration | `npm test` (node:test, 50 cases) | **50/50** locally; GitHub Actions run 39873159681 on `b7ebcfe` ✅ (run 1: 45/45, run 39870286621) |
 | Mutation checks | Retry-everything, no dedupe, unescaped name, success-on-any-response | each caught by ≥ 1 test |
-| Type check | `tsc --noEmit --allowJs --checkJs` against Resend's own type definitions (ad hoc; the repo has no TypeScript) | **0 errors** (send payload, `replyTo`, `tags`, `idempotencyKey` match `resend@6.32.1`) |
+| Type check | `tsc --noEmit --allowJs --checkJs` against Resend's own type definitions (ad hoc; the repo has no TypeScript) | **0 errors** (send payload, `replyTo`, `tags`, `idempotencyKey`, `signal` match `resend@6.32.1`) |
 | Lint | ESLint 9 `recommended` (ad hoc; the repo has no ESLint config) | 7 style findings, none in new logic: 1 intentional control-character regex (input sanitising), 6 pre-existing unused `catch (e)` bindings in `main.js`/`api/contact.js` |
 | Production build | Vercel build of `d6ab541` | READY; 76 packages installed; warnings only (open `engines` range; `memory` ignored under Fluid compute) |
-| Browser, local (Chrome + axe-core 4.10; server.js with the **real Resend SDK** pointed at a local fake Resend API) | 34 journeys | **34/34** — see §7 |
+| Browser, local (Chrome + axe-core 4.10; server.js with the **real Resend SDK** pointed at a local fake Resend API) | 34 journeys | **34/34** (run 1 and run 2) — see §7 |
 | Browser, preview | 29 journeys incl. one real unmocked submission | **29/29** (real submission → 503 + honest pre-filled fallback; 0 axe violations at 4 widths × EN/FR; layout/axe contexts bypass CSP only to inject axe) |
 | Dependency audit | `npm audit` | 0 vulnerabilities |
 | Real delivery to seckbara23@gmail.com | — | **Not run**: no Resend key/verified domain. Will be run by the owner (guide §1 step 8) |
 
-## 6. Resend and DNS status
+## 6. Resend and DNS status (run 2)
 
-| Item | Status | Owner action |
+| Item | Status | Evidence / owner action |
 |---|---|---|
-| Resend account / domain `teranga-tech.com` | Not visible to this session; assumed not added | Add the domain in Resend (guide §1 steps 1–2) |
-| DNS records | **None exist.** Exact DKIM / SPF / return-path values are generated by Resend per domain and are not guessed here | Copy the records Resend shows into Vercel DNS (step 3), or send them for addition via the Vercel connector after approval |
-| Existing mail records | No MX, no SPF TXT, no DMARC on `teranga-tech.com`: nothing to merge or replace | — |
-| Domain verification | Not started | Verify in Resend; proceed only when it says **Verified** |
-| `RESEND_API_KEY` | **Missing** | Create a sending-access key restricted to `teranga-tech.com`; add to Vercel Production + Preview as Sensitive |
-| `RESEND_FROM_EMAIL` | Set (Production + Preview): `Teranga Technologies <notifications@teranga-tech.com>` | — |
-| `LEAD_NOTIFICATION_EMAIL` | Set (Production + Preview): `seckbara23@gmail.com` | — |
-| DMARC | Not present | Optional after verification: `_dmarc` TXT `v=DMARC1; p=none; rua=mailto:seckbara23@gmail.com` |
+| Domain `teranga-tech.com` in Resend | Verified (reported by the owner, region EU West / Ireland) | Not readable from this session; corroborated by DNS below and by Resend accepting a send from `notifications@teranga-tech.com` |
+| DNS records (Vercel DNS, created by the owner) | Present and resolving via 8.8.8.8 | TXT `resend._domainkey` (DKIM public key); CNAME `send` → `send.forge.rmta.net` (MX `feedback.forge.rmta.net` + SPF behind it); CNAME `rsend` → `rsend-euw1.forge.rmta.net` |
+| Existing mail records | Untouched | No root MX/SPF existed; nothing replaced |
+| DMARC | Not present | Optional: `_dmarc` TXT `v=DMARC1; p=none; rua=mailto:seckbara23@gmail.com` |
+| `RESEND_API_KEY` | **Preview only**, type Sensitive (verified by name/target/type; value never read) | **Add for Production at release time** (same Sensitive type) |
+| `RESEND_FROM_EMAIL` | Production + Preview (edited by the owner 23:30 UTC) | Resolved at runtime to the `teranga-tech.com` domain (log `fromDomain`) |
+| `LEAD_NOTIFICATION_EMAIL` | Production + Preview | Resolved at runtime to 1 recipient (log `recipients`) |
 
 ## 7. Contact form and quotation wizard
 
@@ -120,8 +122,8 @@ Browser evidence (local, real SDK → fake Resend API): discovery request accept
 | Item | Value |
 |---|---|
 | Branch | `feat/teranga-03-resend-leads` |
-| Commits | `3955ecc`, `e69edd2`, `d6ab541` (+ this record) on top of `d730dcd` |
-| CI | GitHub Actions "CI" run 39870286621 on `d6ab541`: success (npm ci, npm test, npm audit); Vercel status success |
+| Commits | `3955ecc`, `e69edd2`, `d6ab541`, `4abd9a6`, `812cb80`, `b7ebcfe` (+ this record) on top of `d730dcd` |
+| CI | GitHub Actions "CI" run 39873159681 on `b7ebcfe`: success (npm ci, npm test, npm audit); Vercel status success. Run 1: 39870286621 on `d6ab541` ✅ |
 | Pull request | **Not opened** — no GitHub API access in this session (GitHub connector 401, no `gh`). Open: https://github.com/seckbara23-cmyk/Teranga-technologies/compare/master...feat/teranga-03-resend-leads?expand=1 |
 | Branch protection | None on `master`; recommended: require the "test" check |
 
@@ -142,11 +144,11 @@ Browser evidence (local, real SDK → fake Resend API): discovery request accept
 
 | # | Gate | Status |
 |---|---|---|
-| P1 | Resend domain `teranga-tech.com` **Verified** (DKIM + return path records added from Resend) | ❌ owner |
-| P2 | `RESEND_API_KEY` (sending access, Sensitive) in Production + Preview | ❌ owner |
+| P1 | Resend domain `teranga-tech.com` **Verified** (DKIM + return path records added from Resend) | ✅ owner-reported; DNS resolves; send accepted |
+| P2 | `RESEND_API_KEY` (sending access, Sensitive) in Production + Preview | 🟡 Preview ✅ · Production ❌ owner |
 | P3 | `RESEND_FROM_EMAIL`, `LEAD_NOTIFICATION_EMAIL` in Production + Preview | ✅ |
-| P4 | Preview redeployed after P1–P2; real delivery test arrives in seckbara23@gmail.com and shows **Delivered** in Resend; Vercel log `Lead accepted by Resend` with the same ref | ❌ after P1–P2 |
-| P5 | PR opened, reviewed, CI green | 🟡 CI green; PR to open |
+| P4 | Preview redeployed after P1–P2; real delivery test arrives in seckbara23@gmail.com and shows **Delivered** in Resend; Vercel log `Lead accepted by Resend` with the same ref | 🟡 accepted (id `01a165fc-…`, ref `TT-20261022-C41B`); owner to confirm Gmail + Resend status |
+| P5 | PR opened, reviewed, CI green | 🟡 CI green on `b7ebcfe`; PR to open |
 | P6 | Vercel production branch set to `master` (or manual promotion agreed) | ❌ owner approval |
 | P7 | Explicit owner approval to merge and release (names the merge SHA) | ❌ |
 | P8 | Code, security and preview checks | ✅ |
@@ -160,3 +162,24 @@ After approval: merge the PR → production deploys from `master` (P6) → confi
 - Then `git revert -m 1 <merge SHA>` on `master` so the next deployment does not bring the change back.
 - Lighter option if only email fails after release: the site keeps working and shows the pre-filled email/WhatsApp fallback; fix the Resend configuration in Vercel and redeploy, no code rollback needed.
 - Environment variables added in TERANGA-03 can be removed in Vercel → Environment Variables; they do nothing on the old code.
+
+## 12. Run 2 — controlled preview UAT (2026-10-22 23:39 UTC)
+
+Changes before the test (`812cb80`, `b7ebcfe`): bounded Resend calls (4 s per attempt, AbortSignal + timer, retried once with the same idempotency key), subject "New Teranga Technologies Inquiry — <service> — <company or name> · <ref>", branded HTML (navy/amber, image-free, hidden preview line) with plain text, "Submitted from" field, `[TEST · preview]` subject prefix and "not a real lead" banner outside production, and log fields `deployment`, `fromDomain`, `recipients`, `attempts`. 50/50 tests; 34/34 local browser journeys; CI run 39873159681 ✅.
+
+Preview `dpl_4ARVBKLAaCftscXdnKSYzK8XozkE` (`b7ebcfe2046027f2524475ad4f77180f2fe982b8`), READY. Before the live test: security headers 6/6; no Resend key, variable name, API host or sender address in `index.html`/`main.js`; `main.js` byte-identical to the commit; internal paths 404; `GET` 405, invalid body 400, honeypot 400 (no send).
+
+One submission through the real form in Chrome (`?lang=en&utm_source=teranga03-uat&utm_medium=test`):
+
+| Step | Result | Evidence |
+|---|---|---|
+| Browser submission | ✅ | HTTP 200; page shows "Request sent. We aim to reply within one business day…"; 1 POST; form reset; 0 console errors |
+| Server accepted | ✅ | Vercel log 23:39:49 UTC: `Lead accepted by Resend` `{"ref":"TT-20261022-C41B","type":"discovery","service":"ai","lang":"en","sourced":true,"deployment":"preview","fromDomain":"teranga-tech.com","recipients":1,"attempts":1,…}` |
+| Resend message id | ✅ | `01a165fc-3326-7670-8744-8b91607ae278` |
+| Resend sent/delivered events | ⏳ owner | Resend → Emails → the id above: expect "Delivered" |
+| Gmail inbox (incl. Spam) | ⏳ owner | Subject `[TEST · preview] New Teranga Technologies Inquiry — AI integration — Teranga UAT · TT-20261022-C41B`, from `notifications@teranga-tech.com` |
+| Content matches | ⏳ owner | Name "TERANGA-03 UAT (test)", company "Teranga UAT", service AI integration, timeline Just exploring, language English, source `utm_source=teranga03-uat · utm_medium=test`, message containing marker `UAT-20261022T233946Z`, "not a real lead" banner |
+| Reply-To | ⏳ owner | Press Reply (do not send): the To field must be `uat-teranga-03@example.com` (reserved test domain) |
+| No unwanted lead record | ✅ | No CRM or lead storage exists; the email is marked TEST; do not add it to the tracker |
+
+Only this one real email was sent. All other preview journeys ran without sending (validation, mocked failures, layout, keyboard, language): **28/28** (EN/FR content, 8 service CTAs, 37 anchors, EN/FR validation, mocked 503/429/network EN/FR, 4 widths × EN/FR layout + 0 axe violations, keyboard, mobile menu, language persistence, reduced motion, no-JS).
