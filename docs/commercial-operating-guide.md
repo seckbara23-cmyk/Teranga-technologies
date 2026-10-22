@@ -16,7 +16,7 @@ Visitor ── "Request a discovery call" / service CTA ──► form (#contact
    │       From:     Teranga Technologies <notifications@teranga-tech.com>   (RESEND_FROM_EMAIL)
    │       To:       seckbara23@gmail.com                                    (LEAD_NOTIFICATION_EMAIL)
    │       Reply-To: the prospect, so "Reply" answers them directly
-   │       Subject:  [Teranga] <inquiry type> — <service> — <company or name> · TT-YYYYMMDD-XXXX
+   │       Subject:  New Teranga Technologies Inquiry — <service> — <company or name> · TT-YYYYMMDD-XXXX
    │
    └─ if sending fails (Resend not configured, domain not verified, provider down, rate limit, network):
           the page says so, keeps the text, and offers email and WhatsApp links
@@ -29,16 +29,17 @@ Direct channels on the page: WhatsApp +221 70 715 7070, seckbara23@gmail.com, ph
 
 **How to reply:** press Reply. The reply goes to the prospect's address (Reply-To), not to `notifications@`, which cannot receive mail. Reply from the address you want the client to keep using.
 
-**Two inquiry types** (first words of the subject, also a Resend tag `inquiry_type`):
+**Subjects** (the inquiry type is also a Resend tag `inquiry_type` and the "Inquiry type" / "Submitted from" lines in the body):
 
 | Subject starts with | Comes from |
 |---|---|
-| `[Teranga] Discovery call request —` | The site's discovery-call form (every CTA on the current site) |
-| `[Teranga] Contact message —` | The previous site's contact form, still accepted from pages cached in visitors' browsers; will disappear on its own |
+| `New Teranga Technologies Inquiry —` | The site's discovery-call form (every CTA on the current site) |
+| `New Teranga Technologies Contact Message —` | The previous site's contact form, still accepted from pages cached in visitors' browsers; will disappear on its own |
+| `[TEST · preview]`, `[TEST · local]` | A submission made on a Vercel preview or a developer machine, with a "not a real lead" banner. Never log these in the tracker |
 
 There is no separate quotation form: the previous site's 6-step quote wizard never sent anything (it only wrote to the browser console) and was replaced by the discovery form in TERANGA-01. A quote request arrives as a discovery request whose message asks for a quote. If you want a distinct "Request a quote" option with a budget range, decide the currency and ranges first (see `docs/TERANGA-03-resend-release.md` §7).
 
-Gmail filters: create two filters on those subject prefixes to apply the labels `Leads/Discovery` and `Leads/Contact`.
+Gmail filters: `subject:("New Teranga Technologies Inquiry")` → label `Leads/Discovery`; `subject:("New Teranga Technologies Contact Message")` → `Leads/Contact`; `subject:("[TEST")` from `notifications@teranga-tech.com` → `Leads/Test`.
 
 Each notification email contains:
 
@@ -60,17 +61,17 @@ Fields the prospect did not fill in are left out, never invented. The form does 
 | Where | What to look for |
 |---|---|
 | The visitor's screen | On any failure the visitor sees "We couldn't send your request…" with pre-filled email/WhatsApp links, so the lead can still reach you directly |
-| Vercel → project → Logs (filter `/api/contact`) | `Lead accepted by Resend` (with `ref` and Resend `id`) = handed to Resend. `Lead email failed` (with the Resend error name, e.g. `validation_error` 403 = domain not verified) or `Lead email not configured: missing …` = not sent |
+| Vercel → project → Logs (filter `/api/contact`) | `Lead accepted by Resend` (with `ref`, Resend `id`, `deployment`, `fromDomain`, `recipients`, `attempts`) = handed to Resend. `Lead email failed` (with the Resend error name, e.g. `validation_error` 403 = sender domain not verified, `timeout` = Resend did not answer within 4 s twice) or `Lead email not configured: missing …` = not sent |
 | Resend → Emails | Status of each message: Delivered, Bounced, Complained, Delayed. **"Accepted by Resend" is not proof of inbox delivery; "Delivered" in Resend plus the message in Gmail is** |
 | Gmail | Check Spam during the first weeks; mark the first notification "Not spam" |
 | Monthly test (§9) | A labelled test request must arrive end to end |
 
-### Current status (verified 2026-10-22)
+### Current status (verified 2026-10-22, 23:45 UTC)
 
 - Code: Resend integration on branch `feat/teranga-03-resend-leads`, not yet in production.
-- Vercel: `RESEND_FROM_EMAIL` and `LEAD_NOTIFICATION_EMAIL` set for Production and Preview. **`RESEND_API_KEY` is not set.**
-- Resend: domain `teranga-tech.com` not added/verified yet (owner account). DNS on Vercel has no MX, SPF, DKIM or DMARC record today, so Resend's records conflict with nothing.
-- Production still serves the pre-TERANGA-01 site (`e52bdd8`): see `docs/TERANGA-03-resend-release.md` §2.
+- Resend: owner reports `teranga-tech.com` **verified** (region EU West / Ireland). Its records are in Vercel DNS and resolve publicly: DKIM TXT `resend._domainkey`, CNAME `send` (return path, MX + SPF behind it) and CNAME `rsend`. No DMARC record yet.
+- Vercel: `RESEND_API_KEY` set for **Preview only** (Sensitive); `RESEND_FROM_EMAIL` and `LEAD_NOTIFICATION_EMAIL` for Production and Preview. **Production still needs `RESEND_API_KEY`** before release.
+- Production still serves the pre-TERANGA-01 site (`e52bdd8`) because the Vercel production branch is `main`: see `docs/TERANGA-03-resend-release.md` §2.
 
 ### One-time setup (owner, about 20 minutes plus DNS propagation)
 
@@ -79,7 +80,7 @@ Fields the prospect did not fill in are left out, never invented. The form does 
 3. **DNS records:** Resend then shows the exact records to create (typically a DKIM TXT record and, for the bounce/return path, an MX and an SPF TXT record on a `send` sub-name). Copy them **exactly as Resend shows them**: do not retype values from this guide. Add them in Vercel → Domains → `teranga-tech.com` → DNS Records. The zone has no MX or TXT records today, so nothing must be replaced or merged. (Alternatively, send the record list from the Resend screen and they can be added through the Vercel connector after your approval.)
 4. **Verify:** Resend → the domain → Verify. Wait until the status is **Verified** (minutes to a few hours).
 5. **API key:** Resend → API Keys → Create → permission **Sending access**, domain `teranga-tech.com`. Copy it once.
-6. **Vercel:** Settings → Environment Variables → add `RESEND_API_KEY` for **Production and Preview**, type **Sensitive**. Never put the key in the code, in a public/client-side variable, in chat or in email. Do **not** set `RESEND_BASE_URL` (test-only).
+6. **Vercel:** Settings → Environment Variables → add `RESEND_API_KEY` for **Production and Preview**, type **Sensitive** (Preview is done; Production remains, at release time). Never put the key in the code, in a public/client-side variable, in chat or in email. Do **not** set `RESEND_BASE_URL` (test-only).
 7. **Redeploy the preview** of the TERANGA-03 pull request (environment changes apply only to new deployments).
 8. **Delivery test:** open the preview link, submit the form with the message `TERANGA-03 delivery test`, then confirm (a) the success message on the page, (b) the email in Gmail (check Spam) from `notifications@teranga-tech.com` with Reply-To set to the address you typed, (c) Resend → Emails shows it as **Delivered**, (d) Vercel → Logs shows `Lead accepted by Resend` with the same `ref`.
 9. **Recommended (optional) DMARC record**, once SPF and DKIM pass: TXT `_dmarc` = `v=DMARC1; p=none; rua=mailto:seckbara23@gmail.com`. It only asks receivers for reports; tighten the policy later.
