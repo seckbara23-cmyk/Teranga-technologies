@@ -1,926 +1,927 @@
 /* ============================================================
    Teranga Technologies — Main Script
+   - Bilingual content (EN/FR) with URL, saved and browser detection
+   - Mobile navigation
+   - Hero demo animation (Radiora reporting flow)
+   - Discovery-call form → /api/contact
+   - Conversion events (forwarded to analytics if one is installed)
    ============================================================ */
 
-// ── Translations ─────────────────────────────────────────────
-const i18n = {
-  en: {
-    'nav.home':      'Home',
-    'nav.services':  'Services',
-    'nav.portfolio': 'Portfolio',
-    'nav.about':     'About',
-    'nav.contact':   'Contact',
-    'nav.cta':       'Get a Quote',
+(function () {
+  'use strict';
 
-    'hero.badge':  'Based in Dakar · Serving Clients Globally',
-    'hero.h1a':    'We Build Digital Products That',
-    'hero.h1b':    'Grow Your Business',
-    'hero.sub':    'From websites and mobile apps to full SaaS platforms — Teranga Technologies delivers fast, quality-built solutions for startups and SMEs.',
-    'hero.cta1':   'Get a Free Quote',
-    'hero.cta2':   'See Our Work',
+  // There is no scheduling integration yet: discovery-call buttons open the request form,
+  // and the team replies to schedule. If a booking page (e.g. Calendly / Cal.com) is set up
+  // later, put its URL here: the buttons will then say "Book…" and open it directly.
+  var BOOKING_URL = '';
 
-    'svc.label': 'What We Do',
-    'svc.h2':    'Services That Move Businesses Forward',
-    'svc.sub':   'End-to-end digital solutions tailored to startups, SMEs, and growing companies.',
-    'svc.web.h': 'Website Development',
-    'svc.web.p': 'Fast, polished, SEO-ready business websites that make a strong first impression and generate leads.',
-    'svc.app.h': 'Web Application Development',
-    'svc.app.p': 'Custom dashboards, portals, and tools built with modern frameworks to solve real business problems.',
-    'svc.mob.h': 'Mobile App Development',
-    'svc.mob.p': 'Native and cross-platform iOS and Android apps that deliver smooth, engaging user experiences.',
-    'svc.sas.h': 'SaaS Product Development',
-    'svc.sas.p': 'Full-stack SaaS platforms with auth, billing, and everything needed to go to market quickly.',
-    'svc.sup.h': 'Maintenance & Support',
-    'svc.sup.p': 'Ongoing technical support, updates, and monitoring to keep your product running at peak performance.',
+  var NB = ' '; // non-breaking space for French punctuation
 
-    'why.label':    'Why Teranga',
-    'why.h2':       'Why Clients Choose Us',
-    'why.sub':      'Technical excellence meets startup practicality — fast delivery, clear communication, and real results.',
-    'why.spd.h':    'Fast Turnaround',
-    'why.spd.p':    'Most projects launch in 4–8 weeks without cutting corners on quality.',
-    'why.cus.h':    'Custom-Built Solutions',
-    'why.cus.p':    'No templates. Every product is designed and built for your specific business goals.',
-    'why.com.h':    'Clear Communication',
-    'why.com.p':    'Regular updates, honest timelines, zero jargon. You always know where your project stands.',
-    'why.str.h':    'Startup-Friendly',
-    'why.str.p':    'Flexible pricing and phased delivery make quality development accessible at every stage.',
-    'why.loc.h':    'Local & Remote',
-    'why.loc.p':    'Based in Dakar, we work with clients across Senegal and internationally with zero friction.',
-    'why.mod.h':    'Modern Technology',
-    'why.mod.p':    'Scalable, maintainable stacks. No legacy tech, no lock-in — just solid foundations.',
+  // ── Translations ───────────────────────────────────────────
+  var i18n = {
+    en: {
+      'meta.title': 'Teranga Technologies — SaaS, AI integration and apps | Dakar',
+      'meta.desc':  'Teranga Technologies designs and builds SaaS platforms, AI integrations, and web and mobile apps for startups, growing SMEs and enterprise teams. Bilingual French/English delivery from Dakar, Senegal.',
 
-    'pf.label': 'Our Portfolio',
-    'pf.h2':    'Products We\'re Building',
-    'pf.sub':   'Real digital products built for real problems — across education, health, and business operations.',
-    'pf.view':    'View Platform',
-    'pf.discuss': 'Discuss Your Project',
-    'p1.tag': 'CX / EdTech',
-    'p1.h':   'XP Client Academy',
-    'p1.p':   'A customer experience learning platform for professionals and companies, with online courses, quizzes, certificates, and corporate training programs.',
-    'p2.tag': 'EdTech · SaaS',
-    'p2.h':   'EduSen',
-    'p2.p':   'A complete school management platform for private schools: students, teachers, parents, attendance, grades, exams, finance, admissions, and portals.',
-    'p3.tag': 'GovTech',
-    'p3.h':   'SunuPermis',
-    'p3.p':   'A digital platform for driving license administration, driving schools, exam sessions, student appointments, and government oversight.',
-    'p4.tag': 'HealthTech · AI',
-    'p4.h':   'Radiora Medical',
-    'p4.p':   'An AI-assisted radiology reporting platform for clinics and imaging centers, with structured reports, patient explanations, translation, and workflow management.',
-    'p5.tag': 'HealthTech',
-    'p5.h':   'Clinic Management System',
-    'p5.p':   'A clinic operations platform for patient records, appointments, consultations, billing, documents, and end-to-end healthcare workflows.',
-    'p6.tag': 'Custom SaaS',
-    'p6.h':   'Enterprise Operations Solutions',
-    'p6.p':   'Tailored internal SaaS platforms for companies that need to digitize daily operations, workflows, documents, tasks, reporting, and customer visibility.',
+      'a11y.skip':        'Skip to content',
+      'a11y.nav':         'Main',
+      'a11y.nav.mobile':  'Mobile',
+      'a11y.lang':        'Language',
+      'a11y.menu.open':   'Open menu',
+      'a11y.menu.close':  'Close menu',
+      'a11y.newtab':      ' (opens in a new tab)',
+      'a11y.top':         'Teranga Technologies — back to top',
 
-    'proc.label': 'How We Work',
-    'proc.h2':    'From Idea to Launch in 4 Steps',
-    'proc.sub':   'A clear, proven process designed to deliver quality quickly and keep you in control.',
-    'proc.1.h':   'Discovery',
-    'proc.1.p':   'We learn your goals, users, and constraints to define exactly what to build.',
-    'proc.2.h':   'Design & Plan',
-    'proc.2.p':   'Wireframes, stack selection, and scope alignment — before writing a line of code.',
-    'proc.3.h':   'Build',
-    'proc.3.p':   'Iterative development with regular demos so you see real progress, not just promises.',
-    'proc.4.h':   'Launch & Support',
-    'proc.4.p':   'We handle go-live, deployment, and provide ongoing support to keep things running.',
+      'nav.services': 'Services',
+      'nav.ai':       'AI engineering',
+      'nav.work':     'Work',
+      'nav.process':  'Process',
+      'nav.faq':      'FAQ',
 
-    'abt.label': 'Our Story',
-    'abt.h2':    'Built on Hospitality, Driven by Quality',
-    'abt.p1':    '"Teranga" is the Wolof word for hospitality — a core value in Senegalese culture. We chose this name because the best client relationships are built on warmth, trust, and genuine care.',
-    'abt.p2':    'Founded in Dakar, Teranga Technologies partners with startups, SMEs, and growing businesses across Africa and beyond. We build products that truly help — clean code, thoughtful design, reliable delivery.',
-    'abt.p3':    'Working with us means you have a committed partner who understands your goals, speaks your language, and ships on time.',
-    'abt.v1': 'Dakar, Senegal',
-    'abt.v2': 'Startup-Focused',
-    'abt.v3': 'Bilingual FR/EN',
-    'abt.v4': 'Fast Delivery',
-    'abt.v5': 'Clean Code',
+      'cta.call':       'Request a discovery call',
+      'cta.call.short': 'Request a call',
+      'cta.book':       'Book a discovery call',
+      'cta.book.short': 'Book a call',
+      'cta.work':       'See our work',
 
-    'cta.h2':   'Ready to Build Something Great?',
-    'cta.p':    "Tell us about your project. We'll respond within 24 hours with ideas, pricing, and a clear path forward.",
-    'cta.btn1': 'Start a Project',
-    'cta.btn2': 'WhatsApp Us',
+      'hero.kicker': 'Software engineering for startups, SMEs and enterprise teams',
+      'hero.title':  'Intelligent software that accelerates growth and automates operations.',
+      'hero.sub':    'We design and build SaaS platforms, AI integrations, and web and mobile apps that create measurable business value — delivered in French or English, from Dakar to clients worldwide.',
+      'hero.proof':  'Recent work: <a href="#work-radiora">Radiora Medical</a>, AI-assisted radiology reporting, and <a href="#work-edusen">EduSen</a>, school management SaaS.',
 
-    'ct.label':    'Get in Touch',
-    'ct.h2':       "Let's Talk About Your Project",
-    'ct.sub':      'No obligation. Just a quick conversation to see how we can help.',
-    'ct.info.h':   "We'd love to hear from you",
-    'ct.info.p':   'Whether you have a full brief or just an idea, reach out — we figure it out together.',
-    'ct.note':     'We typically respond within 24 hours. No sales pitch — just honest advice.',
-    'ct.f.name':   'Full Name',
-    'ct.f.email':  'Email Address',
-    'ct.f.svc':    'Service You Need',
-    'ct.f.subj':   'Subject',
-    'ct.f.msg':    'Tell Us About Your Project',
-    'ct.f.send':   'Send Message',
-    'ct.select':   'Select a service…',
-    'ct.opt.web':  'Website Development',
-    'ct.opt.app':  'Web Application',
-    'ct.opt.mob':  'Mobile App',
-    'ct.opt.sas':  'SaaS Product',
-    'ct.opt.sup':  'Maintenance & Support',
-    'ct.opt.oth':  'Other',
-    'ct.ph.name':  'Your full name',
-    'ct.ph.email': 'your@email.com',
-    'ct.ph.phone': '+221 70 000 0000 or +1 234 567 8900',
-    'ct.ph.subj':  'Brief project title',
-    'ct.ph.msg':   'Describe your project, timeline, and any specific requirements…',
-    'ct.f.phone':  'Phone Number',
-    'ct.f.opt':    ' (optional)',
-    'ct.success':  "✓ Message sent! We'll be in touch within 24 hours.",
-    'ct.error':    'Something went wrong. Please email us at seckbara23@gmail.com',
+      'demo.status.listening':   'Listening',
+      'demo.status.structuring': 'Structuring',
+      'demo.status.ready':       'Ready for review',
+      'demo.dictation':  'Dictation',
+      'demo.transcript': 'Abdominal CT without contrast for right upper quadrant pain. Liver normal in size. No biliary dilatation. Simple two-centimetre cyst in the right kidney. Conclusion: simple renal cyst, no other significant finding.',
+      'demo.report': 'Structured report, draft',
+      'demo.s1':  'Indication',
+      'demo.s1v': 'Right upper quadrant pain.',
+      'demo.s2':  'Technique',
+      'demo.s2v': 'Abdominal CT without contrast.',
+      'demo.s3':  'Results',
+      'demo.s3v': 'Liver normal in size. No biliary dilatation. Simple 2 cm cyst, right kidney.',
+      'demo.s4':  'Conclusion',
+      'demo.s4v': 'Simple right renal cyst. No other significant finding.',
+      'demo.sign': 'The AI drafts. Only the radiologist can validate and sign.',
+      'demo.cap':  'Reporting flow in Radiora Medical, a product built by Teranga Technologies. Illustrative example, not patient data.',
 
-    'val.name':  'Please enter your name.',
-    'val.email': 'Please enter a valid email address.',
-    'val.phone': 'Please enter a valid phone number.',
-    'val.svc':   'Please select a service.',
-    'val.subj':  'Please enter a subject.',
-    'val.msg':   'Please enter your message.',
+      'proof.title': 'Why you can trust our delivery',
+      'proof.1.h': 'A live healthcare AI product',
+      'proof.1.p': 'Radiora Medical turns dictation into structured radiology reports, with the radiologist keeping final sign-off.',
+      'proof.2.h': 'SaaS built for schools',
+      'proof.2.p': 'EduSen covers student records, attendance, fees and report cards, designed for Senegalese private schools.',
+      'proof.3.h': 'MVPs in 4–8 weeks',
+      'proof.3.p': 'Typical timeline for a focused first version, confirmed once scope is agreed.',
+      'proof.4.h': 'French and English',
+      'proof.4.p': 'Discovery, delivery and documentation in either language, for francophone and anglophone teams.',
 
-    'ft.tagline':   'Helping startups and SMEs build great digital products — from Dakar to the world.',
-    'ft.links':     'Quick Links',
-    'ft.services':  'Services',
-    'ft.contact':   'Contact',
-    'ft.copy':      '© 2026 Teranga Technologies. All rights reserved.',
-    'ft.made':      'Made with ♥ in Dakar, Senegal',
+      'svc.title': 'Services built around business outcomes',
+      'svc.intro': 'Every engagement starts with the result you need to see — revenue, hours saved, faster decisions — and works back to the software that delivers it.',
+      'svc.after': 'After launch, we can maintain, monitor and improve what we built, so your product keeps pace with your business.',
+      'svc.uses':  'Typical uses',
 
-    'svc.quote.btn': 'Request This Service',
+      'svc.saas.name': 'SaaS development',
+      'svc.saas.h':    'Launch a SaaS product you can sell, scale and maintain.',
+      'svc.saas.p':    'From first version to paying customers: multi-tenant architecture, authentication, subscriptions and admin tools designed so you can validate quickly and grow without a rewrite.',
+      'svc.saas.u1':   'An MVP for a funded startup',
+      'svc.saas.u2':   'Turning an internal tool into a product',
+      'svc.saas.u3':   'Multi-site platforms for clinics, schools or agencies',
+      'svc.saas.cta':  'Discuss your SaaS project',
 
-    'quote.step':        'Step',
-    'quote.of':          'of',
-    'quote.back':        '← Back',
-    'quote.next':        'Next →',
-    'quote.submit':      'Submit Project Request',
-    'quote.select.hint': 'Select all that apply',
+      'svc.ai.name': 'AI integration',
+      'svc.ai.h':    'Put AI to work inside your real workflows.',
+      'svc.ai.p':    'We connect language models to your data and tools to automate repetitive work and support decisions — with quality testing, cost controls and human approval wherever the stakes are high.',
+      'svc.ai.u1':   'Turning dictation and documents into structured records',
+      'svc.ai.u2':   'Drafting replies and reports for your team to review',
+      'svc.ai.u3':   'Searching internal knowledge in French and English',
+      'svc.ai.cta':  'Explore an AI use case',
 
-    'q.step.1': 'Select Services Needed',
-    'q.step.2': 'Business Information',
-    'q.step.3': 'Project Details',
-    'q.step.4': 'Features Needed',
-    'q.step.5': 'Timeline & Budget',
-    'q.step.6': 'Review & Submit',
+      'svc.web.name': 'Web applications',
+      'svc.web.h':    'Replace spreadsheets and manual steps with one reliable system.',
+      'svc.web.p':    'Custom portals, dashboards and back-office tools that give your team real-time visibility, connect to the systems you already use and remove hours of manual work.',
+      'svc.web.u1':   'Operations dashboards and reporting',
+      'svc.web.u2':   'Client, partner and staff portals',
+      'svc.web.u3':   'Connecting payments and messaging, such as Wave, Orange Money or WhatsApp',
+      'svc.web.cta':  'Plan your web application',
 
-    'q.svc.website':    'Website',
-    'q.svc.webapp':     'Web Application',
-    'q.svc.mobile':     'Mobile App',
-    'q.svc.booking':    'Online Booking System',
-    'q.svc.ecommerce':  'E-commerce Platform',
-    'q.svc.payment':    'Payment Integration',
-    'q.svc.crm':        'CRM / Customer Management',
-    'q.svc.automation': 'Automation',
-    'q.svc.dashboard':  'Dashboard / Reporting',
-    'q.svc.api':        'API Integration',
-    'q.svc.modernize':  'System Modernization',
-    'q.svc.other':      'Other',
+      'svc.mob.name': 'Mobile applications',
+      'svc.mob.h':    'Put your service in your customers’ pocket.',
+      'svc.mob.p':    'iOS and Android apps for customers and field teams — sign-up, payments, notifications and day-to-day processes — running on the same backend as your web platform.',
+      'svc.mob.u1':   'Customer apps for bookings, orders and payments',
+      'svc.mob.u2':   'Field apps for data collection and reporting',
+      'svc.mob.u3':   'A companion app for an existing SaaS',
+      'svc.mob.cta':  'Scope your mobile app',
 
-    'q.biz.name':     'Business Name',
-    'q.biz.contact':  'Contact Person',
-    'q.biz.email':    'Email Address',
-    'q.biz.phone':    'Phone Number',
-    'q.biz.industry': 'Industry / Activity',
-    'q.biz.website':  'Website or Social Media',
+      'svc.des.name': 'Web design',
+      'svc.des.h':    'A website that earns trust and turns visits into conversations.',
+      'svc.des.p':    'Clear positioning, fast pages and accessible design that make your company credible to international buyers and easy to contact.',
+      'svc.des.u1':   'Company and product websites',
+      'svc.des.u2':   'Landing pages for launches and campaigns',
+      'svc.des.u3':   'Bilingual French/English sites',
+      'svc.des.cta':  'Improve your website',
 
-    'q.proj.desc':    'Project Description',
-    'q.proj.desc.ph': 'I want customers to book appointments online and receive WhatsApp confirmations automatically.',
-    'q.proj.goal':    'Main Goal',
+      'ai.title': 'AI engineering that holds up in production',
+      'ai.intro': 'We treat AI as a component to design, test and monitor — not a demo. Where it saves time or improves decisions, we build it in. Where a simpler solution works better, we say so.',
+      'ai.1.h': 'Start from a workflow and a number',
+      'ai.1.p': 'We pick one process and the metric it should move — time per task, error rate, response time — before choosing a model.',
+      'ai.2.h': 'Test quality before anyone relies on it',
+      'ai.2.p': 'We build test sets from real cases and check accuracy, tone and failure modes before launch, then keep checking after it.',
+      'ai.3.h': 'Keep people in charge of decisions that matter',
+      'ai.3.p': 'In Radiora Medical, the AI drafts and structures reports. It never diagnoses, and only the radiologist can validate and sign.',
+      'ai.4.h': 'Keep running costs predictable',
+      'ai.4.p': 'Right-sized models for each task, caching and usage limits, so the cost per request is known before you scale.',
+      'ai.5.h': 'Protect your data',
+      'ai.5.p': 'Access control, isolation between organisations and audit trails, so every record and every action can be traced.',
+      'ai.tag.method':  'How we work',
+      'ai.tag.radiora': 'Shipped in Radiora Medical',
+      'ai.tag.both':    'Shipped in Radiora and EduSen',
+      'ai.cta.p':   'Have a process that eats hours every week?',
+      'ai.cta.btn': 'Explore an AI use case',
 
-    'q.goal.sales':      'Increase sales',
-    'q.goal.cx':         'Improve customer service',
-    'q.goal.manual':     'Reduce manual work',
-    'q.goal.payments':   'Accept online payments',
-    'q.goal.customers':  'Manage customers better',
-    'q.goal.visibility': 'Improve visibility',
-    'q.goal.analytics':  'Track business performance',
-    'q.goal.other':      'Other',
+      'work.title': 'Selected work',
+      'work.intro': 'Two products we designed and built, described by what they actually do today.',
+      'case.built':       'What it does',
+      'case.oversight':   'Human oversight',
+      'case.foundations': 'Foundations',
+      'case.results':     'Results',
+      'case.results.pending': 'Measured results are being compiled. We’ll share current figures on a discovery call.',
 
-    'q.feat.customer':  'Customer accounts',
-    'q.feat.employee':  'Employee accounts',
-    'q.feat.admin':     'Admin dashboard',
-    'q.feat.multiuser': 'Multi-user access',
-    'q.feat.whatsapp':  'WhatsApp notifications',
-    'q.feat.sms':       'SMS notifications',
-    'q.feat.email':     'Email notifications',
-    'q.feat.wave':      'Wave integration',
-    'q.feat.orange':    'Orange Money integration',
-    'q.feat.card':      'Card payments',
-    'q.feat.booking':   'Appointment scheduling',
-    'q.feat.files':     'File / document upload',
-    'q.feat.inventory': 'Inventory management',
-    'q.feat.reporting': 'Reporting & analytics',
-    'q.feat.export':    'Data export Excel/PDF',
+      'case.r.sector': 'Healthcare AI',
+      'case.r.alt':    'Radiora Medical home page: AI-assisted radiology reports for clinics',
+      'case.r.lead':   'AI-assisted radiology reporting for clinics and imaging centres in Senegal and West Africa.',
+      'case.r.f1': 'Dictate from a computer, a phone (scan a QR code, no app to install) or an audio file',
+      'case.r.f2': 'AI structures free dictation into Indication, Technique, Results and Conclusion as you speak',
+      'case.r.f3': 'Spoken corrections, free editing, then export to PDF or Word',
+      'case.r.f4': 'Data isolated per establishment, with a full audit trail',
+      'case.r.o':  'The AI never diagnoses and never signs. The radiologist reviews, validates and signs every report.',
+      'case.r.visit': 'Visit Radiora Medical',
+      'case.r.cta':   'Discuss a similar AI product',
 
-    'q.time.label':   'When do you need this?',
-    'q.time.asap':    'ASAP',
-    'q.time.1to3':    'Within 1–3 months',
-    'q.time.3to6':    'Within 3–6 months',
-    'q.time.explore': 'Just exploring ideas',
+      'case.e.sector': 'Education SaaS',
+      'case.e.alt':    'EduSen home page: modern school management for Senegalese schools',
+      'case.e.lead':   'School management SaaS designed for private schools in Senegal.',
+      'case.e.f1': 'Student records with admission numbers, searchable in seconds',
+      'case.e.f2': 'Daily digital attendance by class, with notifications to families',
+      'case.e.f3': 'Tuition tracking with digital receipts',
+      'case.e.f4': 'Grade entry, automatic averages and term report cards',
+      'case.e.o':  'Strict data isolation between schools, logged access to records, a real-time admin dashboard and a French interface aligned with Senegalese school conventions.',
+      'case.e.visit': 'Visit EduSen',
+      'case.e.cta':   'Discuss a similar SaaS',
 
-    'q.budget.label':   'What is your budget range?',
-    'q.budget.lt500':   'Less than 500,000 FCFA',
-    'q.budget.500to2m': '500,000 – 2M FCFA',
-    'q.budget.2to5m':   '2M – 5M FCFA',
-    'q.budget.gt5m':    'More than 5M FCFA',
-    'q.budget.discuss': 'Prefer to discuss first',
+      'more.title':    'Also built by Teranga',
+      'more.xp':       'Customer-experience learning platform with courses, quizzes, certificates and corporate training.',
+      'more.sunu':     'Driving-licence administration: driving schools, exam sessions, appointments and oversight.',
+      'more.clinic.h': 'Clinic Management System',
+      'more.clinic':   'Patient records, appointments, consultations, billing and documents in one system.',
 
-    'q.review.services': 'Services',
-    'q.review.timeline': 'Timeline',
-    'q.review.budget':   'Budget',
-    'q.review.contact':  'Contact',
-    'q.review.notes':    'Any additional details?',
-    'q.review.notes.ph': 'Anything else we should know...',
+      'proc.title': 'How an engagement works',
+      'proc.intro': 'Four steps, with a clear decision point before any build starts.',
+      'proc.1.h': 'Discovery call',
+      'proc.1.p': 'We clarify the outcome you’re after, your users, your constraints and what success looks like in numbers.',
+      'proc.2.h': 'Scope and estimate',
+      'proc.2.p': 'You receive a written scope with milestones, a delivery plan and a cost estimate. A focused MVP is typically scoped for 4–8 weeks.',
+      'proc.3.h': 'Build in short iterations',
+      'proc.3.p': 'Working software demonstrated regularly, so you see real progress and can adjust priorities as you learn.',
+      'proc.4.h': 'Launch and improve',
+      'proc.4.p': 'Deployment, monitoring and handover, then ongoing maintenance and improvements if you need them.',
 
-    'q.success.title': 'Request Submitted!',
-    'q.success.msg':   'Thank you for your request. Our team will contact you shortly.',
+      'why.title': 'Why work with Teranga',
+      'why.p1': '“Teranga” is the Wolof word for hospitality, a value at the heart of Senegalese culture. For us it means treating your project with the care, candour and follow-through you would expect from your own team.',
+      'why.p2': 'We are an engineering partner based in Dakar, working with clients across Africa and internationally to the same standards a global buyer expects.',
+      'why.1.h': 'Bilingual by default',
+      'why.1.p': 'Workshops, specifications and support in French or English, so every stakeholder stays aligned.',
+      'why.2.h': 'Engineering you can hand over',
+      'why.2.p': 'Version-controlled code, documented architecture and a clean handover, so you are never locked in.',
+      'why.3.h': 'AI with judgement',
+      'why.3.p': 'We recommend AI where it pays off, design human review into high-stakes steps, and say so when it isn’t needed.',
+      'why.4.h': 'Speed with a plan',
+      'why.4.p': 'Focused MVPs are typically scoped for 4–8 weeks, with milestones you can check along the way.',
+      'why.5.h': 'Clear communication',
+      'why.5.p': 'Regular demos and honest timelines. You always know where the project stands and what comes next.',
+      'why.6.h': 'Working hours that match yours',
+      'why.6.p': 'Dakar runs on UTC+0 all year: same hours as London in winter, close to Paris, and overlapping New York mornings.',
 
-    'q.val.service':  'Please select at least one service.',
-    'q.val.bizname':  'Business name is required.',
-    'q.val.contact':  'Contact person name is required.',
-    'q.val.email':    'A valid email address is required.',
-    'q.val.phone':    'Please enter a valid phone number.',
-    'q.val.industry': 'Please enter your industry or activity.',
-    'q.val.desc':     'Please describe your project.',
-    'q.val.goal':     'Please select at least one goal.',
-    'q.val.timeline': 'Please select a timeline.',
-    'q.val.budget':   'Please select a budget range.',
-  },
+      'faq.title': 'Questions clients ask before starting',
+      'faq.intro': 'Can’t find your answer? Ask us directly on a discovery call.',
+      'faq.1.q': 'How much does a project cost?',
+      'faq.1.a': 'It depends on scope, integrations and the level of polish you need at launch. After the discovery call, we send a written estimate tied to clear milestones. For larger products we often recommend a phased plan, so you invest in the first release before committing to the full roadmap.',
+      'faq.2.q': 'How long does an MVP take?',
+      'faq.2.a': 'A focused first version is typically scoped for 4–8 weeks. We confirm the timeline once the scope is agreed, and we tell you early if anything puts it at risk.',
+      'faq.3.q': 'Do you work with clients outside Senegal?',
+      'faq.3.a': 'Yes. We work remotely with clients in Senegal and internationally, in French or English. Dakar is on UTC+0 all year, which makes collaboration with Europe straightforward and leaves a good daily overlap with North America.',
+      'faq.4.q': 'How do you use AI responsibly?',
+      'faq.4.a': 'We start from a specific workflow, test output quality on real cases before launch, keep people in charge of high-stakes decisions and control who can access what data. In Radiora Medical, for example, the AI structures reports but only a radiologist can validate and sign them.',
+      'faq.5.q': 'Can you work on our existing product or with our team?',
+      'faq.5.a': 'Yes. We can extend an existing codebase, integrate with your current systems, or add AI features to a product already in use. We start by reviewing what exists so recommendations are grounded in your actual code and constraints.',
+      'faq.6.q': 'Who owns the code?',
+      'faq.6.a': 'Ownership is set out in the contract. Our standard approach is that you own the custom code and deliverables we build for you once the project is paid, with documentation so any team can take it over.',
+      'faq.7.q': 'What happens after launch?',
+      'faq.7.a': 'We can handle maintenance, monitoring, updates and new features on an ongoing basis, or hand everything over to your team with documentation and a walkthrough.',
 
-  fr: {
-    'nav.home':      'Accueil',
-    'nav.services':  'Services',
-    'nav.portfolio': 'Portfolio',
-    'nav.about':     'À propos',
-    'nav.contact':   'Contact',
-    'nav.cta':       'Obtenir un devis',
+      'ct.title': 'Tell us what you want to build',
+      'ct.lead':  'Share a few details. We aim to reply within one business day to schedule a discovery call. No commitment, and no sales script.',
+      'ct.d.whatsapp': 'WhatsApp',
+      'ct.d.email':    'Email',
+      'ct.d.phone':    'Phone',
+      'ct.d.office':   'Office',
+      'ct.d.address':  'Ngor Almadies, Dakar, Senegal',
 
-    'hero.badge':  'Basé à Dakar · Clients dans le monde entier',
-    'hero.h1a':    'Nous Créons des Produits Numériques Qui',
-    'hero.h1b':    'Font Croître Votre Entreprise',
-    'hero.sub':    "Des sites web aux applications mobiles et plateformes SaaS — Teranga Technologies livre des solutions rapides et de qualité pour les startups et PME.",
-    'hero.cta1':   'Obtenir un devis gratuit',
-    'hero.cta2':   'Voir nos réalisations',
+      'f.title':    'Request a discovery call',
+      'f.name':     'Full name',
+      'f.email':    'Work email',
+      'f.company':  'Company',
+      'f.optional': '(optional)',
+      'f.service':  'What do you need?',
+      'f.service.ph':      'Choose a service…',
+      'f.service.support': 'Maintenance and support',
+      'f.service.other':   'Not sure yet',
+      'f.timeline':         'When would you like to start?',
+      'f.timeline.ph':      'Select a timeframe…',
+      'f.timeline.asap':    'As soon as possible',
+      'f.timeline.1to3':    'Within 1–3 months',
+      'f.timeline.3to6':    'Within 3–6 months',
+      'f.timeline.explore': 'Just exploring',
+      'f.message':      'What are you trying to achieve?',
+      'f.message.hint': 'A few sentences is enough: the problem, who it’s for, and any deadline.',
+      'f.submit':   'Request a discovery call',
+      'f.note':     'We use your details only to reply to this request. To have them deleted, email <a href="mailto:seckbara23@gmail.com">seckbara23@gmail.com</a>.',
+      'f.success':  'Request sent. We aim to reply within one business day to schedule your discovery call.',
+      'f.error':    'We couldn’t send your request, but your message is not lost. Send it to <a href="mailto:seckbara23@gmail.com" data-fallback="email">seckbara23@gmail.com</a> or on <a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-fallback="whatsapp">WhatsApp</a>: both open with your message already filled in.',
+      'v.name':    'Enter your name.',
+      'v.email':   'Enter a valid email address, like name@company.com.',
+      'v.service': 'Choose the service closest to your need.',
+      'v.message': 'Tell us in a few words what you want to achieve (at least 10 characters).',
 
-    'svc.label': 'Ce que nous faisons',
-    'svc.h2':    'Des Services Qui Propulsent les Entreprises',
-    'svc.sub':   'Solutions numériques sur mesure pour startups, PME et entreprises en croissance.',
-    'svc.web.h': 'Création de Sites Web',
-    'svc.web.p': 'Sites web professionnels, rapides et optimisés SEO qui génèrent des leads et laissent une forte impression.',
-    'svc.app.h': 'Applications Web',
-    'svc.app.p': "Tableaux de bord, portails et outils sur mesure construits avec des frameworks modernes pour résoudre de vrais problèmes.",
-    'svc.mob.h': 'Applications Mobiles',
-    'svc.mob.p': "Apps iOS et Android natives ou multiplateformes offrant des expériences utilisateurs fluides et engageantes.",
-    'svc.sas.h': 'Développement SaaS',
-    'svc.sas.p': "Plateformes SaaS complètes avec authentification, facturation et tout ce qu'il faut pour aller vite sur le marché.",
-    'svc.sup.h': 'Maintenance & Support',
-    'svc.sup.p': 'Support technique continu, mises à jour et supervision des performances pour garder votre produit au top.',
+      'ft.tagline':  'Intelligent software for growing businesses, built in Dakar for clients worldwide.',
+      'ft.services': 'Services',
+      'ft.company':  'Company',
+      'ft.why':      'Why Teranga',
+      'ft.contact':  'Contact',
+      'ft.reach':    'Reach us',
+      'ft.copy':     '© 2026 Teranga Technologies. All rights reserved.',
+      'ft.made':     'Designed and engineered in Dakar, Senegal.'
+    },
 
-    'why.label':    'Pourquoi Teranga',
-    'why.h2':       'Pourquoi Nos Clients Nous Choisissent',
-    'why.sub':      'Excellence technique et approche startup — livraison rapide, communication honnête, résultats concrets.',
-    'why.spd.h':    'Livraison Rapide',
-    'why.spd.p':    "La plupart des projets sont livrés en 4 à 8 semaines sans compromis sur la qualité.",
-    'why.cus.h':    'Solutions Sur Mesure',
-    'why.cus.p':    "Pas de templates. Chaque produit est conçu et développé selon vos objectifs spécifiques.",
-    'why.com.h':    'Communication Claire',
-    'why.com.p':    "Mises à jour régulières, délais honnêtes, zéro jargon. Vous savez toujours où en est votre projet.",
-    'why.str.h':    'Adapté aux Startups',
-    'why.str.p':    'Tarification flexible et livraisons par phases pour un développement de qualité à chaque étape.',
-    'why.loc.h':    'Local & International',
-    'why.loc.p':    "Basés à Dakar, nous travaillons avec des clients au Sénégal et à l'international sans friction.",
-    'why.mod.h':    'Technologies Modernes',
-    'why.mod.p':    "Stacks évolutives et maintenables. Pas de technologie obsolète, pas de dépendance forcée.",
+    fr: {
+      'meta.title': 'Teranga Technologies — Développement SaaS, IA et applications, Dakar',
+      'meta.desc':  'Teranga Technologies conçoit et développe des plateformes SaaS, des intégrations d’IA et des applications web et mobiles pour startups, PME en croissance et grands groupes. Accompagnement bilingue français/anglais depuis Dakar.',
 
-    'pf.label': 'Notre Portfolio',
-    'pf.h2':    'Les Produits Que Nous Construisons',
-    'pf.sub':   'De vrais produits numériques pour de vrais problèmes — dans l\'éducation, la santé et les opérations d\'entreprise.',
-    'pf.view':    'Voir la plateforme',
-    'pf.discuss': 'Discuter de votre projet',
-    'p1.tag': 'CX / EdTech',
-    'p1.h':   'XP Client Academy',
-    'p1.p':   'Une plateforme d\'apprentissage de l\'expérience client pour les professionnels et les entreprises, avec cours en ligne, quiz, certificats et formations corporate.',
-    'p2.tag': 'EdTech · SaaS',
-    'p2.h':   'EduSen',
-    'p2.p':   'Une plateforme complète de gestion scolaire pour les écoles privées : élèves, enseignants, parents, présences, notes, examens, finances, admissions et portails.',
-    'p3.tag': 'GovTech',
-    'p3.h':   'SunuPermis',
-    'p3.p':   'Une plateforme numérique pour l\'administration du permis de conduire, les auto-écoles, les sessions d\'examen, les rendez-vous étudiants et la supervision gouvernementale.',
-    'p4.tag': 'HealthTech · IA',
-    'p4.h':   'Radiora Medical',
-    'p4.p':   'Une plateforme de compte-rendu radiologique assistée par IA pour les cliniques et centres d\'imagerie, avec rapports structurés, explications patients, traduction et gestion des workflows.',
-    'p5.tag': 'HealthTech',
-    'p5.h':   'Système de Gestion de Clinique',
-    'p5.p':   'Une plateforme de gestion clinique pour les dossiers patients, les rendez-vous, les consultations, la facturation, les documents et les flux de soins.',
-    'p6.tag': 'SaaS sur mesure',
-    'p6.h':   'Solutions Opérationnelles Entreprise',
-    'p6.p':   'Des plateformes SaaS internes sur mesure pour les entreprises qui souhaitent digitaliser leurs opérations, workflows, documents, tâches, rapports et visibilité client.',
+      'a11y.skip':        'Aller au contenu',
+      'a11y.nav':         'Principale',
+      'a11y.nav.mobile':  'Mobile',
+      'a11y.lang':        'Langue',
+      'a11y.menu.open':   'Ouvrir le menu',
+      'a11y.menu.close':  'Fermer le menu',
+      'a11y.newtab':      ' (s’ouvre dans un nouvel onglet)',
+      'a11y.top':         'Teranga Technologies — retour en haut',
 
-    'proc.label': 'Notre méthode',
-    'proc.h2':    "De l'Idée au Lancement en 4 Étapes",
-    'proc.sub':   'Un processus clair et éprouvé pour livrer rapidement et vous garder aux commandes.',
-    'proc.1.h':   'Découverte',
-    'proc.1.p':   "Nous apprenons vos objectifs, utilisateurs et contraintes pour définir exactement ce qu'il faut construire.",
-    'proc.2.h':   'Design & Planification',
-    'proc.2.p':   "Maquettes, choix de la stack et validation du périmètre avant d'écrire la première ligne de code.",
-    'proc.3.h':   'Développement',
-    'proc.3.p':   'Développement itératif avec démos régulières pour que vous voyiez de vrais progrès.',
-    'proc.4.h':   'Lancement & Support',
-    'proc.4.p':   'Nous gérons la mise en ligne, le déploiement et assurons le support continu.',
+      'nav.services': 'Services',
+      'nav.ai':       'Ingénierie IA',
+      'nav.work':     'Réalisations',
+      'nav.process':  'Méthode',
+      'nav.faq':      'FAQ',
 
-    'abt.label': 'Notre histoire',
-    'abt.h2':    "Fondés sur l'Hospitalité, Guidés par la Qualité",
-    'abt.p1':    '« Teranga » est le mot wolof pour l\'hospitalité — une valeur profondément ancrée dans la culture sénégalaise. Nous avons choisi ce nom car les meilleures relations client se construisent sur la chaleur, la confiance et l\'attention.',
-    'abt.p2':    'Fondée à Dakar, Teranga Technologies travaille avec des startups, PME et entreprises en croissance en Afrique et au-delà. Nous construisons des produits vraiment utiles — code propre, design réfléchi, livraison fiable.',
-    'abt.p3':    'Travailler avec nous, c\'est avoir un partenaire engagé qui comprend vos objectifs, parle votre langue et livre dans les délais.',
-    'abt.v1': 'Dakar, Sénégal',
-    'abt.v2': 'Focus Startups',
-    'abt.v3': 'Bilingue FR/EN',
-    'abt.v4': 'Livraison Rapide',
-    'abt.v5': 'Code Propre',
+      'cta.call':       'Demander un appel découverte',
+      'cta.call.short': 'Demander un appel',
+      'cta.book':       'Réserver un appel découverte',
+      'cta.book.short': 'Réserver un appel',
+      'cta.work':       'Voir nos réalisations',
 
-    'cta.h2':   'Prêt à Construire Quelque Chose de Grand ?',
-    'cta.p':    "Parlez-nous de votre projet. Nous répondons dans les 24h avec des idées, des tarifs et une feuille de route.",
-    'cta.btn1': 'Démarrer un projet',
-    'cta.btn2': 'WhatsApp',
+      'hero.kicker': 'Ingénierie logicielle pour startups, PME et grands groupes',
+      'hero.title':  'Des logiciels intelligents qui accélèrent votre croissance et automatisent vos opérations.',
+      'hero.sub':    'Nous concevons et développons des plateformes SaaS, des intégrations d’IA et des applications web et mobiles qui créent une valeur mesurable pour votre activité — en français ou en anglais, depuis Dakar, pour des clients du monde entier.',
+      'hero.proof':  'Réalisations récentes' + NB + ': <a href="#work-radiora">Radiora Medical</a>, compte rendu radiologique assisté par IA, et <a href="#work-edusen">EduSen</a>, SaaS de gestion scolaire.',
 
-    'ct.label':    'Contactez-nous',
-    'ct.h2':       'Parlons de Votre Projet',
-    'ct.sub':      'Sans engagement. Juste une conversation rapide pour voir comment nous pouvons vous aider.',
-    'ct.info.h':   'Nous sommes à votre écoute',
-    'ct.info.p':   "Que vous ayez un brief complet ou juste une idée, contactez-nous — on construit ensemble.",
-    'ct.note':     'Nous répondons généralement sous 24 heures. Pas de discours commercial — juste des conseils honnêtes.',
-    'ct.f.name':   'Nom complet',
-    'ct.f.email':  'Adresse email',
-    'ct.f.svc':    'Service souhaité',
-    'ct.f.subj':   'Sujet',
-    'ct.f.msg':    'Décrivez votre projet',
-    'ct.f.send':   'Envoyer le message',
-    'ct.select':   'Choisir un service…',
-    'ct.opt.web':  'Création de site web',
-    'ct.opt.app':  'Application web',
-    'ct.opt.mob':  'Application mobile',
-    'ct.opt.sas':  'Produit SaaS',
-    'ct.opt.sup':  'Maintenance & Support',
-    'ct.opt.oth':  'Autre',
-    'ct.ph.name':  'Votre nom complet',
-    'ct.ph.email': 'votre@email.com',
-    'ct.ph.phone': '+221 70 000 0000 ou +33 6 12 34 56 78',
-    'ct.ph.subj':  'Titre bref du projet',
-    'ct.ph.msg':   'Décrivez votre projet, délais et besoins spécifiques…',
-    'ct.f.phone':  'Numéro de téléphone',
-    'ct.f.opt':    ' (optionnel)',
-    'ct.success':  '✓ Message envoyé ! Nous vous contacterons dans les 24 heures.',
-    'ct.error':    'Une erreur s\'est produite. Contactez-nous à seckbara23@gmail.com',
+      'demo.status.listening':   'Écoute en cours',
+      'demo.status.structuring': 'Structuration',
+      'demo.status.ready':       'Prêt pour relecture',
+      'demo.dictation':  'Dictée',
+      'demo.transcript': 'Scanner abdominal sans injection pour douleur de l’hypocondre droit. Foie de taille normale. Pas de dilatation des voies biliaires. Kyste simple de deux centimètres au rein droit. Conclusion' + NB + ': kyste rénal simple, pas d’autre anomalie significative.',
+      'demo.report': 'Compte rendu structuré, brouillon',
+      'demo.s1':  'Indication',
+      'demo.s1v': 'Douleur de l’hypocondre droit.',
+      'demo.s2':  'Technique',
+      'demo.s2v': 'Scanner abdominal sans injection.',
+      'demo.s3':  'Résultats',
+      'demo.s3v': 'Foie de taille normale. Pas de dilatation des voies biliaires. Kyste simple de 2' + NB + 'cm du rein droit.',
+      'demo.s4':  'Conclusion',
+      'demo.s4v': 'Kyste rénal droit simple. Pas d’autre anomalie significative.',
+      'demo.sign': 'L’IA rédige. Seul le radiologue peut valider et signer.',
+      'demo.cap':  'Flux de compte rendu dans Radiora Medical, un produit développé par Teranga Technologies. Exemple illustratif, sans données patient.',
 
-    'val.name':  'Veuillez entrer votre nom.',
-    'val.email': 'Veuillez entrer une adresse email valide.',
-    'val.phone': 'Veuillez entrer un numéro de téléphone valide.',
-    'val.svc':   'Veuillez sélectionner un service.',
-    'val.subj':  'Veuillez entrer un sujet.',
-    'val.msg':   'Veuillez entrer votre message.',
+      'proof.title': 'Pourquoi nous faire confiance',
+      'proof.1.h': 'Une IA santé en ligne',
+      'proof.1.p': 'Radiora Medical transforme la dictée en comptes rendus radiologiques structurés, le radiologue gardant la signature finale.',
+      'proof.2.h': 'Un SaaS conçu pour les écoles',
+      'proof.2.p': 'EduSen couvre dossiers élèves, présences, frais de scolarité et bulletins, pensé pour les écoles privées sénégalaises.',
+      'proof.3.h': 'Un MVP en 4' + NB + 'à' + NB + '8' + NB + 'semaines',
+      'proof.3.p': 'Délai type pour une première version ciblée, confirmé une fois le périmètre validé.',
+      'proof.4.h': 'Français et anglais',
+      'proof.4.p': 'Cadrage, livraison et documentation dans l’une ou l’autre langue, pour des équipes francophones comme anglophones.',
 
-    'ft.tagline':  'Aidons les startups et PME à créer de super produits numériques — de Dakar vers le monde.',
-    'ft.links':    'Liens rapides',
-    'ft.services': 'Services',
-    'ft.contact':  'Contact',
-    'ft.copy':     '© 2026 Teranga Technologies. Tous droits réservés.',
-    'ft.made':     'Fait avec ♥ à Dakar, Sénégal',
+      'svc.title': 'Des services pensés pour vos résultats',
+      'svc.intro': 'Chaque mission part du résultat que vous voulez constater — chiffre d’affaires, heures gagnées, décisions plus rapides — pour remonter jusqu’au logiciel qui le produit.',
+      'svc.after': 'Après le lancement, nous assurons la maintenance, le suivi et les évolutions de ce que nous avons construit, pour que votre produit avance au rythme de votre activité.',
+      'svc.uses':  'Cas d’usage types',
 
-    'svc.quote.btn': 'Demander ce service',
+      'svc.saas.name': 'Développement SaaS',
+      'svc.saas.h':    'Lancez un produit SaaS que vous pourrez vendre, faire grandir et maintenir.',
+      'svc.saas.p':    'De la première version aux premiers clients payants' + NB + ': architecture multi-tenant, authentification, abonnements et outils d’administration, conçus pour valider vite et grandir sans tout réécrire.',
+      'svc.saas.u1':   'Un MVP pour une startup financée',
+      'svc.saas.u2':   'Transformer un outil interne en produit',
+      'svc.saas.u3':   'Des plateformes multi-sites pour cliniques, écoles ou agences',
+      'svc.saas.cta':  'Parler de votre projet SaaS',
 
-    'quote.step':        'Étape',
-    'quote.of':          'sur',
-    'quote.back':        '← Retour',
-    'quote.next':        'Suivant →',
-    'quote.submit':      'Envoyer la demande',
-    'quote.select.hint': 'Sélectionnez tout ce qui s\'applique',
+      'svc.ai.name': 'Intégration d’IA',
+      'svc.ai.h':    'Mettez l’IA au travail dans vos processus réels.',
+      'svc.ai.p':    'Nous connectons les modèles de langage à vos données et à vos outils pour automatiser les tâches répétitives et éclairer les décisions — avec tests de qualité, maîtrise des coûts et validation humaine dès que l’enjeu l’exige.',
+      'svc.ai.u1':   'Transformer dictées et documents en données structurées',
+      'svc.ai.u2':   'Préparer réponses et rapports relus par vos équipes',
+      'svc.ai.u3':   'Interroger vos connaissances internes en français et en anglais',
+      'svc.ai.cta':  'Étudier un cas d’usage IA',
 
-    'q.step.1': 'Services Souhaités',
-    'q.step.2': 'Informations Entreprise',
-    'q.step.3': 'Détails du Projet',
-    'q.step.4': 'Fonctionnalités',
-    'q.step.5': 'Délai & Budget',
-    'q.step.6': 'Révision & Envoi',
+      'svc.web.name': 'Applications web',
+      'svc.web.h':    'Remplacez tableurs et tâches manuelles par un seul système fiable.',
+      'svc.web.p':    'Portails, tableaux de bord et outils de gestion sur mesure qui donnent à vos équipes une visibilité en temps réel, se connectent à vos outils existants et suppriment des heures de saisie.',
+      'svc.web.u1':   'Tableaux de bord et reporting opérationnels',
+      'svc.web.u2':   'Portails clients, partenaires et collaborateurs',
+      'svc.web.u3':   'Connexion aux paiements et à la messagerie, comme Wave, Orange Money ou WhatsApp',
+      'svc.web.cta':  'Planifier votre application web',
 
-    'q.svc.website':    'Site Web',
-    'q.svc.webapp':     'Application Web',
-    'q.svc.mobile':     'Application Mobile',
-    'q.svc.booking':    'Réservation en Ligne',
-    'q.svc.ecommerce':  'Plateforme E-commerce',
-    'q.svc.payment':    'Intégration de Paiement',
-    'q.svc.crm':        'CRM / Gestion Clients',
-    'q.svc.automation': 'Automatisation',
-    'q.svc.dashboard':  'Tableau de Bord / Rapports',
-    'q.svc.api':        'Intégration API',
-    'q.svc.modernize':  'Modernisation Système',
-    'q.svc.other':      'Autre',
+      'svc.mob.name': 'Applications mobiles',
+      'svc.mob.h':    'Votre service, dans la poche de vos clients.',
+      'svc.mob.p':    'Applications iOS et Android pour vos clients et vos équipes terrain — inscription, paiements, notifications et processus du quotidien — reliées au même backend que votre plateforme web.',
+      'svc.mob.u1':   'Applications clients pour réservations, commandes et paiements',
+      'svc.mob.u2':   'Applications terrain pour la collecte et le reporting',
+      'svc.mob.u3':   'Une application compagnon pour un SaaS existant',
+      'svc.mob.cta':  'Cadrer votre application mobile',
 
-    'q.biz.name':     'Nom de l\'entreprise',
-    'q.biz.contact':  'Personne de contact',
-    'q.biz.email':    'Adresse email',
-    'q.biz.phone':    'Numéro de téléphone',
-    'q.biz.industry': 'Secteur d\'activité',
-    'q.biz.website':  'Site web ou réseaux sociaux',
+      'svc.des.name': 'Design web',
+      'svc.des.h':    'Un site qui inspire confiance et transforme les visites en rendez-vous.',
+      'svc.des.p':    'Un positionnement clair, des pages rapides et un design accessible qui crédibilisent votre entreprise auprès des acheteurs internationaux et facilitent la prise de contact.',
+      'svc.des.u1':   'Sites d’entreprise et de produit',
+      'svc.des.u2':   'Pages de lancement et de campagne',
+      'svc.des.u3':   'Sites bilingues français/anglais',
+      'svc.des.cta':  'Améliorer votre site',
 
-    'q.proj.desc':    'Description du projet',
-    'q.proj.desc.ph': 'Je veux que les clients puissent réserver des rendez-vous en ligne et recevoir des confirmations WhatsApp automatiquement.',
-    'q.proj.goal':    'Objectif principal',
+      'ai.title': 'Une ingénierie IA qui tient la route en production',
+      'ai.intro': 'Pour nous, l’IA est un composant à concevoir, tester et surveiller — pas une démo. Là où elle fait gagner du temps ou améliore les décisions, nous l’intégrons. Là où une solution plus simple suffit, nous le disons.',
+      'ai.1.h': 'Partir d’un processus et d’un chiffre',
+      'ai.1.p': 'Nous choisissons un processus et l’indicateur qu’il doit faire bouger — temps par tâche, taux d’erreur, délai de réponse — avant de choisir un modèle.',
+      'ai.2.h': 'Tester la qualité avant que quiconque s’y fie',
+      'ai.2.p': 'Nous constituons des jeux de test à partir de cas réels et vérifions exactitude, ton et cas d’échec avant le lancement, puis nous continuons à les vérifier ensuite.',
+      'ai.3.h': 'Garder l’humain aux commandes des décisions importantes',
+      'ai.3.p': 'Dans Radiora Medical, l’IA rédige et structure les comptes rendus. Elle ne pose jamais de diagnostic, et seul le radiologue peut valider et signer.',
+      'ai.4.h': 'Des coûts d’exploitation prévisibles',
+      'ai.4.p': 'Des modèles dimensionnés pour chaque tâche, de la mise en cache et des plafonds d’usage' + NB + ': le coût par requête est connu avant de passer à l’échelle.',
+      'ai.5.h': 'Protéger vos données',
+      'ai.5.p': 'Contrôle des accès, isolation entre organisations et pistes d’audit' + NB + ': chaque donnée et chaque action restent traçables.',
+      'ai.tag.method':  'Notre méthode',
+      'ai.tag.radiora': 'En production dans Radiora Medical',
+      'ai.tag.both':    'En production dans Radiora et EduSen',
+      'ai.cta.p':   'Un processus vous coûte des heures chaque semaine' + NB + '?',
+      'ai.cta.btn': 'Étudier un cas d’usage IA',
 
-    'q.goal.sales':      'Augmenter les ventes',
-    'q.goal.cx':         'Améliorer le service client',
-    'q.goal.manual':     'Réduire le travail manuel',
-    'q.goal.payments':   'Accepter les paiements en ligne',
-    'q.goal.customers':  'Mieux gérer les clients',
-    'q.goal.visibility': 'Améliorer la visibilité',
-    'q.goal.analytics':  'Suivre les performances',
-    'q.goal.other':      'Autre',
+      'work.title': 'Nos réalisations',
+      'work.intro': 'Deux produits que nous avons conçus et développés, décrits par ce qu’ils font réellement aujourd’hui.',
+      'case.built':       'Ce qu’il fait',
+      'case.oversight':   'Contrôle humain',
+      'case.foundations': 'Fondations',
+      'case.results':     'Résultats',
+      'case.results.pending': 'Les résultats mesurés sont en cours de consolidation. Nous partageons les chiffres à jour lors d’un appel découverte.',
 
-    'q.feat.customer':  'Comptes clients',
-    'q.feat.employee':  'Comptes employés',
-    'q.feat.admin':     'Tableau de bord admin',
-    'q.feat.multiuser': 'Accès multi-utilisateurs',
-    'q.feat.whatsapp':  'Notifications WhatsApp',
-    'q.feat.sms':       'Notifications SMS',
-    'q.feat.email':     'Notifications email',
-    'q.feat.wave':      'Intégration Wave',
-    'q.feat.orange':    'Intégration Orange Money',
-    'q.feat.card':      'Paiements par carte',
-    'q.feat.booking':   'Prise de rendez-vous',
-    'q.feat.files':     'Upload fichiers / documents',
-    'q.feat.inventory': 'Gestion des stocks',
-    'q.feat.reporting': 'Rapports & analytiques',
-    'q.feat.export':    'Export données Excel/PDF',
+      'case.r.sector': 'IA santé',
+      'case.r.alt':    'Page d’accueil de Radiora Medical' + NB + ': comptes rendus radiologiques assistés par IA pour les cliniques',
+      'case.r.lead':   'Compte rendu radiologique assisté par IA pour les cliniques et centres d’imagerie au Sénégal et en Afrique de l’Ouest.',
+      'case.r.f1': 'Dictée depuis un ordinateur, un téléphone (scan d’un QR code, sans application à installer) ou un fichier audio',
+      'case.r.f2': 'L’IA structure la dictée libre en Indication, Technique, Résultats et Conclusion, au fil de la parole',
+      'case.r.f3': 'Corrections dictées, édition libre, puis export en PDF ou Word',
+      'case.r.f4': 'Données isolées par établissement, avec une piste d’audit complète',
+      'case.r.o':  'L’IA ne pose jamais de diagnostic et ne signe jamais. Le radiologue relit, valide et signe chaque compte rendu.',
+      'case.r.visit': 'Découvrir Radiora Medical',
+      'case.r.cta':   'Parler d’un produit IA similaire',
 
-    'q.time.label':   'Quand en avez-vous besoin ?',
-    'q.time.asap':    'Dès que possible',
-    'q.time.1to3':    'Sous 1–3 mois',
-    'q.time.3to6':    'Sous 3–6 mois',
-    'q.time.explore': 'Je cherche juste des idées',
+      'case.e.sector': 'SaaS éducation',
+      'case.e.alt':    'Page d’accueil d’EduSen' + NB + ': gestion scolaire moderne pour les établissements sénégalais',
+      'case.e.lead':   'SaaS de gestion scolaire conçu pour les écoles privées du Sénégal.',
+      'case.e.f1': 'Dossiers élèves avec numéro d’admission, retrouvés en quelques secondes',
+      'case.e.f2': 'Appel numérique quotidien par classe, avec notification des familles',
+      'case.e.f3': 'Suivi des frais de scolarité avec reçus numériques',
+      'case.e.f4': 'Saisie des notes, moyennes automatiques et bulletins trimestriels',
+      'case.e.o':  'Isolation stricte des données entre écoles, accès aux dossiers journalisés, tableau de bord administratif en temps réel et interface en français adaptée aux usages scolaires sénégalais.',
+      'case.e.visit': 'Découvrir EduSen',
+      'case.e.cta':   'Parler d’un SaaS similaire',
 
-    'q.budget.label':   'Quelle est votre fourchette de budget ?',
-    'q.budget.lt500':   'Moins de 500 000 FCFA',
-    'q.budget.500to2m': '500 000 – 2M FCFA',
-    'q.budget.2to5m':   '2M – 5M FCFA',
-    'q.budget.gt5m':    'Plus de 5M FCFA',
-    'q.budget.discuss': 'Préfère en discuter d\'abord',
+      'more.title':    'Également développés par Teranga',
+      'more.xp':       'Plateforme de formation à l’expérience client' + NB + ': cours, quiz, certificats et formations en entreprise.',
+      'more.sunu':     'Administration du permis de conduire' + NB + ': auto-écoles, sessions d’examen, rendez-vous et supervision.',
+      'more.clinic.h': 'Système de gestion de clinique',
+      'more.clinic':   'Dossiers patients, rendez-vous, consultations, facturation et documents dans un seul système.',
 
-    'q.review.services': 'Services',
-    'q.review.timeline': 'Délai',
-    'q.review.budget':   'Budget',
-    'q.review.contact':  'Contact',
-    'q.review.notes':    'Des précisions à ajouter ?',
-    'q.review.notes.ph': 'Tout ce que nous devrions savoir...',
+      'proc.title': 'Comment se déroule une mission',
+      'proc.intro': 'Quatre étapes, avec un point de décision clair avant tout développement.',
+      'proc.1.h': 'Appel découverte',
+      'proc.1.p': 'Nous clarifions le résultat visé, vos utilisateurs, vos contraintes et ce que le succès représente en chiffres.',
+      'proc.2.h': 'Cadrage et estimation',
+      'proc.2.p': 'Vous recevez un périmètre écrit avec jalons, un plan de livraison et une estimation de coût. Un MVP ciblé se cadre généralement sur 4' + NB + 'à' + NB + '8' + NB + 'semaines.',
+      'proc.3.h': 'Développement par itérations courtes',
+      'proc.3.p': 'Un logiciel fonctionnel présenté régulièrement' + NB + ': vous voyez les progrès réels et ajustez les priorités au fil de l’eau.',
+      'proc.4.h': 'Lancement et amélioration',
+      'proc.4.p': 'Mise en production, supervision et passation, puis maintenance et évolutions si vous le souhaitez.',
 
-    'q.success.title': 'Demande envoyée !',
-    'q.success.msg':   'Merci pour votre demande. Notre équipe vous contactera très bientôt.',
+      'why.title': 'Pourquoi travailler avec Teranga',
+      'why.p1': '«' + NB + 'Teranga' + NB + '» signifie hospitalité en wolof, une valeur au cœur de la culture sénégalaise. Pour nous, c’est traiter votre projet avec le soin, la franchise et la constance que vous attendriez de votre propre équipe.',
+      'why.p2': 'Nous sommes un partenaire d’ingénierie basé à Dakar, au service de clients en Afrique et à l’international, avec le niveau d’exigence qu’attend un acheteur international.',
+      'why.1.h': 'Bilingues par défaut',
+      'why.1.p': 'Ateliers, spécifications et support en français ou en anglais, pour que toutes les parties prenantes restent alignées.',
+      'why.2.h': 'Un code que vous pouvez reprendre',
+      'why.2.p': 'Code versionné, architecture documentée et passation propre' + NB + ': vous n’êtes jamais captif.',
+      'why.3.h': 'Une IA employée à bon escient',
+      'why.3.p': 'Nous recommandons l’IA là où elle est rentable, intégrons une relecture humaine aux étapes sensibles, et le disons quand elle n’est pas nécessaire.',
+      'why.4.h': 'La vitesse, avec un plan',
+      'why.4.p': 'Un MVP ciblé se cadre généralement sur 4' + NB + 'à' + NB + '8' + NB + 'semaines, avec des jalons vérifiables tout au long du projet.',
+      'why.5.h': 'Une communication claire',
+      'why.5.p': 'Démos régulières et délais honnêtes. Vous savez toujours où en est le projet et ce qui suit.',
+      'why.6.h': 'Des horaires compatibles avec les vôtres',
+      'why.6.p': 'Dakar vit à l’heure UTC+0 toute l’année' + NB + ': les mêmes horaires que Londres en hiver, proches de Paris, et une plage commune avec les matinées de New York.',
 
-    'q.val.service':  'Veuillez sélectionner au moins un service.',
-    'q.val.bizname':  'Le nom de l\'entreprise est requis.',
-    'q.val.contact':  'Le nom du contact est requis.',
-    'q.val.email':    'Une adresse email valide est requise.',
-    'q.val.phone':    'Veuillez entrer un numéro de téléphone valide.',
-    'q.val.industry': 'Veuillez entrer votre secteur d\'activité.',
-    'q.val.desc':     'Veuillez décrire votre projet.',
-    'q.val.goal':     'Veuillez sélectionner au moins un objectif.',
-    'q.val.timeline': 'Veuillez sélectionner un délai.',
-    'q.val.budget':   'Veuillez sélectionner une fourchette de budget.',
-  }
-};
+      'faq.title': 'Les questions posées avant de démarrer',
+      'faq.intro': 'Vous ne trouvez pas votre réponse' + NB + '? Posez-nous la question lors d’un appel découverte.',
+      'faq.1.q': 'Combien coûte un projet' + NB + '?',
+      'faq.1.a': 'Cela dépend du périmètre, des intégrations et du niveau de finition attendu au lancement. Après l’appel découverte, nous envoyons une estimation écrite liée à des jalons clairs. Pour les produits plus ambitieux, nous recommandons souvent un plan par phases' + NB + ': vous investissez dans une première version avant de vous engager sur toute la feuille de route.',
+      'faq.2.q': 'Combien de temps faut-il pour un MVP' + NB + '?',
+      'faq.2.a': 'Une première version ciblée se cadre généralement sur 4' + NB + 'à' + NB + '8' + NB + 'semaines. Nous confirmons le délai une fois le périmètre validé, et nous vous alertons tôt si quelque chose le menace.',
+      'faq.3.q': 'Travaillez-vous avec des clients hors du Sénégal' + NB + '?',
+      'faq.3.a': 'Oui. Nous travaillons à distance avec des clients au Sénégal et à l’international, en français ou en anglais. Dakar est à UTC+0 toute l’année, ce qui simplifie la collaboration avec l’Europe et laisse un bon créneau commun avec l’Amérique du Nord.',
+      'faq.4.q': 'Comment utilisez-vous l’IA de façon responsable' + NB + '?',
+      'faq.4.a': 'Nous partons d’un processus précis, testons la qualité des résultats sur des cas réels avant le lancement, gardons l’humain aux commandes des décisions sensibles et contrôlons qui accède à quelles données. Dans Radiora Medical, par exemple, l’IA structure les comptes rendus mais seul un radiologue peut les valider et les signer.',
+      'faq.5.q': 'Pouvez-vous intervenir sur notre produit existant ou avec notre équipe' + NB + '?',
+      'faq.5.a': 'Oui. Nous pouvons faire évoluer une base de code existante, l’intégrer à vos systèmes actuels ou ajouter des fonctionnalités d’IA à un produit déjà en service. Nous commençons par examiner l’existant, pour que nos recommandations s’appuient sur votre code et vos contraintes réels.',
+      'faq.6.q': 'À qui appartient le code' + NB + '?',
+      'faq.6.a': 'La propriété est définie dans le contrat. Notre approche standard' + NB + ': le code sur mesure et les livrables que nous réalisons vous appartiennent une fois le projet réglé, avec une documentation permettant à n’importe quelle équipe de le reprendre.',
+      'faq.7.q': 'Que se passe-t-il après le lancement' + NB + '?',
+      'faq.7.a': 'Nous pouvons assurer la maintenance, la supervision, les mises à jour et les nouvelles fonctionnalités dans la durée, ou tout transmettre à votre équipe avec documentation et présentation guidée.',
 
-// ── State ────────────────────────────────────────────────────
-let lang = localStorage.getItem('tt-lang') || 'en';
+      'ct.title': 'Parlez-nous de ce que vous voulez construire',
+      'ct.lead':  'Donnez-nous quelques détails. Nous nous efforçons de répondre sous un jour ouvré pour planifier un appel découverte. Sans engagement, et sans discours commercial.',
+      'ct.d.whatsapp': 'WhatsApp',
+      'ct.d.email':    'E-mail',
+      'ct.d.phone':    'Téléphone',
+      'ct.d.office':   'Bureau',
+      'ct.d.address':  'Ngor Almadies, Dakar, Sénégal',
 
-// ── i18n helpers ─────────────────────────────────────────────
-function t(key) { return i18n[lang][key] || i18n.en[key] || key; }
+      'f.title':    'Demander un appel découverte',
+      'f.name':     'Nom complet',
+      'f.email':    'E-mail professionnel',
+      'f.company':  'Entreprise',
+      'f.optional': '(facultatif)',
+      'f.service':  'De quoi avez-vous besoin' + NB + '?',
+      'f.service.ph':      'Choisissez un service…',
+      'f.service.support': 'Maintenance et support',
+      'f.service.other':   'Je ne sais pas encore',
+      'f.timeline':         'Quand souhaitez-vous démarrer' + NB + '?',
+      'f.timeline.ph':      'Choisissez un délai…',
+      'f.timeline.asap':    'Dès que possible',
+      'f.timeline.1to3':    'D’ici 1 à 3' + NB + 'mois',
+      'f.timeline.3to6':    'D’ici 3 à 6' + NB + 'mois',
+      'f.timeline.explore': 'Je me renseigne',
+      'f.message':      'Quel résultat cherchez-vous à obtenir' + NB + '?',
+      'f.message.hint': 'Quelques phrases suffisent' + NB + ': le problème, pour qui, et l’échéance éventuelle.',
+      'f.submit':   'Demander un appel découverte',
+      'f.note':     'Vos informations servent uniquement à répondre à cette demande. Pour les faire supprimer, écrivez à <a href="mailto:seckbara23@gmail.com">seckbara23@gmail.com</a>.',
+      'f.success':  'Demande envoyée. Nous nous efforçons de vous répondre sous un jour ouvré pour planifier votre appel découverte.',
+      'f.error':    'Votre demande n’a pas pu être envoyée, mais votre message n’est pas perdu. Envoyez-le à <a href="mailto:seckbara23@gmail.com" data-fallback="email">seckbara23@gmail.com</a> ou sur <a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-fallback="whatsapp">WhatsApp</a>' + NB + ': les deux s’ouvrent avec votre message déjà rempli.',
+      'v.name':    'Indiquez votre nom.',
+      'v.email':   'Indiquez une adresse e-mail valide, par exemple nom@entreprise.com.',
+      'v.service': 'Choisissez le service le plus proche de votre besoin.',
+      'v.message': 'Décrivez en quelques mots ce que vous voulez obtenir (10' + NB + 'caractères minimum).',
 
-function applyTranslations() {
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    el.innerHTML = t(el.dataset.i18n);
-  });
-  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-    el.placeholder = t(el.dataset.i18nPh);
-  });
-  document.documentElement.lang = lang;
-  document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.lang === lang);
-  });
-}
-
-function setLang(l) {
-  lang = l;
-  localStorage.setItem('tt-lang', l);
-  applyTranslations();
-}
-
-// ── Scroll-shadow header ─────────────────────────────────────
-function initScrollHeader() {
-  const header = document.querySelector('.site-header');
-  window.addEventListener('scroll', () => {
-    header.classList.toggle('scrolled', window.scrollY > 20);
-  }, { passive: true });
-}
-
-// ── Mobile menu ───────────────────────────────────────────────
-function initMobileMenu() {
-  const toggle = document.getElementById('menu-toggle');
-  const nav    = document.getElementById('mobile-nav');
-  if (!toggle || !nav) return;
-
-  function close() {
-    nav.classList.remove('open');
-    toggle.setAttribute('aria-expanded', 'false');
-    toggle.textContent = '☰';
-  }
-
-  toggle.addEventListener('click', () => {
-    const open = nav.classList.toggle('open');
-    toggle.setAttribute('aria-expanded', String(open));
-    toggle.textContent = open ? '✕' : '☰';
-  });
-
-  nav.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && nav.classList.contains('open')) {
-      close();
-      toggle.focus();
+      'ft.tagline':  'Des logiciels intelligents pour les entreprises en croissance, conçus à Dakar pour des clients du monde entier.',
+      'ft.services': 'Services',
+      'ft.company':  'Entreprise',
+      'ft.why':      'Pourquoi Teranga',
+      'ft.contact':  'Contact',
+      'ft.reach':    'Nous joindre',
+      'ft.copy':     '© 2026 Teranga Technologies. Tous droits réservés.',
+      'ft.made':     'Conçu et développé à Dakar, au Sénégal.'
     }
-  });
-}
-
-// ── Contact form ─────────────────────────────────────────────
-function initContactForm() {
-  const form = document.getElementById('contact-form');
-  if (!form) return;
-
-  const f = {
-    name:    form.querySelector('#f-name'),
-    email:   form.querySelector('#f-email'),
-    service: form.querySelector('#f-service'),
-    subject: form.querySelector('#f-subject'),
-    phone:   form.querySelector('#f-phone'),
-    message: form.querySelector('#f-message'),
   };
 
-  const submitBtn = document.getElementById('f-submit');
-  const feedback  = document.getElementById('f-feedback');
-
-  function fieldErr(name, msg) {
-    const el = f[name];
-    el.classList.add('has-error');
-    const errEl = el.closest('.form-group').querySelector('.form-err');
-    if (errEl) { errEl.textContent = msg; errEl.classList.add('visible'); }
-  }
-
-  function clearErr(name) {
-    const el = f[name];
-    el.classList.remove('has-error');
-    const errEl = el.closest('.form-group').querySelector('.form-err');
-    if (errEl) errEl.classList.remove('visible');
-  }
-
-  function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
-  function isPhone(v) { return /^\+?[\d\s\-().]{7,20}$/.test(v); }
-
-  function validate() {
-    let ok = true;
-    Object.keys(f).forEach(k => clearErr(k));
-
-    if (!f.name.value.trim())                       { fieldErr('name',    t('val.name'));  ok = false; }
-    if (!isEmail(f.email.value.trim()))             { fieldErr('email',   t('val.email')); ok = false; }
-    if (!f.service.value)                           { fieldErr('service', t('val.svc'));   ok = false; }
-    if (!f.subject.value.trim())                    { fieldErr('subject', t('val.subj'));  ok = false; }
-    const phoneVal = f.phone.value.trim();
-    if (phoneVal && !isPhone(phoneVal))             { fieldErr('phone',   t('val.phone')); ok = false; }
-    if (!f.message.value.trim())                    { fieldErr('message', t('val.msg'));   ok = false; }
-
-    return ok;
-  }
-
-  Object.keys(f).forEach(k => {
-    f[k].addEventListener('input',  () => clearErr(k));
-    f[k].addEventListener('change', () => clearErr(k));
-  });
-
-  function setLoading(on) {
-    submitBtn.disabled = on;
-    submitBtn.classList.toggle('loading', on);
-  }
-
-  function showFeedback(type, msg) {
-    feedback.className = `form-feedback ${type} visible`;
-    feedback.textContent = msg;
-    feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    setLoading(true);
-    feedback.className = 'form-feedback';
-
+  // ── Storage helpers (storage can be blocked) ───────────────
+  function store(key, val) {
     try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name:    f.name.value.trim(),
-          email:   f.email.value.trim(),
-          service: f.service.value,
-          subject: f.subject.value.trim(),
-          phone:   f.phone.value.trim(),
-          message: f.message.value.trim(),
-          website: document.getElementById('f-website')?.value || '',
-        }),
-      });
+      if (val === undefined) return window.localStorage.getItem(key);
+      window.localStorage.setItem(key, val);
+    } catch (e) { /* ignore */ }
+    return null;
+  }
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || 'Server error');
+  // ── Lead source (campaign tags and referring site only) ─────
+  // Kept for the visit so a lead can be attributed even if the form is sent later.
+  function leadSource() {
+    var src = {};
+    try {
+      var params = new URLSearchParams(window.location.search);
+      ['utm_source', 'utm_medium', 'utm_campaign'].forEach(function (k) {
+        if (params.get(k)) src[k] = params.get(k).slice(0, 100);
+      });
+      var ref = document.referrer ? new URL(document.referrer).hostname : '';
+      if (ref && ref !== window.location.hostname) src.referrer = ref;
+    } catch (e) { /* ignore */ }
+    try {
+      if (Object.keys(src).length) window.sessionStorage.setItem('tt-src', JSON.stringify(src));
+      else src = JSON.parse(window.sessionStorage.getItem('tt-src') || '{}');
+    } catch (e) { /* ignore */ }
+    return src;
+  }
+
+  var source = leadSource();
+
+  // ── Language ───────────────────────────────────────────────
+  function initialLang() {
+    var param = null;
+    try { param = new URLSearchParams(window.location.search).get('lang'); } catch (e) { /* ignore */ }
+    if (param === 'fr' || param === 'en') return param;
+    var saved = store('tt-lang');
+    if (saved === 'fr' || saved === 'en') return saved;
+    var prefs = navigator.languages || [navigator.language || 'en'];
+    for (var i = 0; i < prefs.length; i++) {
+      var p = String(prefs[i]).toLowerCase();
+      if (p.indexOf('fr') === 0) return 'fr';
+      if (p.indexOf('en') === 0) return 'en';
+    }
+    return 'en';
+  }
+
+  var lang = initialLang();
+
+  function t(key) {
+    var dict = i18n[lang] || i18n.en;
+    return dict[key] !== undefined ? dict[key] : (i18n.en[key] !== undefined ? i18n.en[key] : key);
+  }
+
+  function applyTranslations() {
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      el.innerHTML = t(el.getAttribute('data-i18n'));
+    });
+    document.querySelectorAll('[data-i18n-attr]').forEach(function (el) {
+      el.getAttribute('data-i18n-attr').split(';').forEach(function (pair) {
+        var parts = pair.split(':');
+        if (parts.length === 2) el.setAttribute(parts[0].trim(), t(parts[1].trim()));
+      });
+    });
+
+    document.documentElement.lang = lang;
+    document.title = t('meta.title');
+    var desc = document.querySelector('meta[name="description"]');
+    if (desc) desc.setAttribute('content', t('meta.desc'));
+
+    document.querySelectorAll('.lang-btn').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', String(btn.getAttribute('data-lang') === lang));
+    });
+
+    syncMenuLabel();
+    demo.onLanguageChange();
+  }
+
+  function setLang(next) {
+    if (next === lang) return;
+    lang = next;
+    store('tt-lang', next);
+    applyTranslations();
+    track('language_switch', { lang: next });
+  }
+
+  // ── Analytics bridge (no-op unless an analytics script exists) ─
+  function track(name, props) {
+    props = props || {};
+    try {
+      if (typeof window.va === 'function') window.va('event', { name: name, data: props });
+      if (typeof window.plausible === 'function') window.plausible(name, { props: props });
+      if (Array.isArray(window.dataLayer)) window.dataLayer.push(Object.assign({ event: name }, props));
+    } catch (e) { /* ignore */ }
+  }
+
+  // ── Mobile menu ────────────────────────────────────────────
+  var menuToggle = document.getElementById('menu-toggle');
+  var mobileNav  = document.getElementById('mobile-nav');
+
+  function menuOpen() { return menuToggle && menuToggle.getAttribute('aria-expanded') === 'true'; }
+
+  function syncMenuLabel() {
+    if (!menuToggle) return;
+    menuToggle.setAttribute('aria-label', t(menuOpen() ? 'a11y.menu.close' : 'a11y.menu.open'));
+  }
+
+  function setMenu(open, returnFocus) {
+    if (!menuToggle || !mobileNav) return;
+    menuToggle.setAttribute('aria-expanded', String(open));
+    mobileNav.hidden = !open;
+    syncMenuLabel();
+    if (!open && returnFocus) menuToggle.focus();
+  }
+
+  function initMenu() {
+    if (!menuToggle || !mobileNav) return;
+    menuToggle.addEventListener('click', function () { setMenu(!menuOpen()); });
+    mobileNav.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () { setMenu(false); });
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && menuOpen()) setMenu(false, true);
+    });
+    window.matchMedia('(min-width: 1081px)').addEventListener('change', function (mq) {
+      if (mq.matches) setMenu(false);
+    });
+  }
+
+  // ── Hero demo ──────────────────────────────────────────────
+  var demo = (function () {
+    var root = document.querySelector('[data-demo]');
+    var timers = [];
+    var state = 'idle'; // idle | playing | done
+
+    function q(sel) { return root ? root.querySelector(sel) : null; }
+
+    function setStatus(s) {
+      var pill = q('.demo-status');
+      var label = q('.demo-status-text');
+      if (!pill || !label) return;
+      pill.setAttribute('data-state', s);
+      label.setAttribute('data-i18n', 'demo.status.' + s);
+      label.textContent = t('demo.status.' + s);
+    }
+
+    function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+
+    function finish() {
+      timers.forEach(clearTimeout);
+      timers = [];
+      if (!root) return;
+      root.classList.remove('demo-armed');
+      setStatus('ready');
+      state = 'done';
+    }
+
+    function play() {
+      if (!root || state !== 'idle') return;
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) { finish(); return; }
+
+      state = 'playing';
+      var transcript = q('.demo-transcript');
+      var words = transcript.textContent.split(/(\s+)/);
+      transcript.innerHTML = words.map(function (w) {
+        return /^\s+$/.test(w) ? w : '<span class="w">' + w.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>';
+      }).join('');
+      root.classList.add('demo-armed');
+      setStatus('listening');
+
+      var spans = transcript.querySelectorAll('.w');
+      var step = 55;
+      spans.forEach(function (s, i) { later(function () { s.classList.add('is-in'); }, 250 + i * step); });
+
+      var t0 = 250 + spans.length * step + 300;
+      later(function () { setStatus('structuring'); }, t0);
+      root.querySelectorAll('.demo-row').forEach(function (row, i) {
+        later(function () { row.classList.add('is-in'); }, t0 + 500 + i * 420);
+      });
+      later(function () {
+        var s = q('.demo-signoff');
+        if (s) s.classList.add('is-in');
+      }, t0 + 500 + 4 * 420 + 200);
+      later(finish, t0 + 500 + 4 * 420 + 900);
+    }
+
+    function onLanguageChange() {
+      // Translation replaced the demo text: never leave it half-revealed.
+      if (state === 'playing') finish();
+      else if (state === 'done') setStatus('ready');
+    }
+
+    function start() {
+      if (!root) return;
+      if (!('IntersectionObserver' in window)) { play(); return; }
+      var io = new IntersectionObserver(function (entries) {
+        if (entries.some(function (e) { return e.isIntersecting; })) { io.disconnect(); play(); }
+      }, { threshold: 0.35 });
+      io.observe(root);
+    }
+
+    return { start: start, onLanguageChange: onLanguageChange };
+  })();
+
+  // ── CTA wiring ─────────────────────────────────────────────
+  function initCtas() {
+    var serviceSelect = document.getElementById('f-service');
+
+    document.querySelectorAll('[data-cta]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        track('cta_click', { location: el.getAttribute('data-cta'), service: el.getAttribute('data-service') || '' });
+      });
+    });
+
+    // Optional external booking page: only then do the buttons promise booking.
+    if (BOOKING_URL) {
+      document.querySelectorAll('a[href="#contact"][data-cta]').forEach(function (a) {
+        a.setAttribute('href', BOOKING_URL);
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+      });
+      document.querySelectorAll('[data-i18n="cta.call"]').forEach(function (el) { el.setAttribute('data-i18n', 'cta.book'); });
+      document.querySelectorAll('[data-i18n="cta.call.short"]').forEach(function (el) { el.setAttribute('data-i18n', 'cta.book.short'); });
+    }
+
+    // Service-specific CTAs pre-select the service in the form
+    document.querySelectorAll('[data-service]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (BOOKING_URL || !serviceSelect) return;
+        serviceSelect.value = el.getAttribute('data-service');
+        serviceSelect.removeAttribute('aria-invalid');
+        var err = document.getElementById('f-service-err');
+        if (err) err.textContent = '';
+      });
+    });
+
+    // After jumping to the form, put focus on the first field without a second scroll
+    document.querySelectorAll('a[href="#contact"]').forEach(function (a) {
+      a.addEventListener('click', function () {
+        if (BOOKING_URL) return;
+        setTimeout(function () {
+          var first = document.getElementById('f-name');
+          if (first) first.focus({ preventScroll: true });
+        }, 600);
+      });
+    });
+  }
+
+  // ── Discovery form ─────────────────────────────────────────
+  function initForm() {
+    var form = document.getElementById('contact-form');
+    if (!form) return;
+
+    var fields = {
+      name:    form.querySelector('#f-name'),
+      email:   form.querySelector('#f-email'),
+      company: form.querySelector('#f-company'),
+      service: form.querySelector('#f-service'),
+      timeline:form.querySelector('#f-timeline'),
+      message: form.querySelector('#f-message'),
+      website: form.querySelector('#f-website')
+    };
+    var submit   = document.getElementById('f-submit');
+    var feedback = document.getElementById('f-feedback');
+    var started  = false;
+    var sending  = false;
+
+    function setError(name, key) {
+      var el = fields[name];
+      var err = document.getElementById('f-' + name + '-err');
+      if (key) {
+        el.setAttribute('aria-invalid', 'true');
+        if (err) err.textContent = t(key);
+      } else {
+        el.removeAttribute('aria-invalid');
+        if (err) err.textContent = '';
+      }
+    }
+
+    function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); }
+
+    function validate() {
+      var problems = [];
+      var name = fields.name.value.trim();
+      var email = fields.email.value.trim();
+      var msg = fields.message.value.trim();
+
+      setError('name',    name.length >= 2 ? null : 'v.name');      if (name.length < 2) problems.push('name');
+      setError('email',   isEmail(email) ? null : 'v.email');      if (!isEmail(email)) problems.push('email');
+      setError('service', fields.service.value ? null : 'v.service'); if (!fields.service.value) problems.push('service');
+      setError('message', msg.length >= 10 ? null : 'v.message');   if (msg.length < 10) problems.push('message');
+      return problems;
+    }
+
+    ['name', 'email', 'service', 'message'].forEach(function (k) {
+      var ev = k === 'service' ? 'change' : 'input';
+      fields[k].addEventListener(ev, function () {
+        if (fields[k].getAttribute('aria-invalid') === 'true') setError(k, null);
+      });
+    });
+
+    form.addEventListener('focusin', function () {
+      if (!started) { started = true; track('form_start'); }
+    });
+
+    function setLoading(on) {
+      submit.disabled = on;
+      submit.classList.toggle('is-loading', on);
+      submit.setAttribute('aria-busy', String(on));
+    }
+
+    function show(type, html) {
+      feedback.className = 'form-feedback is-' + type;
+      feedback.innerHTML = html;
+    }
+
+    function optionText(select) {
+      var opt = select.options[select.selectedIndex];
+      return opt && opt.value ? opt.text : '';
+    }
+
+    // If sending fails, the email and WhatsApp links open with the visitor's request filled in,
+    // so nothing has to be typed again.
+    function prefillFallback() {
+      var company = fields.company.value.trim();
+      var summary = [
+        fields.name.value.trim() + (company ? ' — ' + company : ''),
+        [optionText(fields.service), optionText(fields.timeline)].filter(Boolean).join(' · '),
+        ''
+      ].join('\n');
+      var message = fields.message.value.trim();
+      var mail = feedback.querySelector('a[data-fallback="email"]');
+      var wa   = feedback.querySelector('a[data-fallback="whatsapp"]');
+      if (mail) {
+        mail.href = 'mailto:seckbara23@gmail.com?subject=' +
+          encodeURIComponent(t('f.title') + ' — ' + optionText(fields.service)) +
+          '&body=' + encodeURIComponent(summary + message.slice(0, 1200));
+      }
+      if (wa) wa.href = 'https://wa.me/221707157070?text=' + encodeURIComponent(summary + message.slice(0, 600));
+    }
+
+    feedback.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[data-fallback]');
+      if (a) track('lead_fallback', { channel: a.getAttribute('data-fallback') });
+    });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (sending) return;
+      feedback.className = 'form-feedback';
+      feedback.textContent = '';
+
+      var problems = validate();
+      if (problems.length) {
+        fields[problems[0]].focus();
+        track('form_invalid', { fields: problems.join(',') });
+        return;
       }
 
-      showFeedback('success', t('ct.success'));
-      form.reset();
-    } catch (err) {
-      showFeedback('error', t('ct.error'));
-      console.error('Contact form error:', err);
-    } finally {
-      setLoading(false);
-    }
-  });
-}
+      sending = true;
+      setLoading(true);
+      var controller = ('AbortController' in window) ? new AbortController() : null;
+      var timeout = setTimeout(function () { if (controller) controller.abort(); }, 15000);
 
-// ── Quote Modal ───────────────────────────────────────────────
-function initQuoteModal() {
-  const TOTAL = 6;
-  let step = 1;
-
-  const SERVICES = [
-    { id: 'website',    icon: '🌐', key: 'q.svc.website'    },
-    { id: 'webapp',     icon: '💻', key: 'q.svc.webapp'     },
-    { id: 'mobile',     icon: '📱', key: 'q.svc.mobile'     },
-    { id: 'booking',    icon: '📅', key: 'q.svc.booking'    },
-    { id: 'ecommerce',  icon: '🛒', key: 'q.svc.ecommerce'  },
-    { id: 'payment',    icon: '💳', key: 'q.svc.payment'    },
-    { id: 'crm',        icon: '👥', key: 'q.svc.crm'        },
-    { id: 'automation', icon: '⚙️', key: 'q.svc.automation' },
-    { id: 'dashboard',  icon: '📊', key: 'q.svc.dashboard'  },
-    { id: 'api',        icon: '🔌', key: 'q.svc.api'        },
-    { id: 'modernize',  icon: '🔄', key: 'q.svc.modernize'  },
-    { id: 'other',      icon: '✨', key: 'q.svc.other'      },
-  ];
-  const GOALS    = ['q.goal.sales','q.goal.cx','q.goal.manual','q.goal.payments','q.goal.customers','q.goal.visibility','q.goal.analytics','q.goal.other'];
-  const FEATURES = ['q.feat.customer','q.feat.employee','q.feat.admin','q.feat.multiuser','q.feat.whatsapp','q.feat.sms','q.feat.email','q.feat.wave','q.feat.orange','q.feat.card','q.feat.booking','q.feat.files','q.feat.inventory','q.feat.reporting','q.feat.export'];
-  const TIMELINES = ['q.time.asap','q.time.1to3','q.time.3to6','q.time.explore'];
-  const BUDGETS   = ['q.budget.lt500','q.budget.500to2m','q.budget.2to5m','q.budget.gt5m','q.budget.discuss'];
-
-  let data = makeData();
-  function makeData() {
-    return { services: [], biz: { name:'', contact:'', email:'', phone:'', industry:'', website:'' }, proj: { description:'', goals:[] }, features: [], timeline:'', budget:'', notes:'', honeypot:'' };
-  }
-
-  const overlay    = document.getElementById('qm-overlay');
-  const dialog     = document.getElementById('qm-dialog');
-  const bodyEl     = document.getElementById('qm-body');
-  const backBtn    = document.getElementById('qm-back');
-  const nextBtn    = document.getElementById('qm-next');
-  const submitBtn  = document.getElementById('qm-submit');
-  const closeBtn   = document.getElementById('qm-close');
-  const fillEl     = document.getElementById('qm-progress-fill');
-  const stepLbl    = document.getElementById('qm-step-label');
-  const titleEl    = document.getElementById('qm-title');
-  const errorEl    = document.getElementById('qm-error');
-  const footerEl   = document.getElementById('qm-footer');
-  if (!overlay || !dialog) return;
-
-  function open(preselect) {
-    data = makeData();
-    if (preselect) data.services = [preselect];
-    step = 1;
-    footerEl.style.display = '';
-    render();
-    overlay.classList.add('qm-active');
-    dialog.classList.add('qm-active');
-    document.body.classList.add('qm-open');
-    setTimeout(() => closeBtn.focus(), 60);
-  }
-
-  function close() {
-    overlay.classList.remove('qm-active');
-    dialog.classList.remove('qm-active');
-    document.body.classList.remove('qm-open');
-  }
-
-  function err(msg) { errorEl.textContent = msg; errorEl.classList.add('qm-err-on'); }
-  function clrErr() { errorEl.textContent = ''; errorEl.classList.remove('qm-err-on'); }
-
-  function render() {
-    fillEl.style.width = (step / TOTAL * 100) + '%';
-    stepLbl.textContent = `${t('quote.step')} ${step} ${t('quote.of')} ${TOTAL}`;
-    titleEl.textContent = t(`q.step.${step}`);
-    backBtn.style.visibility = step === 1 ? 'hidden' : 'visible';
-    backBtn.textContent  = t('quote.back');
-    nextBtn.textContent  = t('quote.next');
-    submitBtn.textContent = t('quote.submit');
-    nextBtn.style.display   = step < TOTAL ? '' : 'none';
-    submitBtn.style.display = step === TOTAL ? '' : 'none';
-    clrErr();
-    [renderStep1, renderStep2, renderStep3, renderStep4, renderStep5, renderStep6][step - 1]();
-    bodyEl.scrollTop = 0;
-  }
-
-  function esc(v) { return String(v||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
-
-  function renderStep1() {
-    bodyEl.innerHTML = `<p class="qm-hint">${t('quote.select.hint')}</p>
-      <div class="qm-svc-grid">${SERVICES.map(s => `
-        <button type="button" class="qm-svc-card${data.services.includes(s.id)?' qm-selected':''}" data-svc="${s.id}">
-          <span class="qm-svc-icon">${s.icon}</span>
-          <span class="qm-svc-lbl">${t(s.key)}</span>
-        </button>`).join('')}
-      </div>`;
-    bodyEl.querySelectorAll('.qm-svc-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const id = card.dataset.svc;
-        if (data.services.includes(id)) { data.services = data.services.filter(s => s !== id); card.classList.remove('qm-selected'); }
-        else { data.services.push(id); card.classList.add('qm-selected'); }
-      });
+      fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller ? controller.signal : undefined,
+        body: JSON.stringify({
+          type:     'discovery',
+          name:     fields.name.value.trim(),
+          email:    fields.email.value.trim(),
+          company:  fields.company.value.trim(),
+          service:  fields.service.value,
+          timeline: fields.timeline.value,
+          message:  fields.message.value.trim(),
+          lang:     lang,
+          page:     window.location.pathname,
+          source:   source,
+          website:  fields.website ? fields.website.value : ''
+        })
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          show('success', t('f.success'));
+          track('lead_submitted', { service: fields.service.value });
+          form.reset();
+          started = false;
+        })
+        .catch(function (err) {
+          show('error', t('f.error'));
+          prefillFallback();
+          track('lead_failed', { reason: String(err && err.message || err) });
+        })
+        .then(function () {
+          clearTimeout(timeout);
+          sending = false;
+          setLoading(false);
+          feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
     });
   }
 
-  function field(id, label, type, val, ph, required, ac) {
-    return `<div class="qm-fld">
-      <label for="${id}">${label}${required ? '<span class="req">*</span>' : '<span class="opt"> (optional)</span>'}</label>
-      <input type="${type}" id="${id}" class="qm-input" value="${esc(val)}" placeholder="${esc(ph)}"
-             ${required?'required':''} ${ac?`autocomplete="${ac}"`:''}></div>`;
-  }
-
-  function renderStep2() {
-    bodyEl.innerHTML = `<div class="qm-fld-grid">
-      ${field('qb-name',     t('q.biz.name'),     'text',  data.biz.name,     '', true,  'organization')}
-      ${field('qb-contact',  t('q.biz.contact'),  'text',  data.biz.contact,  '', true,  'name')}
-      ${field('qb-email',    t('q.biz.email'),    'email', data.biz.email,    '', true,  'email')}
-      ${field('qb-phone',    t('q.biz.phone'),    'tel',   data.biz.phone,    '+221 70 000 0000', true, 'tel')}
-      ${field('qb-industry', t('q.biz.industry'), 'text',  data.biz.industry, '', true)}
-      ${field('qb-website',  t('q.biz.website'),  'url',   data.biz.website,  'https://', false, 'url')}
-    </div>`;
-    [['qb-name','name'],['qb-contact','contact'],['qb-email','email'],['qb-phone','phone'],['qb-industry','industry'],['qb-website','website']].forEach(([id,key]) => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('input', () => { data.biz[key] = el.value; });
-    });
-  }
-
-  function checkGrid(items, selected, cssClass) {
-    return `<div class="qm-chk-grid${cssClass?' '+cssClass:''}">${items.map(key => `
-      <label class="qm-chk${selected.includes(key)?' qm-selected':''}">
-        <input type="checkbox" value="${key}"${selected.includes(key)?' checked':''}><span>${t(key)}</span>
-      </label>`).join('')}</div>`;
-  }
-
-  function bindChecks(selector, arr) {
-    bodyEl.querySelectorAll(selector).forEach(cb => {
-      cb.addEventListener('change', () => {
-        cb.closest('.qm-chk').classList.toggle('qm-selected', cb.checked);
-        if (cb.checked) arr.push(cb.value); else arr.splice(arr.indexOf(cb.value), 1);
-      });
-    });
-  }
-
-  function renderStep3() {
-    bodyEl.innerHTML = `
-      <div class="qm-fld">
-        <label for="qp-desc">${t('q.proj.desc')}<span class="req">*</span></label>
-        <textarea id="qp-desc" class="qm-input qm-ta" placeholder="${esc(t('q.proj.desc.ph'))}">${esc(data.proj.description)}</textarea>
-      </div>
-      <div class="qm-fld" style="margin-top:20px">
-        <label>${t('q.proj.goal')}<span class="req">*</span></label>
-        ${checkGrid(GOALS, data.proj.goals)}
-      </div>`;
-    document.getElementById('qp-desc').addEventListener('input', e => { data.proj.description = e.target.value; });
-    bindChecks('.qm-chk input', data.proj.goals);
-  }
-
-  function renderStep4() {
-    bodyEl.innerHTML = `<p class="qm-hint">${t('quote.select.hint')}</p>${checkGrid(FEATURES, data.features, 'qm-chk-grid--wide')}`;
-    bindChecks('.qm-chk input', data.features);
-  }
-
-  function pillGroup(label, items, cur, group) {
-    return `<div class="qm-fld"><label>${label}<span class="req">*</span></label>
-      <div class="qm-pills">${items.map(k => `
-        <button type="button" class="qm-pill${cur===k?' qm-selected':''}" data-group="${group}" data-val="${k}">${t(k)}</button>`).join('')}
-      </div></div>`;
-  }
-
-  function renderStep5() {
-    bodyEl.innerHTML = pillGroup(t('q.time.label'), TIMELINES, data.timeline, 'timeline') + '<div style="margin-top:24px">' + pillGroup(t('q.budget.label'), BUDGETS, data.budget, 'budget') + '</div>';
-    bodyEl.querySelectorAll('.qm-pill').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const g = btn.dataset.group;
-        bodyEl.querySelectorAll(`.qm-pill[data-group="${g}"]`).forEach(b => b.classList.remove('qm-selected'));
-        btn.classList.add('qm-selected');
-        data[g] = btn.dataset.val;
-      });
-    });
-  }
-
-  function renderStep6() {
-    const svcLabels = data.services.map(id => { const s = SERVICES.find(x => x.id === id); return s ? t(s.key) : id; }).join(', ') || '—';
-    bodyEl.innerHTML = `
-      <div class="qm-review">
-        ${[
-          [t('q.review.services'), svcLabels],
-          [t('q.biz.name'),        esc(data.biz.name)    || '—'],
-          [t('q.biz.email'),       esc(data.biz.email)   || '—'],
-          [t('q.biz.phone'),       esc(data.biz.phone)   || '—'],
-          [t('q.review.timeline'), data.timeline ? t(data.timeline) : '—'],
-          [t('q.review.budget'),   data.budget   ? t(data.budget)   : '—'],
-        ].map(([lbl,val]) => `<div class="qm-rv-row"><span class="qm-rv-lbl">${lbl}</span><span class="qm-rv-val">${val}</span></div>`).join('')}
-      </div>
-      <div class="hp-field" aria-hidden="true"><input type="text" id="qm-hp" tabindex="-1" autocomplete="off"></div>
-      <div class="qm-fld" style="margin-top:20px">
-        <label for="qm-notes">${t('q.review.notes')}</label>
-        <textarea id="qm-notes" class="qm-input qm-ta" placeholder="${esc(t('q.review.notes.ph'))}">${esc(data.notes)}</textarea>
-      </div>`;
-    document.getElementById('qm-notes').addEventListener('input', e => { data.notes = e.target.value; });
-    const hp = document.getElementById('qm-hp');
-    if (hp) hp.addEventListener('input', e => { data.honeypot = e.target.value; });
-  }
-
-  function validate() {
-    clrErr();
-    if (step === 1 && !data.services.length)                          { err(t('q.val.service'));  return false; }
-    if (step === 2) {
-      if (!data.biz.name.trim())                                      { err(t('q.val.bizname'));  return false; }
-      if (!data.biz.contact.trim())                                   { err(t('q.val.contact'));  return false; }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.biz.email.trim())) { err(t('q.val.email'));    return false; }
-      if (data.biz.phone.trim() && !/^\+?[\d\s\-().]{7,20}$/.test(data.biz.phone.trim())) { err(t('q.val.phone')); return false; }
-      if (!data.biz.industry.trim())                                  { err(t('q.val.industry')); return false; }
-    }
-    if (step === 3) {
-      if (!data.proj.description.trim()) { err(t('q.val.desc')); return false; }
-      if (!data.proj.goals.length)       { err(t('q.val.goal')); return false; }
-    }
-    if (step === 5) {
-      if (!data.timeline) { err(t('q.val.timeline')); return false; }
-      if (!data.budget)   { err(t('q.val.budget'));   return false; }
-    }
-    return true;
-  }
-
-  function submit() {
-    if (data.honeypot) return;
-    submitBtn.disabled = true;
-    const payload = {
-      timestamp: new Date().toISOString(),
-      services:  [...data.services],
-      business:  { ...data.biz },
-      project:   { description: data.proj.description, goals: [...data.proj.goals] },
-      features:  [...data.features],
-      timeline:  data.timeline,
-      budget:    data.budget,
-      notes:     data.notes,
-    };
-    console.log('[Teranga Quote Submission]', payload);
-    // TODO: await fetch('/api/quote', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-    footerEl.style.display = 'none';
-    fillEl.style.width = '100%';
-    stepLbl.textContent = '';
-    titleEl.textContent = '';
-    bodyEl.innerHTML = `
-      <div class="qm-success">
-        <div class="qm-success-icon">✓</div>
-        <h3>${t('q.success.title')}</h3>
-        <p>${t('q.success.msg')}</p>
-      </div>`;
-  }
-
-  closeBtn.addEventListener('click', close);
-  overlay.addEventListener('click', close);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && dialog.classList.contains('qm-active')) close(); });
-  backBtn.addEventListener('click', () => { if (step > 1) { step--; render(); } });
-  nextBtn.addEventListener('click', () => { if (validate()) { step++; render(); } });
-  submitBtn.addEventListener('click', submit);
-
-  window.openQuoteModal = open;
-}
-
-// ── Bootstrap ────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.addEventListener('click', () => setLang(btn.dataset.lang));
+  // ── Boot ───────────────────────────────────────────────────
+  document.querySelectorAll('.lang-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { setLang(btn.getAttribute('data-lang')); });
   });
 
+  initMenu();
+  initCtas();
+  initForm();
   applyTranslations();
-  initScrollHeader();
-  initMobileMenu();
-  initContactForm();
-  initQuoteModal();
+  demo.start();
 
-  document.querySelectorAll('[data-open-quote]').forEach(el => {
-    el.addEventListener('click', e => {
-      e.preventDefault();
-      const preselect = el.dataset.openQuote || null;
-      if (window.openQuoteModal) window.openQuoteModal(preselect || undefined);
-    });
-  });
-});
+  // expose for tests/debugging
+  window.TT = { i18n: i18n, setLang: setLang, lang: function () { return lang; } };
+})();

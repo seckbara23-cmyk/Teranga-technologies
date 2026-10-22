@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://teranga-tech.com/sitemap.xml
