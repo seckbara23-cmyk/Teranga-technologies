@@ -1,2 +1,7 @@
 # Internal documents (sales templates, strategy, reports) — never publish on the website
 docs/
+
+# Original images no longer used by the site. "Logo Teranga" carries a stock-photo
+# watermark and Pic1.jpg is a stock photo of unknown licence: keep them out of
+# deployments until the owner confirms rights or deletes them.
+Pictures/
