@@ -1,61 +1,61 @@
-# Teranga Technologies — Landing Page
+# Teranga Technologies — Website
 
-Startup landing page for Teranga Technologies. Static HTML/CSS/JS frontend with a lightweight Express backend for the contact form.
+Marketing site for Teranga Technologies (teranga-tech.com): a single bilingual (EN/FR) page with a discovery-call form. Static HTML/CSS/JS, one serverless function for the form, deployed on Vercel. No build step.
 
-## Stack
-
-- **Frontend** — HTML5, CSS3 (custom properties, Grid, Flexbox), vanilla JS
-- **Backend** — Node.js + Express + Nodemailer
-- **Languages** — Bilingual EN/FR (runtime i18n, no page reload)
-
-## Project Structure
+## Structure
 
 ```
-├── index.html       # Main page (all sections)
-├── style.css        # All styles
-├── main.js          # i18n, mobile menu, contact form logic
-├── server.js        # Express server + /api/contact + /api/health
-├── package.json
-└── Pictures/
-    ├── Logo Teranga
-    └── Pic1.jpg
+├── index.html            # The page (English text is the default and the no-JS fallback)
+├── style.css             # All styles (brand tokens at the top)
+├── main.js               # EN/FR dictionary, language switch, menu, hero demo, form
+├── api/
+│   ├── contact.js        # Vercel function: POST /api/contact
+│   └── _lib/contact.js   # Shared validation + email (also used by server.js)
+├── server.js             # Local Express server (static files + /api/contact + /api/health)
+├── assets/
+│   ├── brand/            # Interim logo mark (SVG), touch icon, social share image
+│   ├── fonts/            # Self-hosted Bricolage Grotesque + Inter (SIL OFL)
+│   └── portfolio/        # Product screenshots (PNG + WebP)
+├── Pictures/             # Original image files (no longer referenced by the page; see docs report)
+├── docs/                 # Internal documents — excluded from deployment by .vercelignore
+├── robots.txt, sitemap.xml
+└── vercel.json           # Function settings, security headers, caching
 ```
 
-## Setup
+## Run locally
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+cp .env.example .env      # fill in SMTP settings
+npm start                 # http://localhost:3000
+```
 
-2. Create a `.env` file:
-   ```env
-   EMAIL_HOST=smtp.gmail.com
-   EMAIL_PORT=587
-   EMAIL_SECURE=false
-   EMAIL_USER=your-email@gmail.com
-   EMAIL_PASS=your-app-password
-   EMAIL_TO=seckbara23@gmail.com
-   PORT=3000
-   # ALLOWED_ORIGIN=https://yourdomain.com   # set in production
-   ```
+## Environment variables
 
-3. Start the server:
-   ```bash
-   npm start
-   ```
+| Variable | Purpose |
+|---|---|
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_SECURE`, `EMAIL_USER`, `EMAIL_PASS` | SMTP account used to send form submissions |
+| `EMAIL_TO` | Inbox that receives requests (default `seckbara23@gmail.com`) |
+| `ALLOWED_ORIGIN` | Optional. Only needed if another domain must call the API cross-origin |
+| `CONTACT_RATE_LIMIT` | Local server only: requests per IP per 15 min (default 5) |
 
-4. Open: `http://localhost:3000`
+## Editing content
+
+- All visible text lives in `main.js` under `i18n.en` and `i18n.fr`, keyed by the `data-i18n` attribute in `index.html`. When you change English text, change it in **both** `index.html` and `i18n.en` (the HTML copy is what search engines and no-JS visitors see).
+- Attributes are translated with `data-i18n-attr="aria-label:key;alt:key"`.
+- Language order: `?lang=fr|en` in the URL → the visitor's saved choice → browser language → English.
+- Booking link: set `BOOKING_URL` at the top of `main.js` (e.g. a Calendly or Cal.com page) to make every "Book a discovery call" button open it directly instead of the form.
+- After changing `style.css` or `main.js`, bump the `?v=` query in `index.html` so returning visitors get the new files.
 
 ## API
 
-| Method | Path           | Description                        |
-|--------|----------------|------------------------------------|
-| GET    | `/api/health`  | Health check                       |
-| POST   | `/api/contact` | Submit contact form (rate-limited) |
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/contact` | Discovery-call request. JSON: `name`, `email`, `service`, `message` (required); `company`, `timeline`, `phone`, `subject`, `lang` (optional); `website` is a honeypot. |
+| GET | `/api/health` | Health check (local server only) |
 
-The contact endpoint is rate-limited to 5 requests per IP per 15 minutes.
+`service` accepts `saas`, `ai`, `webapp`, `mobile`, `webdesign`, `support`, `other` (and the labels sent by the previous version of the site).
 
-## Deployment
+## Analytics
 
-The server serves static files from the project root. No build step needed. Set `NODE_ENV=production` and `ALLOWED_ORIGIN` in your environment before deploying.
+`main.js` sends conversion events (`cta_click`, `form_start`, `form_invalid`, `lead_submitted`, `lead_failed`, `language_switch`) to Vercel Web Analytics, Plausible or a Google Tag Manager `dataLayer` if one of them is installed; otherwise they are ignored.
