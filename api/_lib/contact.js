@@ -154,13 +154,14 @@ async function handleSubmission(body, env = process.env) {
 
   const cfg = smtpConfig(env);
   if (!cfg) {
+    // Logged for the owner; the public response stays generic.
     console.error('[Teranga] SMTP not configured: set EMAIL_HOST, EMAIL_USER and EMAIL_PASS.');
-    return { status: 500, body: { message: 'Email service is not configured.' } };
+    return { status: 503, body: { message: 'Unable to send your request. Please try again later.' } };
   }
 
   const mail = buildEmail(v.data);
   try {
-    await nodemailer.createTransport(cfg.transport).sendMail({
+    const info = await nodemailer.createTransport(cfg.transport).sendMail({
       from: `"Teranga Website" <${cfg.from}>`,
       to: cfg.to,
       replyTo: `"${v.data.name.replace(/"/g, '')}" <${v.data.email}>`,
@@ -168,9 +169,19 @@ async function handleSubmission(body, env = process.env) {
       text: mail.text,
       html: mail.html,
     });
+    // Delivery evidence for the logs, without personal data.
+    console.log('[Teranga] Discovery request handed to SMTP', JSON.stringify({
+      service: v.data.service,
+      accepted: (info.accepted || []).length,
+      rejected: (info.rejected || []).length,
+      smtp: String(info.response || '').slice(0, 60),
+    }));
+    if ((info.accepted || []).length === 0) {
+      return { status: 502, body: { message: 'Unable to send your request. Please try again later.' } };
+    }
     return { status: 200, body: { message: 'Request sent.' } };
   } catch (err) {
-    console.error('[Teranga] Mail send error:', err && err.message);
+    console.error('[Teranga] Mail send error:', err && (err.code || err.message));
     return { status: 502, body: { message: 'Unable to send your request. Please try again later.' } };
   }
 }
