@@ -94,10 +94,14 @@ Not verified here: the live SMTP settings on Vercel (the Vercel connector refuse
 
 ## E. Git, push, PR and preview status
 
-- Branch: `feat/teranga-01-ai-first-website`, created from `master` at `e52bdd8`. Commits are listed in the delivery message.
-- **Push: refused.** This session can read the repository but has no GitHub write access, because the Claude GitHub App is not installed for `seckbara23-cmyk/Teranga-technologies`.
-- **Pull request: not opened** (requires the push).
-- **Vercel preview: not created.** The project builds previews from Git pushes; it will appear automatically once the branch is pushed.
+- Branch: `feat/teranga-01-ai-first-website`, created from `master` at `e52bdd8` (master has not moved since).
+- Commits: `ea9c437` fix(contact), `3ddbfdf` feat(site), `9596154` chore(deploy), `a6ea417` docs, plus this status update.
+- **Push: done** after the Claude GitHub App was installed (first attempt was refused with HTTP 403).
+- **Pull request: #1 open** — https://github.com/seckbara23-cmyk/Teranga-technologies/pull/1 (into `master`, not merged).
+- **Vercel preview: READY** — deployment `dpl_ZJiRY6ZcGiSgKP1L5FvMK85pREKQ` (commit `a6ea417`), https://teranga-technologies-n2qthk2ds-seckbara23-6470s-projects.vercel.app (Vercel login required, or a share link).
+- Preview checks: `/` 200 with the new page; Content-Security-Policy, Permissions-Policy, X-Frame-Options, nosniff and HSTS present; `/docs/growth-assets.md` 404 (internal docs not deployed); `/api/_lib/contact.js` 404 (source not exposed); `GET /api/contact` 405 JSON with `Cache-Control: no-store` (function deployed and running); `/sitemap.xml` 200; `/assets/…` served with the 30-day cache header.
+- Not checked on the preview: a real form submission (needs a browser; depends on SMTP variables being set for the Preview environment).
+- Expected on previews only: Vercel injects its feedback-toolbar script (`vercel.live`), which the new CSP blocks. Production is unaffected unless the toolbar is enabled there.
 - Nothing was merged, force-pushed or deployed to production. No environment variables were read or changed.
 
 ## F. Open decisions and risks
