@@ -10,3 +10,6 @@ tests/
 # watermark and Pic1.jpg is a stock photo of unknown licence: keep them out of
 # deployments until the owner confirms rights or deletes them.
 Pictures/
+
+# Repository tooling
+.github/
