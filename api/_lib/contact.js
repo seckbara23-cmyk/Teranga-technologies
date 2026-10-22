@@ -2,6 +2,7 @@
    Used by the Vercel function (api/contact.js) and the local Express server (server.js).
    Files in api/ whose name starts with "_" are not deployed as endpoints. */
 
+const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
 const SERVICES = {
@@ -29,6 +30,10 @@ const TIMELINES = {
 
 const LIMITS = { name: 120, email: 200, company: 160, subject: 200, phone: 40, message: 5000 };
 
+// First-touch attribution sent by the page: campaign tags and the referring site's host.
+// No personal data; anything else in `source` is ignored.
+const SOURCE_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'referrer'];
+
 function clean(value, max) {
   return String(value == null ? '' : value)
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
@@ -53,6 +58,21 @@ function isValidEmail(email) {
   return /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']{2,}$/.test(email);
 }
 
+function cleanSource(source) {
+  if (!source || typeof source !== 'object') return '';
+  return SOURCE_KEYS
+    .map((k) => [k, oneLine(source[k], 100)])
+    .filter(([, v]) => v)
+    .map(([k, v]) => `${k}=${v}`)
+    .join(' · ');
+}
+
+/** Short reference used to track a request from the inbox to the logs, e.g. TT-20261022-3F9A. */
+function leadRef(now = new Date()) {
+  const day = now.toISOString().slice(0, 10).replace(/-/g, '');
+  return `TT-${day}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+}
+
 /** Validate a request body. Returns { ok, status, message, data }. */
 function validate(body) {
   body = body && typeof body === 'object' ? body : {};
@@ -70,6 +90,7 @@ function validate(body) {
     service:  oneLine(body.service, 80),
     timeline: oneLine(body.timeline, 20),
     lang:     body.lang === 'fr' ? 'fr' : 'en',
+    source:   cleanSource(body.source),
   };
 
   if (data.name.length < 2)
@@ -95,8 +116,12 @@ function validate(body) {
   return { ok: true, status: 200, data };
 }
 
-function buildEmail(d) {
+function buildEmail(d, meta) {
+  const received = meta.received.toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
+  const source = d.source || 'Direct or unknown';
   const rows = [
+    ['Reference', escapeHtml(meta.ref)],
+    ['Received', received],
     ['Name', escapeHtml(d.name)],
     ['Email', `<a href="mailto:${escapeHtml(d.email)}">${escapeHtml(d.email)}</a>`],
     d.company ? ['Company', escapeHtml(d.company)] : null,
@@ -104,6 +129,7 @@ function buildEmail(d) {
     ['Service', escapeHtml(d.serviceLabel)],
     d.timelineLabel ? ['Timeline', escapeHtml(d.timelineLabel)] : null,
     ['Site language', d.lang === 'fr' ? 'French' : 'English'],
+    ['Source', escapeHtml(source)],
     ['Message', `<span style="white-space:pre-wrap">${escapeHtml(d.message)}</span>`],
   ].filter(Boolean);
 
@@ -113,11 +139,13 @@ function buildEmail(d) {
     <table style="font-family:Arial,sans-serif;font-size:14px;border-collapse:collapse;width:100%;max-width:640px">
       ${rows.map(([k, v]) => `<tr><td style="${cell};font-weight:600;background:#F3F5F8;width:130px">${k}</td><td style="${cell}">${v}</td></tr>`).join('')}
     </table>
-    <p style="font-family:Arial,sans-serif;font-size:13px;color:#53627A">Reply to this email to answer ${escapeHtml(d.name)} directly. The site promises a reply within 24 hours.</p>`;
+    <p style="font-family:Arial,sans-serif;font-size:13px;color:#53627A">Reply to this email to answer ${escapeHtml(d.name)} directly. Target: first reply within one business day. Log it in the lead tracker as NEW with reference ${escapeHtml(meta.ref)}.</p>`;
 
   const text = [
     'New discovery call request — Teranga Technologies',
     '',
+    `Reference: ${meta.ref}`,
+    `Received: ${received}`,
     `Name: ${d.name}`,
     `Email: ${d.email}`,
     d.company ? `Company: ${d.company}` : null,
@@ -125,11 +153,12 @@ function buildEmail(d) {
     `Service: ${d.serviceLabel}`,
     d.timelineLabel ? `Timeline: ${d.timelineLabel}` : null,
     `Site language: ${d.lang === 'fr' ? 'French' : 'English'}`,
+    `Source: ${source}`,
     '',
     d.message,
   ].filter((l) => l !== null).join('\n');
 
-  return { subject: `[Teranga] ${d.subject}`, html, text };
+  return { subject: `[Teranga] ${d.subject} · ${meta.ref}`, html, text };
 }
 
 function smtpConfig(env) {
@@ -159,7 +188,8 @@ async function handleSubmission(body, env = process.env) {
     return { status: 503, body: { message: 'Unable to send your request. Please try again later.' } };
   }
 
-  const mail = buildEmail(v.data);
+  const meta = { ref: leadRef(), received: new Date() };
+  const mail = buildEmail(v.data, meta);
   try {
     const info = await nodemailer.createTransport(cfg.transport).sendMail({
       from: `"Teranga Website" <${cfg.from}>`,
@@ -171,7 +201,10 @@ async function handleSubmission(body, env = process.env) {
     });
     // Delivery evidence for the logs, without personal data.
     console.log('[Teranga] Discovery request handed to SMTP', JSON.stringify({
+      ref: meta.ref,
       service: v.data.service,
+      lang: v.data.lang,
+      sourced: Boolean(v.data.source),
       accepted: (info.accepted || []).length,
       rejected: (info.rejected || []).length,
       smtp: String(info.response || '').slice(0, 60),
@@ -181,9 +214,9 @@ async function handleSubmission(body, env = process.env) {
     }
     return { status: 200, body: { message: 'Request sent.' } };
   } catch (err) {
-    console.error('[Teranga] Mail send error:', err && (err.code || err.message));
+    console.error('[Teranga] Mail send error:', meta.ref, err && (err.code || err.message));
     return { status: 502, body: { message: 'Unable to send your request. Please try again later.' } };
   }
 }
 
-module.exports = { handleSubmission, validate, buildEmail, escapeHtml, SERVICES, TIMELINES };
+module.exports = { handleSubmission, validate, buildEmail, escapeHtml, leadRef, SERVICES, TIMELINES };

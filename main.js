@@ -517,6 +517,27 @@
     return null;
   }
 
+  // ── Lead source (campaign tags and referring site only) ─────
+  // Kept for the visit so a lead can be attributed even if the form is sent later.
+  function leadSource() {
+    var src = {};
+    try {
+      var params = new URLSearchParams(window.location.search);
+      ['utm_source', 'utm_medium', 'utm_campaign'].forEach(function (k) {
+        if (params.get(k)) src[k] = params.get(k).slice(0, 100);
+      });
+      var ref = document.referrer ? new URL(document.referrer).hostname : '';
+      if (ref && ref !== window.location.hostname) src.referrer = ref;
+    } catch (e) { /* ignore */ }
+    try {
+      if (Object.keys(src).length) window.sessionStorage.setItem('tt-src', JSON.stringify(src));
+      else src = JSON.parse(window.sessionStorage.getItem('tt-src') || '{}');
+    } catch (e) { /* ignore */ }
+    return src;
+  }
+
+  var source = leadSource();
+
   // ── Language ───────────────────────────────────────────────
   function initialLang() {
     var param = null;
@@ -832,6 +853,7 @@
           message:  fields.message.value.trim(),
           lang:     lang,
           page:     window.location.pathname,
+          source:   source,
           website:  fields.website ? fields.website.value : ''
         })
       })
