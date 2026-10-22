@@ -28,7 +28,7 @@ Marketing site for Teranga Technologies (teranga-tech.com): a single bilingual (
 
 ```bash
 npm install
-cp .env.example .env      # fill in SMTP settings
+cp .env.example .env      # fill in the Resend settings
 npm start                 # http://localhost:3000
 ```
 
@@ -36,12 +36,15 @@ npm start                 # http://localhost:3000
 
 | Variable | Purpose |
 |---|---|
-| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_SECURE`, `EMAIL_USER`, `EMAIL_PASS` | SMTP account used to send form submissions |
-| `EMAIL_TO` | Inbox that receives requests (default `seckbara23@gmail.com`) |
+| `RESEND_API_KEY` | Resend API key with sending access (Vercel type **Sensitive**). Server-side only |
+| `RESEND_FROM_EMAIL` | Sender on a domain verified in Resend: `Teranga Technologies <notifications@teranga-tech.com>` |
+| `LEAD_NOTIFICATION_EMAIL` | Inbox that receives requests (`seckbara23@gmail.com`); up to five addresses, comma-separated |
 | `ALLOWED_ORIGIN` | Optional. Only needed if another domain must call the API cross-origin |
 | `CONTACT_RATE_LIMIT` | Requests per IP before a 429 (default 5): per 10 min per instance on Vercel, per 15 min on the local server |
 
-Set the `EMAIL_*` variables in Vercel for **Production and Preview**, then redeploy. Without them the form cannot send email and visitors see the error with the pre-filled email/WhatsApp fallback. Setup and delivery test: `docs/commercial-operating-guide.md` §1.
+Set the three Resend variables in Vercel for **Production and Preview**, then redeploy. If any is missing or malformed, the API answers a generic 503, logs which variable is wrong (never its value), and visitors see the error with the pre-filled email/WhatsApp fallback. Do not set `RESEND_BASE_URL` outside tests. Setup, DNS and delivery test: `docs/commercial-operating-guide.md` §1.
+
+Delivery: the API returns success only after Resend accepts the message (an email id). Acceptance is not inbox delivery; check Resend → Emails for Delivered/Bounced. Each submission uses its own Resend idempotency key (safe retries on 429/5xx), and an identical request repeated within 10 minutes is not sent twice.
 
 ## Editing content
 
@@ -55,10 +58,10 @@ Set the `EMAIL_*` variables in Vercel for **Production and Preview**, then redep
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/api/contact` | Discovery-call request. JSON: `name`, `email`, `service`, `message` (required); `company`, `timeline`, `phone`, `subject`, `lang` (optional); `website` is a honeypot. |
+| POST | `/api/contact` | Discovery-call request. JSON: `name`, `email`, `service`, `message` (required); `type`, `company`, `timeline`, `phone`, `subject`, `lang`, `source` (optional); `website` is a honeypot. |
 | GET | `/api/health` | Health check (local server only) |
 
-`service` accepts `saas`, `ai`, `webapp`, `mobile`, `webdesign`, `support`, `other` (and the labels sent by the previous version of the site).
+`service` accepts `saas`, `ai`, `webapp`, `mobile`, `webdesign`, `support`, `other` (and the labels sent by the previous version of the site). `type` is `discovery` (the site form) or `contact` (the previous site's contact form; inferred from its legacy service labels when absent); anything else is a 400.
 
 ## Analytics
 
