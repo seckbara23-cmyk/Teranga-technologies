@@ -1,6 +1,6 @@
 # Teranga Technologies — Website
 
-Marketing site for Teranga Technologies (teranga-tech.com): six pages in English and French with a discovery-call form. Static HTML/CSS/JS generated from one source by a small dependency-free script, one serverless function for the form, deployed on Vercel. Vercel runs no build: the generated HTML is committed.
+Marketing site for Teranga Technologies (teranga-tech.com): six pages plus a privacy page, in English and French, with a discovery-call form. Static HTML/CSS/JS generated from one source by a small dependency-free script, one serverless function for the form, deployed on Vercel. Vercel runs no build: the generated HTML is committed.
 
 ## Pages
 
@@ -12,6 +12,7 @@ Marketing site for Teranga Technologies (teranga-tech.com): six pages in English
 | `/work` | `/fr/work` | Radiora Medical and EduSen case studies, three more products |
 | `/about` | `/fr/about` | Name, principles, collaboration, location |
 | `/contact` | `/fr/contact` | Discovery-call form, next steps, direct contacts, FAQ |
+| `/privacy` | `/fr/privacy` | What the form and analytics collect, processors, storage, retention, rights (linked from the footer and the form) |
 
 `404.html` is a bilingual not-found page. Links from the previous one-page site keep working: `/?lang=fr` redirects to `/fr` (vercel.json and main.js), and `/#services`, `/#work-radiora`, `/#contact`, `/#faq` … are sent to the matching page by `main.js`.
 
@@ -25,16 +26,17 @@ Marketing site for Teranga Technologies (teranga-tech.com): six pages in English
 │   ├── components.mjs    # Header, footer, hero, cards, timeline, CTA, contact form …
 │   ├── pages.mjs         # Page compositions
 │   ├── layout.mjs        # <head> metadata (canonical, hreflang, Open Graph, JSON-LD)
-│   └── config.mjs        # Site URL, contact details, product links, BOOKING_URL
-├── index.html, services.html, ai-engineering.html, work.html, about.html, contact.html
+│   └── config.mjs        # Site URL, contact details, product links, BOOKING_URL, ANALYTICS switches
+├── index.html, services.html, ai-engineering.html, work.html, about.html, contact.html, privacy.html
 ├── fr/                   # French pages (generated)
 ├── 404.html, sitemap.xml # Generated
 ├── style.css             # "Teranga Signature" design system (tokens at the top)
-├── main.js               # Language preference, legacy links, menu, hero demo, form, motion
+├── main.js               # Language, legacy links, menu, hero demo, form, attribution, events, motion
 ├── api/
 │   ├── contact.js        # Vercel function: POST /api/contact
 │   └── _lib/contact.js   # Shared validation + Resend notification (also used by server.js)
 ├── server.js             # Local Express server (same clean URLs, /api/contact, /api/health)
+├── scripts/lead-report.mjs # Monthly lead report from a tracker export — not deployed
 ├── assets/
 │   ├── brand/            # Interim logo mark (SVG), touch icon, social share image
 │   ├── fonts/            # Self-hosted Bricolage Grotesque + Inter (SIL OFL)
@@ -84,16 +86,17 @@ Delivery: the API returns success only after Resend accepts the message (an emai
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/api/contact` | Discovery-call request. JSON: `name`, `email`, `service`, `message` (required); `type`, `company`, `timeline`, `phone`, `subject`, `lang`, `source` (optional); `website` is a honeypot. |
+| POST | `/api/contact` | Discovery-call request. JSON: `name`, `email`, `service`, `message` (required); `type`, `company`, `timeline`, `phone`, `subject`, `lang`, `page`, `source` (optional); `website` is a honeypot. Body ≤ 32 KB (else 413). Success: `200 {"message", "ref"}` |
 | GET | `/api/health` | Health check (local server only) |
 
 `service` accepts `saas`, `ai`, `webapp`, `mobile`, `webdesign`, `support`, `other` (and the labels sent by the previous version of the site). `type` is `discovery` (the site form) or `contact` (the previous site's contact form; inferred from its legacy service labels when absent); anything else is a 400.
 
-## Analytics
+## Measurement and attribution
 
-`main.js` sends conversion events (`cta_click`, `form_start`, `form_invalid`, `lead_submitted`, `lead_failed`, `lead_fallback`, `language_switch`) to Vercel Web Analytics, Plausible or a Google Tag Manager `dataLayer` if one of them is installed; otherwise they are ignored. No analytics script is installed yet (see `docs/commercial-operating-guide.md` §7).
-
-Every lead email carries a reference (`TT-YYYYMMDD-XXXX`, also in the subject and the Vercel log line), the received time, the site language and the source (`utm_source`, `utm_medium`, `utm_campaign` and referring site, captured by the page for the visit).
+- **Leads** are counted from the notifications (one per request accepted by Resend), recorded in a private tracker and reported with `node scripts/lead-report.mjs <export.csv> [--from] [--to] [--visitors]`. See `docs/TERANGA-05A-lead-operations.md`.
+- **Attribution:** the page keeps the visit's `utm_*` tags, the referring site's host and the entry page for the tab session and sends them with the form. The server re-validates them, computes the channel (campaign / referral / direct) and adds an attribution section and a ready-to-paste tracker row to the notification.
+- **Analytics:** `ANALYTICS` in `site/config.mjs`. `webAnalytics` adds the cookieless Vercel Web Analytics script to every page; enable Web Analytics in the Vercel project first, or the script answers 404. `customEvents` (Pro plan) also forwards the conversion events. Events are defined once in `main.js` (`EVENTS`), carry no personal data and are listed in `docs/TERANGA-05A-analytics-taxonomy.md`. In any case they are available in the page as `window.TT.events`.
+- Design and data flow: `docs/TERANGA-05A-architecture.md`; privacy and security review: `docs/TERANGA-05A-privacy-security.md`.
 
 ## Tests
 
