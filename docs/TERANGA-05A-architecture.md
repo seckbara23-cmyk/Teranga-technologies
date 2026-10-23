@@ -121,7 +121,7 @@ There is one delivery mechanism (Resend). If it fails, the server never reports 
 
 ## 7. Performance
 
-`initReveal()` read each element's position right after changing the previous element's class. That forced a layout per element, which the baseline measured as a 139–213 ms main-thread task on the home page. It now reads every position first, then changes classes: one layout. See the release report for Lighthouse figures.
+The baseline measured a 139–213 ms `main.js` task on the home page under mobile throttling, almost all of it style and layout (scripting itself is 15–50 ms). `initReveal()` read element positions with `getBoundingClientRect()` while the script ran, which forced the page's first layout (and, before this release, one more per element) into the script's task. A first fix that only batched the reads did not shorten the task: the first layout was still forced. It now reads no layout at all. A first IntersectionObserver report sorts the elements after the browser's own layout: those on screen or above it stay as they are, and those below get `reveal-pending`. Opacity and transform only, so no layout shift. A second observer reveals them on scroll. Figures: release report.
 
 ## 8. Known limits
 

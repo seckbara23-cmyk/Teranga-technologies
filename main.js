@@ -317,26 +317,29 @@
   }
 
   // ── Entrance motion: only elements below the fold, never content already on screen ─
+  // Positions come from IntersectionObserver, after the browser's own layout. Reading them here
+  // (getBoundingClientRect) forced the page's whole first layout into this script's task.
   function initReveal() {
     if (!('IntersectionObserver' in window)) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var io = new IntersectionObserver(function (entries) {
+    var reveal = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
         if (!e.isIntersecting) return;
         e.target.classList.add('is-revealed');
         e.target.classList.remove('reveal-pending');
-        io.unobserve(e.target);
+        reveal.unobserve(e.target);
       });
     }, { rootMargin: '0px 0px -8% 0px' });
-    // All positions are read before any class changes: alternating the two forced a layout per element.
-    var fold = window.innerHeight;
-    var below = Array.prototype.filter.call(document.querySelectorAll('[data-reveal]'), function (el) {
-      return el.getBoundingClientRect().top >= fold;
+    // First report for each element: on screen or above it → left alone; below → hidden until it scrolls in.
+    var sort = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        sort.unobserve(e.target);
+        if (e.isIntersecting || e.boundingClientRect.top < 0) return;
+        e.target.classList.add('reveal-pending');
+        reveal.observe(e.target);
+      });
     });
-    below.forEach(function (el) {
-      el.classList.add('reveal-pending');
-      io.observe(el);
-    });
+    document.querySelectorAll('[data-reveal]').forEach(function (el) { sort.observe(el); });
   }
 
   // ── Click events: discovery CTAs, case studies, WhatsApp and email ─
