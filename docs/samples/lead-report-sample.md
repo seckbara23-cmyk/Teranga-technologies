@@ -1,4 +1,4 @@
-<!-- SYNTHETIC SAMPLE: generated with `node scripts/lead-report.mjs docs/samples/lead-tracker-sample.csv --from 2026-09-01 --to 2026-10-31 --visitors 1840`. Fictional rows and visitor count; no real lead or traffic data. -->
+<!-- SYNTHETIC SAMPLE: generated with `node scripts/lead-report.mjs docs/samples/lead-tracker-sample.csv --from 2026-09-01 --to 2026-10-31 --visitors 1840 --form-starts 64`. Fictional rows, visitor and form-start counts; no real lead or traffic data. -->
 
 # Lead report — 2026-09-01 → 2026-10-31
 
@@ -6,19 +6,25 @@ Source of truth: the private lead tracker (one row per notification accepted by 
 
 ## Summary
 
-| Measure | Value |
-| --- | --- |
-| Leads (excluding spam) | 10 |
-| Spam rows | 2 (16.7% of rows) |
-| Open pipeline (NEW → PROPOSAL) | 7 |
-| Won | 1 |
-| Lost | 2 |
-| Win rate of decided leads (WON ÷ (WON + LOST)) | 33.3% |
-| First reply, median | 5.6 h over 9 lead(s) |
-| First reply within 24 h | 88.9% |
-| Visitors (Vercel Web Analytics, entered with --visitors) | 1840 |
-| Leads per 100 visitors | 0.54 |
-| Qualified leads per 100 visitors | 0.33 |
+| Measure | Value | From |
+| --- | --- | --- |
+| Accepted leads (excluding spam) | 10 | Tracker |
+| Spam rows | 2 (16.7% of rows) | Tracker |
+| Qualification rate (reached QUALIFIED ÷ leads) | 60% | Tracker |
+| Open pipeline (NEW → PROPOSAL) | 7 | Tracker |
+| Won | 1 | Tracker |
+| Lost | 2 | Tracker |
+| Win rate of decided leads (WON ÷ (WON + LOST)) | 33.3% | Tracker |
+| First reply, median | 5.6 h over 9 lead(s) | Tracker |
+| First reply within 24 h | 88.9% | Tracker |
+| Visitors (--visitors) | 1840 | Vercel Web Analytics |
+| Contact form starts (--form-starts) | 64 | Vercel events (Pro) |
+| Leads per 100 visitors | 0.54 | Tracker ÷ Vercel, not joined |
+| Qualified leads per 100 visitors | 0.33 | Tracker ÷ Vercel, not joined |
+| Form-start rate (starts ÷ visitors) | 3.5% | Vercel |
+| Form completion (leads ÷ form starts) | 15.6% | Tracker ÷ Vercel, not joined |
+
+Rates that divide tracker counts by Vercel counts compare two systems for the same period; they are indicative (ad blockers hide some visits and events from Vercel, never leads from the tracker).
 
 ## Funnel (leads that reached each stage)
 

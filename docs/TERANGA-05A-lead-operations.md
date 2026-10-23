@@ -34,7 +34,7 @@ Create one Google Sheet named "Teranga leads", shared with no one else (or only 
 Row 1, columns A–K exactly as the notification writes them, then the columns you fill by hand:
 
 ```
-Reference | Submitted (UTC) | Company | Service | Language | Channel | Source | Medium | Campaign | Entry page | Status | First reply (UTC) | Lost at | Lost reason | Discovery date | Proposal date | Estimated value | Next action | Next action date | Notes
+Reference | Submitted (UTC) | Company | Service | Language | Channel | Source | Medium | Campaign | Entry page | Status | First reply (UTC) | Last contact (UTC) | Owner | Next action | Next action date | Lost at | Lost reason | Discovery date | Proposal date | Estimated value | Notes
 ```
 
 - Format column B and the date columns as plain text. The notification writes `2026-10-23 09:05 UTC` and the report reads the same format, or `YYYY-MM-DD HH:MM`.
@@ -46,24 +46,24 @@ Reference | Submitted (UTC) | Company | Service | Language | Channel | Source | 
 1. Open the notification. At the bottom, under "Lead tracker row", copy the line below the column names (it is tab-separated).
 2. In the sheet, click column A of the first empty row and paste: the cells fill A–K with Status `NEW`. If everything lands in column A, use Data → Split text to columns (separator: detect automatically), or copy the row from the plain-text view of the email (Gmail ⋮ → Show original).
 3. Reply from Gmail (Reply-To is the prospect), in the language shown. When sent, set Status `CONTACTED` and "First reply (UTC)".
-4. Update Status and the dates as the lead moves. Fill "Next action" and its date for every open lead.
+4. Update Status and the dates as the lead moves. For every open lead keep "Owner" (who follows it up), "Last contact (UTC)", "Next action" and its date filled.
 
 If a cell starts with `'` (for example `'=…`), the notification neutralised a value that could have run as a spreadsheet formula. Leave it as it is.
 
 ## 5. Monthly report (10 minutes)
 
 1. Sheet → File → Download → **Comma-separated values (.csv)** (current sheet). Save it outside the repository, e.g. `Downloads/teranga-leads.csv`.
-2. Vercel → project → Analytics → set the same period → note **Visitors** (once Web Analytics is enabled).
+2. Vercel → project → Analytics → set the same period → note **Visitors** (once Web Analytics is enabled) and, on the Pro plan only, the count of the `contact_form_start` event.
 3. In the repository folder:
 
    ```
-   node scripts/lead-report.mjs "C:\Users\<you>\Downloads\teranga-leads.csv" --from 2026-11-01 --to 2026-11-30 --visitors 1840
+   node scripts/lead-report.mjs "C:\Users\<you>\Downloads\teranga-leads.csv" --from 2026-11-01 --to 2026-11-30 --visitors 1840 --form-starts 64
    ```
 
-   Add `> report-2026-11.md` to save it, or `--json` for raw figures. Without `--visitors`, no conversion rate is printed.
+   Add `> report-2026-11.md` to save it, or `--json` for raw figures. Without `--visitors` / `--form-starts`, the rates that need them are left blank, never estimated.
 4. Delete the CSV export when done. Keep the report wherever you keep business documents, not in the repository.
 
-The report contains: leads (spam excluded), spam share, open pipeline, won/lost, win rate of decided leads, median first-reply time and share within 24 h, leads and qualified leads per 100 visitors, the funnel (leads that reached each stage), and breakdowns by channel, source, entry page, service, language and month. It lists only references for rows that need fixing (unknown status, unreadable date, duplicate), never names or companies.
+The report contains: accepted leads (spam excluded), spam share, qualification rate, open pipeline, won/lost, win rate of decided leads, median first-reply time and share within 24 h, leads and qualified leads per 100 visitors, form-start rate and form completion, the funnel (leads that reached each stage), and breakdowns by channel, source, entry page, service, language and month. Each summary figure names its system: Tracker, Vercel, or "Tracker ÷ Vercel, not joined" when a tracker count is divided by a Vercel count for the same period. Service interest by clicks (`service_cta_click` by service) is read in Vercel → Analytics → Events on Pro. On Hobby, use "By service" (leads), which is the stronger signal anyway. It lists only references for rows that need fixing (unknown status, unreadable date, duplicate), never names or companies.
 
 A synthetic example: `docs/samples/lead-tracker-sample.csv` → `docs/samples/lead-report-sample.md`. All of its rows are fictional and marked as such.
 

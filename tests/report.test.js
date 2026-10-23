@@ -8,7 +8,7 @@ const { TRACKER_COLUMNS } = require('../api/_lib/contact');
 const root = path.join(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(root, f), 'utf8').replace(/\r\n/g, '\n');
 const SAMPLE = 'docs/samples/lead-tracker-sample.csv';
-const OPTS = { from: '2026-09-01', to: '2026-10-31', visitors: 1840 };
+const OPTS = { from: '2026-09-01', to: '2026-10-31', visitors: 1840, formStarts: 64 };
 
 let report;
 test.before(async () => { report = await import('../scripts/lead-report.mjs'); });
@@ -40,18 +40,27 @@ test('funnel, pipeline, response time and rates are computed from the tracker', 
   assert.equal(s.open, 7);
   assert.equal(s.winRateOfDecided, 33.3);
   assert.deepEqual(s.response, { measured: 9, medianHours: 5.6, within24h: 88.9 });
+  assert.equal(s.qualificationRate, 60);
   assert.equal(s.leadRate, 0.54);
   assert.equal(s.qualifiedRate, 0.33);
+  assert.equal(s.formStartRate, 3.5);
+  assert.equal(s.formCompletion, 15.6);
   assert.deepEqual(s.byChannel.map((g) => [g.name, g.leads, g.qualified, g.won]), [['campaign', 4, 4, 0], ['direct', 3, 1, 0], ['referral', 3, 1, 1]]);
   assert.deepEqual(s.byMonth, [{ month: '2026-09', leads: 5 }, { month: '2026-10', leads: 5 }]);
   assert.deepEqual(s.problems, []);
 });
 
-test('no visitor count means no conversion rate: clicks and views are never treated as leads', () => {
+test('no visitor or form-start count means no rate that needs one: clicks and views are never treated as leads', () => {
   const s = report.summarize(report.parseTable(read(SAMPLE)), { from: OPTS.from, to: OPTS.to });
   assert.equal(s.visitors, null);
   assert.equal(s.leadRate, null);
-  assert.match(report.render(s), /\| Leads per 100 visitors \| — \|/);
+  assert.equal(s.formStartRate, null);
+  assert.equal(s.formCompletion, null);
+  const md = report.render(s);
+  assert.match(md, /\| Leads per 100 visitors \| — \| Tracker ÷ Vercel, not joined \|/);
+  assert.match(md, /\| Form completion \(leads ÷ form starts\) \| — \|/);
+  // The lead count comes from the tracker only, whatever analytics say.
+  assert.equal(report.summarize(report.parseTable(read(SAMPLE)), { ...OPTS, formStarts: 5 }).leads, 10);
 });
 
 test('the date range is inclusive and bad rows are listed by reference only', () => {

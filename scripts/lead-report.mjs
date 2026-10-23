@@ -2,10 +2,12 @@
 // channel, service and response-time figures as Markdown (docs/TERANGA-05A-lead-operations.md).
 // No dependencies; nothing is sent anywhere.
 //
-//   node scripts/lead-report.mjs tracker.csv [--from 2026-10-01] [--to 2026-10-31] [--visitors 1840] [--json]
+//   node scripts/lead-report.mjs tracker.csv [--from 2026-10-01] [--to 2026-10-31] [--visitors 1840] [--form-starts 60] [--json]
 //
-// --visitors is the visitor count for the same period, read from Vercel Web Analytics. Without it
-// no conversion rate is printed: clicks and page views are never counted as leads.
+// --visitors is the visitor count for the same period, read from Vercel Web Analytics, and
+// --form-starts the contact_form_start count (Vercel, Pro plan only). Without them no rate that
+// needs them is printed: clicks and page views are never counted as leads. Rates mixing the
+// tracker and Vercel are labelled as such: the two cannot be joined visitor by visitor.
 // The output lists references only (for rows that need fixing), never names, companies or messages.
 
 import fs from 'node:fs';
@@ -87,7 +89,7 @@ function breakdown(leads, key) {
 }
 
 /** Figures for the rows submitted between from and to (inclusive, UTC dates). */
-export function summarize(rows, { from, to, visitors } = {}) {
+export function summarize(rows, { from, to, visitors, formStarts } = {}) {
   const lo = from ? parseUtc(from) : null;
   const hi = to ? new Date(parseUtc(to).getTime() + 86400000) : null;
   const problems = [];
@@ -123,6 +125,8 @@ export function summarize(rows, { from, to, visitors } = {}) {
   }
 
   const v = Number(visitors);
+  const fs0 = Number(formStarts);
+  const per100 = (n, d) => (d > 0 ? Math.round((n / d) * 10000) / 100 : null);
   return {
     period: { from: from || null, to: to || null },
     rows: inRange.length,
@@ -144,9 +148,13 @@ export function summarize(rows, { from, to, visitors } = {}) {
     byLanguage: breakdown(leads, 'Language'),
     byEntry: breakdown(leads, 'Entry page'),
     byMonth: [...months.entries()].sort().map(([month, n]) => ({ month, leads: n })),
+    qualificationRate: pct(reached[2], leads.length),
     visitors: v > 0 ? v : null,
-    leadRate: v > 0 ? Math.round((leads.length / v) * 10000) / 100 : null,
-    qualifiedRate: v > 0 ? Math.round((reached[2] / v) * 10000) / 100 : null,
+    formStarts: fs0 > 0 ? fs0 : null,
+    leadRate: per100(leads.length, v),
+    qualifiedRate: per100(reached[2], v),
+    formStartRate: v > 0 && fs0 > 0 ? pct(fs0, v) : null,
+    formCompletion: fs0 > 0 ? pct(leads.length, fs0) : null,
     problems,
   };
 }
@@ -170,19 +178,25 @@ export function render(s) {
     '',
     '## Summary',
     '',
-    table(['Measure', 'Value'], [
-      ['Leads (excluding spam)', s.leads],
-      ['Spam rows', `${s.spam} (${fmt(s.spamShare)} of rows)`],
-      ['Open pipeline (NEW → PROPOSAL)', s.open],
-      ['Won', s.byStatus.WON],
-      ['Lost', s.byStatus.LOST],
-      ['Win rate of decided leads (WON ÷ (WON + LOST))', fmt(s.winRateOfDecided)],
-      ['First reply, median', s.response.medianHours == null ? '— (fill "First reply (UTC)")' : `${s.response.medianHours} h over ${s.response.measured} lead(s)`],
-      ['First reply within 24 h', fmt(s.response.within24h)],
-      ['Visitors (Vercel Web Analytics, entered with --visitors)', s.visitors == null ? '— not provided' : s.visitors],
-      ['Leads per 100 visitors', s.leadRate == null ? '—' : s.leadRate],
-      ['Qualified leads per 100 visitors', s.qualifiedRate == null ? '—' : s.qualifiedRate],
+    table(['Measure', 'Value', 'From'], [
+      ['Accepted leads (excluding spam)', s.leads, 'Tracker'],
+      ['Spam rows', `${s.spam} (${fmt(s.spamShare)} of rows)`, 'Tracker'],
+      ['Qualification rate (reached QUALIFIED ÷ leads)', fmt(s.qualificationRate), 'Tracker'],
+      ['Open pipeline (NEW → PROPOSAL)', s.open, 'Tracker'],
+      ['Won', s.byStatus.WON, 'Tracker'],
+      ['Lost', s.byStatus.LOST, 'Tracker'],
+      ['Win rate of decided leads (WON ÷ (WON + LOST))', fmt(s.winRateOfDecided), 'Tracker'],
+      ['First reply, median', s.response.medianHours == null ? '— (fill "First reply (UTC)")' : `${s.response.medianHours} h over ${s.response.measured} lead(s)`, 'Tracker'],
+      ['First reply within 24 h', fmt(s.response.within24h), 'Tracker'],
+      ['Visitors (--visitors)', s.visitors == null ? '— not provided' : s.visitors, 'Vercel Web Analytics'],
+      ['Contact form starts (--form-starts)', s.formStarts == null ? '— not provided' : s.formStarts, 'Vercel events (Pro)'],
+      ['Leads per 100 visitors', s.leadRate == null ? '—' : s.leadRate, 'Tracker ÷ Vercel, not joined'],
+      ['Qualified leads per 100 visitors', s.qualifiedRate == null ? '—' : s.qualifiedRate, 'Tracker ÷ Vercel, not joined'],
+      ['Form-start rate (starts ÷ visitors)', fmt(s.formStartRate), 'Vercel'],
+      ['Form completion (leads ÷ form starts)', fmt(s.formCompletion), 'Tracker ÷ Vercel, not joined'],
     ]),
+    '',
+    'Rates that divide tracker counts by Vercel counts compare two systems for the same period; they are indicative (ad blockers hide some visits and events from Vercel, never leads from the tracker).',
     '',
     '## Funnel (leads that reached each stage)',
     '',
@@ -218,18 +232,20 @@ function args(argv) {
     const a = argv[i];
     if (a === '--json') o.json = true;
     else if (['--from', '--to', '--visitors'].includes(a)) o[a.slice(2)] = argv[++i];
+    else if (a === '--form-starts') o.formStarts = argv[++i];
     else if (!a.startsWith('--')) o.file = a;
     else throw new Error(`Unknown option ${a}`);
   }
   for (const k of ['from', 'to']) if (o[k] && !parseUtc(o[k])) throw new Error(`--${k} must be a date like 2026-10-01`);
   if (o.visitors !== undefined && !(Number(o.visitors) > 0)) throw new Error('--visitors must be a positive number');
+  if (o.formStarts !== undefined && !(Number(o.formStarts) > 0)) throw new Error('--form-starts must be a positive number');
   return o;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const o = args(process.argv.slice(2));
-    if (!o.file) throw new Error('Usage: node scripts/lead-report.mjs tracker.csv [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--visitors N] [--json]');
+    if (!o.file) throw new Error('Usage: node scripts/lead-report.mjs tracker.csv [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--visitors N] [--form-starts N] [--json]');
     const s = summarize(parseTable(fs.readFileSync(o.file, 'utf8')), o);
     process.stdout.write(o.json ? `${JSON.stringify(s, null, 2)}\n` : render(s));
   } catch (err) {
