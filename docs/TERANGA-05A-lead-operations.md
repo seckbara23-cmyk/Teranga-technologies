@@ -53,7 +53,7 @@ If a cell starts with `'` (for example `'=…`), the notification neutralised a 
 ## 5. Monthly report (10 minutes)
 
 1. Sheet → File → Download → **Comma-separated values (.csv)** (current sheet). Save it outside the repository, e.g. `Downloads/teranga-leads.csv`.
-2. Vercel → project → Analytics → set the same period → note **Visitors** (once Web Analytics is enabled) and, on the Pro plan only, the count of the `contact_form_start` event.
+2. Vercel → project → Analytics → set the same period → note **Visitors** (once Web Analytics is enabled) and, when custom events are on, the count of the `contact_form_start` event (Analytics → Events).
 3. In the repository folder:
 
    ```

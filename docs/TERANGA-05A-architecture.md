@@ -83,7 +83,12 @@ All attribution is untrusted input:
 | Queue | When forwarding is on, `main.js` defines the standard `window.va` queue. `main.js` runs before the deferred Vercel script, which replays the queue |
 | Server records | The tracker, fed from notifications. No server-side event store was created: nothing new needs protecting, and nothing private is published |
 
-**Release gate (owner):** Web Analytics is not enabled for this Vercel project (baseline §3). Until it is, `/_vercel/insights/script.js` answers 404 on previews and production. The page still works, but the browser logs one console error per page view. Before merging: enable it in Vercel → project → Analytics. It is free on Hobby within 50,000 events a month, shared with the account's other projects. Then redeploy the preview and check the script answers 200. To ship without analytics instead, set `webAnalytics: false`, regenerate and commit.
+**Activation (updated 2026-10-23, `docs/TERANGA-05A-analytics-activation.md`):**
+- Web Analytics was enabled for the project at 19:33 UTC.
+- Vercel adds the `/_vercel/insights/*` routes only to deployments **created after** that. An older deployment answers 404 for the script, logs one console error per page view and records nothing.
+- After enabling (or re-enabling) Web Analytics, redeploy, then run `node scripts/check-analytics.mjs <url>`. No code change is needed.
+- The team is on **Pro**: custom events are available (2 properties per event, 8 with Web Analytics Plus), and page views and events are billed as usage.
+- The Vercel script ignores automated browsers (`navigator.webdriver`, "Headless" user agents), so automated tests never add page views.
 
 ## 5. Notification delivery semantics (unchanged contract, now documented)
 
@@ -128,4 +133,4 @@ The baseline measured a 139–213 ms `main.js` task on the home page under mobil
 - Rate limit and duplicate guard are per serverless instance (best effort). For a global limit add a Vercel Firewall rule on `POST /api/contact` (owner, dashboard).
 - Attribution is self-reported by the browser: it can be forged or missing (privacy tools strip referrers; ad blockers block analytics). It is bounded and labelled as such in the notification, and is good enough for channel-level decisions.
 - Attribution lives in the tab's session: a visitor who comes back later in a new tab is "direct".
-- Page views are only available once Web Analytics is enabled; events reach Vercel only on Pro.
+- Page views are recorded only by deployments created after Web Analytics was enabled. Events reach Vercel only with `customEvents` on (the team's Pro plan supports them).
