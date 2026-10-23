@@ -4,6 +4,53 @@ Audience: the owner deciding whether to merge. Date: 2026-10-23. Branch `feat/te
 
 **Production merged: NO** · **Production deployment changed: NO**
 
+## Revision 1 — owner decisions (2026-10-23, PR #7)
+
+The owner reviewed the proof register and took three decisions. They are recorded in `docs/TERANGA-05B-proof-register.md` §0 and implemented on the same branch and PR (#7).
+
+| Decision | Evidence / condition | Implemented |
+|---|---|---|
+| **D1** "ScolaTech (formerly EduSen)", if the lineage is verified | **Verified** from four independent sources (proof register §4.1): <br>1. this repository's 2026-06-03 EduSen link and screenshot; <br>2. byte-identical builds on `scolatech.app` and the former URL, with the same hero copy; <br>3. one Vercel project and one Git repository serving both domains (`scolatech.app` attached 2026-06-09); <br>4. public commit `aec8d08` (2026-06-09) renaming the app manifest `"EduSen"` → `"ScolaTech"` | EN "ScolaTech (formerly EduSen)", FR "ScolaTech (anciennement EduSen)" on the home card, Work case study, Work metadata and AI label. Link → https://scolatech.app. New screenshot of the current ScolaTech page; alt text updated. The old EduSen screenshot was removed. Internal key `edusen` / `/work#edusen` kept for link and analytics stability. Presented as a product Teranga designed and built (an operated SaaS), not a client |
+| **D2** Permission to name and display XP Client Academy | Client site: "© 2025 XP Client Consulting", "Plateforme conçue par Teranga Technologies" | Work card: "Designed and built for XP Client Consulting: …" / "Conçue et développée pour XP Client Consulting : …". No new claims |
+| **D3** Remove the fixed 4–8 week MVP estimate | — | Services → SaaS and the FAQ, EN/FR: timelines depend on scope, integrations, technical complexity and readiness; milestones and a realistic plan are set during discovery. A test blocks any fixed duration (the contact form's own start-date options excepted) |
+
+Also changed, as a conservative wording for an unsupported claim: Services → Mobile "iOS and Android apps" became "Installable mobile apps (PWA) … on iOS and Android". None of the 9 public repositories uses a native mobile toolchain; ScolaTech ships an installable web app.
+
+New evidence for an open claim: the public ScolaTech repository contains Wave + Orange Money payment adapters (`bbb62a6`) and a WhatsApp (Meta Cloud) provider (`3845bce`). The capability wording stays; live use is unverified.
+
+**Validation of the revision:**
+
+| Check | Result |
+|---|---|
+| `npm test` | **93/93** (90 + 3 new tests: ScolaTech naming, links, screenshot identity and recorded lineage; no fixed delivery duration; XP attribution and no native-app claim). Each new commit passes on its own. CI `test` green on `72b9a5d` |
+| Browser suite, preview `dpl_HJ87nCx2whfJZuUJsX7d8ax2yFTv` | **38/38** (every submission mocked): EN/FR pages and images, navigation, CTA preselection, form paths, 8 events without personal data, mobile menu, axe WCAG 2.2 AA with **0 violations** on 14 pages × 4 widths plus the confirmation state |
+| Browser suite, local | **43/43** (incl. attribution through the real Resend SDK to a fake API) |
+| Preview HTTP | `/work`, `/fr/work` link `https://scolatech.app`, with no trace of the former URL. New images 200; old `edusen.png` 404. Labels present EN/FR; no week counts. Trailing-slash 308, private folders 404, `X-Robots-Tag: noindex`, analytics check OK |
+| Lighthouse (preview, mobile) | Home 98 · 98, Work 97 · 98, FR Work 98. A11y/BP 100. SEO fails only `is-crawlable` (preview noindex). CLS 0. Home 175 → 192 KB (+17 KB: the 2× ScolaTech screenshot) |
+| HTML validation / lint | 0 errors / only the pre-existing `no-control-regex` finding |
+| Structured data | Local tests pass. The external Schema.org validator refused automated requests during the revision (HTTP 405 and a robot page). The only structured-data change is the Work page description text; the same graph validated with 0 errors and 0 warnings earlier today |
+| Production | Unchanged: `dpl_B5nEVpgRkUYBeRo8f6keCjb73vwY` (`1a5438b`) still serves the pre-05B site |
+
+**Remaining owner decisions** (unchanged by D1–D3; none is misleading as currently worded):
+- Radiora Medical brand ownership and marketing relationship;
+- SunuPermis and CHMS ownership and permission to name them;
+- code-ownership wording versus the contract;
+- live use of the Wave / Orange Money / WhatsApp integrations;
+- native mobile (to restore native wording);
+- the Ngor Almadies office line;
+- the domain mailbox;
+- Search Console and Bing;
+- `www` → 308.
+
+Product credits: Radiora and XP credit Teranga; ScolaTech, SunuPermis and CHMS don't yet.
+
+**Verdict after revision 1: GO for the owner's production decision.**
+- The one credibility blocker (EduSen/ScolaTech) is resolved with verified evidence.
+- The open items are either already in production unchanged or now worded more conservatively.
+- Every check passes.
+
+Merging remains the owner's decision.
+
 ## A. Executive summary
 
 The site was already technically sound: Lighthouse SEO 100 and Accessibility 100 on production. This release works on what decides qualified inbound demand.
@@ -34,7 +81,7 @@ Nothing was invented: no clients, figures, testimonials, certifications or keywo
 | Service names not in the Services headings | Medium | Now inside each `<h2>` |
 | Structured data only on Home, LocalBusiness type, neighbourhood as street address, unstated areas served | Medium | Replaced on every page |
 | "In production: … EduSen" while EduSen/ScolaTech is in early adoption | Medium (trust) | "Built into Radiora Medical and EduSen" |
-| **EduSen link shows ScolaTech** | High (trust) | **Owner decision**, unchanged |
+| **EduSen link shows ScolaTech** | High (trust) | **Resolved in revision 1** (D1, lineage verified): "ScolaTech (formerly EduSen)", linked to scolatech.app |
 | No Search Console / Bing verification found | High (visibility) | **Owner** checklist; optional tag slots added |
 | No MX/SPF/DMARC: domain cannot receive mail | — | Gmail kept; mailbox checklist |
 
