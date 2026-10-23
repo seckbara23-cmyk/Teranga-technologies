@@ -158,8 +158,8 @@ If lead volume grows beyond what a sheet handles (roughly more than 30 open lead
 Since TERANGA-05A:
 - **Leads:** the tracker (one row per notification accepted by Resend), reported monthly with `scripts/lead-report.mjs` (`docs/TERANGA-05A-lead-operations.md` §5).
 - **Attribution:** every notification states its channel, campaign tags, referring site and entry page. Tag every outreach link, e.g. `https://teranga-tech.com/fr?utm_source=linkedin&utm_medium=social&utm_campaign=saas-q4`.
-- **Page views and visitors:** Vercel Web Analytics. The script is in the pages (`ANALYTICS.webAnalytics` in `site/config.mjs`); **enable Web Analytics in Vercel → project → Analytics** before releasing, or the script answers 404.
-- **Conversion events:** `service_cta_click`, `case_study_click`, `contact_form_start`, `contact_form_validation_error`, `lead_submit_success`, `lead_submit_failure`, `whatsapp_click`, `email_click` (`docs/TERANGA-05A-analytics-taxonomy.md`). They reach Vercel only on a plan with custom events (Pro) and with `ANALYTICS.customEvents` on.
+- **Page views and visitors:** Vercel Web Analytics. The script is in the pages (`ANALYTICS.webAnalytics` in `site/config.mjs`); Web Analytics is enabled for the project (2026-10-23). Only deployments created after that serve the script, so after any change in that setting, redeploy and run `node scripts/check-analytics.mjs https://teranga-tech.com`.
+- **Conversion events:** `service_cta_click`, `case_study_click`, `contact_form_start`, `contact_form_validation_error`, `lead_submit_success`, `lead_submit_failure`, `whatsapp_click`, `email_click` (`docs/TERANGA-05A-analytics-taxonomy.md`). They reach Vercel only with `ANALYTICS.customEvents` on. The team's Pro plan supports them; each event is billed as usage.
 
 Count a conversion once, from the tracker. Do not count clicks, form starts or events as leads.
 

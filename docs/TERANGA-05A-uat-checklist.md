@@ -55,13 +55,14 @@ Only if you authorise one test email to `LEAD_NOTIFICATION_EMAIL`:
 - [ ] In the repository folder: `node scripts/lead-report.mjs docs/samples/lead-tracker-sample.csv --visitors 1840`. A Markdown report prints. This uses the synthetic sample: the numbers are fictional.
 - [ ] Optional: export your sheet as CSV and run the same command on it.
 
-## G. Analytics (release gate)
+## G. Analytics
 
-- [ ] Vercel → project `teranga-technologies` → **Analytics** → **Enable** Web Analytics. Hobby plan: free within 50,000 events a month, shared with your other Vercel projects.
-- [ ] Ask for the preview to be redeployed (or redeploy it from Vercel), then open `<preview>/_vercel/insights/script.js`: it must load (HTTP 200), not the 404 page.
-- [ ] After browsing a few preview pages, Vercel → Analytics shows page views (filter environment: Preview).
-- [ ] Decision: stay on Hobby (page views only; events stay in the page) or move to Pro to record the conversion events: ______________
-- [ ] If you prefer not to enable analytics now: ask for `webAnalytics: false` before merging (the privacy page then drops its analytics section).
+Web Analytics was enabled on 2026-10-23 at 19:33 UTC. The team is on Pro. See `docs/TERANGA-05A-analytics-activation.md`.
+
+- [ ] Production was deployed **after** that time (Vercel → Deployments: the Production deployment's creation time is later than 19:33 UTC, 2026-10-23). If not, redeploy it.
+- [ ] `node scripts/check-analytics.mjs https://teranga-tech.com` prints `OK`.
+- [ ] Browse a few pages yourself in a normal browser. Within a few minutes, Vercel → Analytics shows them (environment: Production).
+- [ ] Custom events: keep them off (page views only) or turn them on (`customEvents: true`; billed as usage): ______________
 
 ## H. Approval
 

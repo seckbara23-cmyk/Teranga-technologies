@@ -11,7 +11,7 @@ Audience: the owner, and any adviser reviewing the site's data handling. This is
 | Lead reference, received time | Server | Notification, tracker, Vercel function log line (with Resend id, deployment, sender domain, recipient count, attempts, channel) | Trace a lead end to end | Vercel log retention (plan-dependent) |
 | IP address | Vercel (every request) | In-memory rate-limit map (≤ 10 min, per instance); Vercel's platform logs | Abuse protection | Map: minutes; platform: Vercel's policy |
 | Page views: path (with any campaign tags), referring host, country, device, OS, browser | Vercel Web Analytics script, **only once enabled** | Vercel | Aggregated audience statistics | Vercel's policy for the plan |
-| Conversion events (§ taxonomy) | `main.js` | The page only; Vercel only if custom events are enabled (Pro) | Funnel diagnostics | As above |
+| Conversion events (§ taxonomy) | `main.js` | The page; Vercel when `customEvents` is on (the team is on Pro; disclosed on the privacy page) | Funnel diagnostics | As above |
 
 Not collected: cookies, fingerprints, cross-site identifiers, persistent visitor profiles, full referrer URLs, form contents in analytics, the lead reference in analytics.
 
@@ -84,5 +84,5 @@ It makes no claim of legal compliance and no certification. Its retention is wor
 | Lead personal data sits in Gmail and Resend | Inherent | 2-step verification on the Google and Resend accounts; apply the retention practice |
 | Attribution can be forged | Low impact | Bounded, labelled "as reported by the visitor's browser"; never used for anything but reporting |
 | Analytics blocked by some browsers | Accepted | Leads are counted from the tracker |
-| Analytics script answers 404 until Web Analytics is enabled | Low (console error only) | Owner release gate (architecture §4) |
+| Analytics script answers 404 on deployments created before Web Analytics was enabled | Low (console error, no data) | Redeploy after enabling; `node scripts/check-analytics.mjs <url>` (architecture §4) |
 | `no-control-regex` lint finding in `clean()` | None (intentional pattern that strips control characters, present on master) | Keep; it is the sanitiser |

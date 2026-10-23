@@ -45,11 +45,15 @@ Phone (`tel:`) and language-switch clicks are deliberately not events: they are 
 
 ## 4. Where events go
 
-| Plan / switch | Page views | Events |
+The team is on **Pro** (checked 2026-10-23). Pro has no included events: page views and custom events are billed as usage, at $0.03 per 1,000 at the time of writing. Custom events carry 2 properties, or 8 with the Web Analytics Plus add-on.
+
+| Switch | Page views | Events |
 |---|---|---|
-| `webAnalytics: true` and Web Analytics enabled in the Vercel project (Hobby: 50,000 events a month, shared by all projects of the account) | Yes | Kept in the page only (`window.TT.events`, `tt:analytics` DOM event) |
-| `customEvents: true` (needs Pro; Hobby cannot record custom events) | Yes | Also sent to Vercel with the first `maxEventProperties` properties |
+| `webAnalytics: true`, `customEvents: false` | Yes, on deployments created after Web Analytics was enabled | Kept in the page only (`window.TT.events`, `tt:analytics` DOM event) |
+| `webAnalytics: true`, `customEvents: true` | Yes | Also sent to Vercel (`/_vercel/insights/event`) with the first `maxEventProperties` properties. The privacy page then states that actions are recorded |
 | `webAnalytics: false` | No script | In the page only |
+
+Automated browsers are ignored by the Vercel script, so tests never add page views or events.
 
 The switches are in `site/config.mjs` (`ANALYTICS`). After changing one, run `npm run generate`, commit the regenerated pages and deploy. With `customEvents: true`, the generator adds `data-va-events="N"` to each page's `<body>`, and `main.js` then queues events for the Vercel script.
 
