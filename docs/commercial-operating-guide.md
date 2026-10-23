@@ -10,7 +10,7 @@ This guide describes how a prospect inquiry from teranga-tech.com reaches Terang
 ## 1. The lead flow as built
 
 ```
-Visitor ── "Request a discovery call" / service CTA ──► form (#contact)
+Visitor ── "Discuss your project" / service CTA ──► form on /contact (or /fr/contact)
    │
    ├─ POST /api/contact (Vercel function) ── validate ── rate limit ── Resend API ──► LEAD_NOTIFICATION_EMAIL
    │       From:     Teranga Technologies <notifications@teranga-tech.com>   (RESEND_FROM_EMAIL)
@@ -90,7 +90,7 @@ Fields the prospect did not fill in are left out, never invented. The form does 
 When a mailbox such as `contact@teranga-tech.com` exists (it needs MX records from a mail provider; they live alongside Resend's `send` records without conflict):
 1. Vercel → Environment Variables → edit `LEAD_NOTIFICATION_EMAIL` (Production and Preview). Up to five addresses, comma-separated, are accepted (for example the business mailbox plus a backup).
 2. Redeploy, then send a labelled test.
-3. If the public address should change too, update `index.html` (contact list, footer, JSON-LD) and the fallback/privacy links in `main.js` together, and bump the `?v=` cache keys.
+3. If the public address should change too, update `CONTACT` in `site/config.mjs` and the privacy text in `site/content/*.mjs`, the fallback links in `main.js`, then run `npm run generate` (cache keys update automatically).
 
 No code change is needed to change the recipient.
 
@@ -184,7 +184,7 @@ What needs an analytics tool (owner decision): page views, visitors by source an
 | `lead_fallback` | Visitor used the pre-filled email/WhatsApp fallback | Channel |
 | `language_switch` | EN/FR button | Language |
 
-Recommended option: **Vercel Web Analytics** (cookieless, same-origin script, works with the site's Content-Security-Policy). Steps: enable it in the Vercel project → Analytics, then add `<script defer src="/_vercel/insights/script.js"></script>` before `main.js` in `index.html`. Do not add the script before enabling it (it would 404). Custom events may require a paid plan; confirm in the dashboard before relying on them. Page views, referrers and UTM parameters are enough to compute the inquiry conversion rate.
+Recommended option: **Vercel Web Analytics** (cookieless, same-origin script, works with the site's Content-Security-Policy). Steps: enable it in the Vercel project → Analytics, then add `<script defer src="/_vercel/insights/script.js"></script>` before `main.js` in `site/layout.mjs` and run `npm run generate`. Do not add the script before enabling it (it would 404). Custom events may require a paid plan; confirm in the dashboard before relying on them. Page views, referrers and UTM parameters are enough to compute the inquiry conversion rate.
 
 Count a conversion once: `lead_submitted` (server confirmed) plus tracker rows from fallback emails/WhatsApp. Do not count `form_start` or `cta_click` as conversions.
 

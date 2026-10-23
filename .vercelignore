@@ -6,6 +6,9 @@ docs/
 server.js
 tests/
 
+# Page generator source: the generated HTML at the root and in fr/ is what gets served.
+site/
+
 # Original images no longer used by the site. "Logo Teranga" carries a stock-photo
 # watermark and Pic1.jpg is a stock photo of unknown licence: keep them out of
 # deployments until the owner confirms rights or deletes them.
