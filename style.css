@@ -712,6 +712,8 @@ p { text-wrap: pretty; }
 .service-head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px; align-items: start; margin-bottom: clamp(32px, 4vw, 48px); }
 .service-index { font-family: var(--f-display); font-size: clamp(2.6rem, 2rem + 2.4vw, 4rem); font-weight: 300; line-height: 1; color: var(--amber-ink); letter-spacing: -0.03em; }
 .service-head .eyebrow { margin-bottom: 10px; }
+/* The service name is part of the h2 (heading text names the service), styled as the eyebrow above it */
+.service-head h2 .eyebrow { display: block; font-family: var(--f-body); line-height: 1.4; letter-spacing: 0.12em; }
 .service-head h2 { font-size: clamp(1.6rem, 1.25rem + 1.4vw, 2.35rem); max-width: 24ch; }
 .service-body { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: clamp(28px, 4vw, 56px); align-items: start; }
 .service-main h3, .service-panel h3 {

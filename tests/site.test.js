@@ -209,11 +209,110 @@ test('pages work under the Content-Security-Policy', () => {
   }
 });
 
-test('structured data appears only on the home pages and is valid JSON', () => {
+test('structured data: one valid graph per indexable page, describing only what the page shows', () => {
+  const ORG = `${config.SITE_URL}/#organization`;
+  const SITE = `${config.SITE_URL}/#website`;
   for (const p of pages) {
-    const ld = attr(p.html, /<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
-    if (p.page === 'home') assert.equal(JSON.parse(ld)['@type'], 'ProfessionalService');
-    else assert.equal(ld, undefined, p.file);
+    const blocks = all(p.html, /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g);
+    assert.equal(blocks.length, 1, `${p.file}: one JSON-LD block`);
+    const data = JSON.parse(blocks[0]);
+    assert.equal(data['@context'], 'https://schema.org');
+    const graph = data['@graph'];
+    const byId = new Map(graph.filter((n) => n['@id']).map((n) => [n['@id'], n]));
+    const org = byId.get(ORG);
+    assert.equal(org['@type'], 'Organization', p.file);
+    assert.equal(byId.get(SITE)['@type'], 'WebSite', p.file);
+    // Organization facts are the ones shown in the footer of every page.
+    const text = textOf(p.html);
+    assert.ok(text.includes(org.email), `${p.file}: email visible`);
+    assert.ok(p.html.includes(`href="tel:${org.telephone}"`), `${p.file}: phone visible`);
+    assert.equal(org.address.addressLocality, 'Dakar');
+    assert.equal(org.address.addressCountry, 'SN');
+    assert.equal(org.address.streetAddress, undefined, 'no street address: the office line is a neighbourhood');
+    // The page node matches the page's own metadata.
+    const page = graph.find((n) => n['@id'] === `${config.SITE_URL}${p.path}#webpage`);
+    assert.ok(page, `${p.file}: WebPage node`);
+    assert.equal(page.url, attr(p.html, /<link rel="canonical" href="([^"]+)">/));
+    assert.equal(page.name, attr(p.html, /<title>([^<]*)<\/title>/).replace(/&amp;/g, '&').replace(/&#39;/g, "'"));
+    assert.equal(page.inLanguage, p.lang);
+    assert.equal(page['@type'], { about: 'AboutPage', contact: 'ContactPage' }[p.page] || 'WebPage');
+    // Every reference resolves inside the graph.
+    for (const n of graph) for (const k of ['provider', 'isPartOf', 'about', 'publisher']) if (n[k]) assert.ok(byId.has(n[k]['@id']), `${p.file}: ${k} → ${n[k]['@id']}`);
+    // Nothing that is not on the site: no ratings, reviews, founders, awards, profiles or FAQ markup.
+    assert.doesNotMatch(blocks[0], /aggregateRating|"review|"Review|founder|award|sameAs|FAQPage|LocalBusiness|ProfessionalService/, p.file);
+  }
+  for (const p of pages.filter((q) => q.page === 'services')) {
+    const graph = JSON.parse(attr(p.html, /<script type="application\/ld\+json">([\s\S]*?)<\/script>/))['@graph'];
+    const services = graph.filter((n) => n['@type'] === 'Service');
+    const c = p.lang === 'fr' ? fr : en;
+    assert.deepEqual(services.map((s) => s.url), c.pages.services.items.map((s) => `${config.SITE_URL}${p.path}#${s.id}`));
+    for (const s of services) {
+      assert.match(p.html, new RegExp(`<span class="eyebrow">${s.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</span>`), `${p.file}: ${s.name} is the visible heading`);
+      assert.match(p.html, new RegExp(`\\sid="${s.url.split('#')[1]}"`));
+    }
+  }
+  assert.doesNotMatch(read('404.html'), /application\/ld\+json/, '404 has no structured data');
+});
+
+test('every page has one h1 first in main and no skipped heading levels', () => {
+  for (const p of [...pages, { file: '404.html', html: read('404.html') }]) {
+    const main = attr(p.html, /(<main\b[\s\S]*<\/main>)/);
+    const levels = all(main, /<h([1-6])\b/g).map(Number);
+    assert.equal(levels[0], 1, `${p.file}: h1 first`);
+    assert.equal(levels.filter((l) => l === 1).length, 1, `${p.file}: one h1`);
+    for (let i = 1; i < levels.length; i++) assert.ok(levels[i] <= levels[i - 1] + 1, `${p.file}: h${levels[i - 1]} → h${levels[i]}`);
+  }
+});
+
+test('production stays indexable; previews keep Vercel\'s protection; duplicates redirect to the canonical host', () => {
+  const v = JSON.parse(read('vercel.json'));
+  // No X-Robots-Tag of our own: Vercel adds "noindex" to preview deployments itself, and production must stay indexable.
+  assert.doesNotMatch(JSON.stringify(v.headers), /x-robots-tag/i);
+  assert.equal(v.trailingSlash, false, '/services/ redirects to /services');
+  const host = v.redirects.find((r) => r.has && r.has.some((h) => h.type === 'host'));
+  assert.deepEqual(host, { source: '/:path*', has: [{ type: 'host', value: 'teranga-technologies.vercel.app' }], destination: 'https://teranga-tech.com/:path*', permanent: true });
+  for (const p of pages) assert.doesNotMatch(p.html, /<meta name="robots"/, `${p.file} is indexable`);
+  assert.match(read('404.html'), /<meta name="robots" content="noindex">/);
+  const robots = read('robots.txt');
+  assert.match(robots, /^User-agent: \*\nAllow: \/\n/);
+  assert.doesNotMatch(robots, /Disallow: \/\s*$/m);
+});
+
+test('the sitemap lists exactly the canonical URLs, with reciprocal language alternates', () => {
+  const sm = read('sitemap.xml');
+  const locs = all(sm, /<loc>([^<]+)<\/loc>/g);
+  assert.deepEqual(locs.sort(), pages.map((p) => attr(p.html, /<link rel="canonical" href="([^"]+)">/)).sort());
+  for (const entry of all(sm, /<url>([\s\S]*?)<\/url>/g)) {
+    const loc = attr(entry, /<loc>([^<]+)<\/loc>/);
+    const p = pages.find((q) => `${config.SITE_URL}${q.path}` === loc);
+    assert.match(attr(entry, /<lastmod>([^<]+)<\/lastmod>/), /^\d{4}-\d{2}-\d{2}$/);
+    for (const l of ['en', 'fr']) assert.equal(attr(entry, new RegExp(`hreflang="${l}" href="([^"]+)"`)), attr(p.html, new RegExp(`<link rel="alternate" hreflang="${l}" href="([^"]+)">`)), `${loc} ${l}`);
+  }
+});
+
+test('a real favicon.ico is served and referenced next to the SVG icon', () => {
+  const ico = fs.readFileSync(path.join(root, 'favicon.ico'));
+  assert.deepEqual([ico.readUInt16LE(0), ico.readUInt16LE(2)], [0, 1], 'ICO header');
+  const sizes = [...Array(ico.readUInt16LE(4)).keys()].map((i) => ico[6 + 16 * i]);
+  assert.ok(sizes.includes(48), `sizes ${sizes}`);
+  for (const p of pages) {
+    assert.match(p.html, /<link rel="icon" href="\/favicon\.ico" sizes="48x48">/);
+    assert.match(p.html, /<link rel="icon" href="\/assets\/brand\/teranga-mark\.svg" type="image\/svg\+xml">/);
+  }
+});
+
+test('search verification tags are absent until a token is set, then escaped', () => {
+  for (const p of pages) assert.doesNotMatch(p.html, /google-site-verification|msvalidate/, p.file);
+  const saved = { ...config.SEARCH_VERIFICATION };
+  try {
+    config.SEARCH_VERIFICATION.google = 'tok"en<x';
+    config.SEARCH_VERIFICATION.bing = 'B1NG';
+    const home = build.renderSite().get('index.html');
+    assert.match(home, /<meta name="google-site-verification" content="tok&quot;en&lt;x">/);
+    assert.match(home, /<meta name="msvalidate\.01" content="B1NG">/);
+    assert.doesNotMatch(build.renderSite().get('404.html'), /google-site-verification/, 'not on the noindex page');
+  } finally {
+    Object.assign(config.SEARCH_VERIFICATION, saved);
   }
 });
 

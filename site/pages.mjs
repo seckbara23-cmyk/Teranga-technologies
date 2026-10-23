@@ -1,7 +1,8 @@
 // Page bodies. Each returns { title, description, ogTitle?, body } for layout().
 
 import { html, rich } from './lib/html.mjs';
-import { PRODUCTS, PAGES, ANALYTICS } from './config.mjs';
+import { PRODUCTS, PAGES, ANALYTICS, SITE_URL } from './config.mjs';
+import { ORG_ID } from './layout.mjs';
 import {
   homeHero, pageHero, sectionHeading, capabilityCard, featuredProject, proofStatement, processTimeline,
   ctaSection, browserFrame, demoWindow, tag, button, textLink, contactList, contactForm, ctaHref, newTab,
@@ -75,8 +76,7 @@ function services(ctx) {
         <div class="service-head" data-reveal>
           <span class="service-index" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
           <div>
-            <p class="eyebrow">${s.name}</p>
-            <h2 id="svc-${s.id}-h">${s.headline}</h2>
+            <h2 id="svc-${s.id}-h"><span class="eyebrow">${s.name}</span><span class="sr-only">. </span>${s.headline}</h2>
           </div>
         </div>
         <div class="service-body">
@@ -107,7 +107,18 @@ function services(ctx) {
     </section>
 
     ${ctaSection(ctx)}`;
-  return { title: p.title, description: p.description, body };
+  // One Service node per section, with the wording visible on the page.
+  const canonical = `${SITE_URL}${ctx.link('services')}`;
+  const schema = p.items.map((s) => ({
+    '@type': 'Service',
+    '@id': `${canonical}#${s.id}`,
+    name: s.name,
+    serviceType: s.name,
+    description: s.headline,
+    url: `${canonical}#${s.id}`,
+    provider: { '@id': ORG_ID },
+  }));
+  return { title: p.title, description: p.description, body, schema };
 }
 
 function aiEngineering(ctx) {

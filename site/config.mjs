@@ -22,6 +22,14 @@ export const ANALYTICS = {
   maxEventProperties: 2,
 };
 
+// Search engine ownership (docs/TERANGA-05B-seo-implementation.md). DNS verification is preferred
+// and needs nothing here. For the "HTML tag" method, paste the content value that Google Search
+// Console (google-site-verification) or Bing Webmaster Tools (msvalidate.01) shows, then regenerate.
+export const SEARCH_VERIFICATION = {
+  google: '',
+  bing: '',
+};
+
 export const LANGS = ['en', 'fr'];
 // Pages in the main navigation, then pages linked from the footer only.
 export const NAV_PAGES = ['home', 'services', 'ai-engineering', 'work', 'about', 'contact'];

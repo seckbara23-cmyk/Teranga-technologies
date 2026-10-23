@@ -1,34 +1,61 @@
 // Page shell shared by every page: <head> metadata, header, main, footer, script.
 
 import { html, raw } from './lib/html.mjs';
-import { SITE_URL, CONTACT, ANALYTICS } from './config.mjs';
+import { SITE_URL, CONTACT, ANALYTICS, SEARCH_VERIFICATION } from './config.mjs';
 import { globalHeader, globalFooter } from './components.mjs';
 
-function jsonLd(ctx) {
-  const data = {
-    '@context': 'https://schema.org',
-    '@type': 'ProfessionalService',
-    name: 'Teranga Technologies',
-    description: ctx.c.pages.home.description,
-    url: `${SITE_URL}${ctx.link('home')}`,
-    logo: `${SITE_URL}/assets/brand/apple-touch-icon.png`,
-    image: `${SITE_URL}/assets/brand/og-image.png`,
-    telephone: '+221707157070',
-    email: CONTACT.email,
-    address: { '@type': 'PostalAddress', streetAddress: 'Ngor Almadies', addressLocality: 'Dakar', addressCountry: 'SN' },
-    areaServed: ['Senegal', 'Africa', 'Europe', 'North America'],
-    knowsLanguage: ['fr', 'en'],
-    serviceType: ['SaaS Development', 'AI Integration', 'Web Application Development', 'Mobile Application Development', 'Web Design'],
-  };
+// Structured data (docs/TERANGA-05B-seo-implementation.md): only facts that are visible on the site.
+// No address beyond the city (the office line is a neighbourhood, not a street), no ratings,
+// reviews, founders or social profiles until they are verified (docs/TERANGA-05B-proof-register.md).
+export const ORG_ID = `${SITE_URL}/#organization`;
+export const WEBSITE_ID = `${SITE_URL}/#website`;
+const PAGE_TYPES = { about: 'AboutPage', contact: 'ContactPage' };
+
+function structuredData(ctx, { title, description, canonical, schema = [] }) {
+  const telephone = CONTACT.phoneHref.replace(/^tel:/, '');
+  const graph = [
+    {
+      '@type': 'Organization',
+      '@id': ORG_ID,
+      name: 'Teranga Technologies',
+      url: `${SITE_URL}/`,
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/assets/brand/apple-touch-icon.png`, width: 180, height: 180 },
+      image: `${SITE_URL}/assets/brand/og-image.png`,
+      description: ctx.c.pages.home.description,
+      email: CONTACT.email,
+      telephone,
+      address: { '@type': 'PostalAddress', addressLocality: 'Dakar', addressCountry: 'SN' },
+      knowsLanguage: ['fr', 'en'],
+      contactPoint: { '@type': 'ContactPoint', contactType: 'sales', email: CONTACT.email, telephone, availableLanguage: ['French', 'English'] },
+    },
+    { '@type': 'WebSite', '@id': WEBSITE_ID, url: `${SITE_URL}/`, name: 'Teranga Technologies', inLanguage: ['en', 'fr'], publisher: { '@id': ORG_ID } },
+    {
+      '@type': PAGE_TYPES[ctx.page] || 'WebPage',
+      '@id': `${canonical}#webpage`,
+      url: canonical,
+      name: title,
+      description,
+      inLanguage: ctx.lang,
+      isPartOf: { '@id': WEBSITE_ID },
+      about: { '@id': ORG_ID },
+    },
+    ...schema,
+  ];
+  const data = { '@context': 'https://schema.org', '@graph': graph };
   // JSON in a non-executable script element is allowed by the CSP (script-src applies to executable scripts only).
   return html`<script type="application/ld+json">${raw(JSON.stringify(data, null, 2).replace(/</g, '\\u003c'))}</script>`;
 }
 
+function verification() {
+  return html`${SEARCH_VERIFICATION.google ? html`<meta name="google-site-verification" content="${SEARCH_VERIFICATION.google}">` : ''}${SEARCH_VERIFICATION.bing ? html`<meta name="msvalidate.01" content="${SEARCH_VERIFICATION.bing}">` : ''}`;
+}
+
 /**
  * @param ctx  page context
- * @param opts { title, description, ogTitle?, body, bodyClass?, noindex?, alternates? }
+ * @param opts { title, description, ogTitle?, body, bodyClass?, noindex?, alternates?, schema? }
+ *             schema: extra Schema.org nodes for this page (e.g. the Services page's Service items)
  */
-export function layout(ctx, { title, description, ogTitle, body, bodyClass, noindex = false, alternates = true }) {
+export function layout(ctx, { title, description, ogTitle, body, bodyClass, noindex = false, alternates = true, schema }) {
   const c = ctx.c.common;
   const canonical = `${SITE_URL}${ctx.link(ctx.page)}`;
   const alt = (l) => `${SITE_URL}${ctx.pathIn(l)}`;
@@ -41,6 +68,7 @@ ${html`<html lang="${ctx.lang}">
   <title>${title}</title>
   <meta name="description" content="${description}">
   ${noindex ? html`<meta name="robots" content="noindex">` : html`<link rel="canonical" href="${canonical}">`}
+  ${noindex ? '' : verification()}
   ${alternates ? html`<link rel="alternate" hreflang="en" href="${alt('en')}">
   <link rel="alternate" hreflang="fr" href="${alt('fr')}">
   <link rel="alternate" hreflang="x-default" href="${alt('en')}">` : ''}
@@ -61,12 +89,13 @@ ${html`<html lang="${ctx.lang}">
   <meta name="twitter:description" content="${description}">
   <meta name="twitter:image" content="${SITE_URL}/assets/brand/og-image.png">
 
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
   <link rel="icon" href="/assets/brand/teranga-mark.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
   <link rel="preload" href="/assets/fonts/bricolage-grotesque-latin-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="${ctx.asset('/style.css')}">
-  ${ctx.page === 'home' && !noindex ? jsonLd(ctx) : ''}
+  ${noindex ? '' : structuredData(ctx, { title, description, canonical, schema })}
   ${ANALYTICS.webAnalytics ? html`<script defer src="/_vercel/insights/script.js"></script>` : ''}
 </head>
 <body${bodyClass ? html` class="${bodyClass}"` : ''} data-page="${ctx.page}"${ANALYTICS.customEvents ? html` data-va-events="${ANALYTICS.maxEventProperties}"` : ''}>

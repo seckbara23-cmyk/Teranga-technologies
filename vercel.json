@@ -1,6 +1,7 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "trailingSlash": false,
   "functions": {
     "api/contact.js": {
       "memory": 256,
@@ -8,6 +9,17 @@
     }
   },
   "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "teranga-technologies.vercel.app"
+        }
+      ],
+      "destination": "https://teranga-tech.com/:path*",
+      "permanent": true
+    },
     {
       "source": "/",
       "has": [
