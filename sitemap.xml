@@ -1,7 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://teranga-tech.com/</loc>
-    <lastmod>2026-10-22</lastmod>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/"/>
+  </url>
+  <url>
+    <loc>https://teranga-tech.com/fr</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/"/>
+  </url>
+  <url>
+    <loc>https://teranga-tech.com/services</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/services"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr/services"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/services"/>
+  </url>
+  <url>
+    <loc>https://teranga-tech.com/fr/services</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/services"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr/services"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/services"/>
+  </url>
+  <url>
+    <loc>https://teranga-tech.com/ai-engineering</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/ai-engineering"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr/ai-engineering"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/ai-engineering"/>
+  </url>
+  <url>
+    <loc>https://teranga-tech.com/fr/ai-engineering</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/ai-engineering"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr/ai-engineering"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/ai-engineering"/>
+  </url>
+  <url>
+    <loc>https://teranga-tech.com/work</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/work"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr/work"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/work"/>
+  </url>
+  <url>
+    <loc>https://teranga-tech.com/fr/work</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/work"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr/work"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/work"/>
+  </url>
+  <url>
+    <loc>https://teranga-tech.com/about</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/about"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr/about"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/about"/>
+  </url>
+  <url>
+    <loc>https://teranga-tech.com/fr/about</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/about"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr/about"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/about"/>
+  </url>
+  <url>
+    <loc>https://teranga-tech.com/contact</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/contact"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr/contact"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/contact"/>
+  </url>
+  <url>
+    <loc>https://teranga-tech.com/fr/contact</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/contact"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr/contact"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/contact"/>
   </url>
 </urlset>

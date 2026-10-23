@@ -17,7 +17,8 @@ app.use(cors({
 }));
 
 app.use(express.json({ limit: '16kb' }));
-app.use(express.static(path.join(__dirname)));
+// Same URLs as on Vercel (cleanUrls): /services serves services.html, /fr serves fr/index.html.
+app.use(express.static(path.join(__dirname), { extensions: ['html'] }));
 
 // ── Simple in-memory rate limiter ─────────────────────────────
 // 5 contact submissions per IP per 15-minute window.
@@ -56,6 +57,11 @@ app.get('/api/health', (_req, res) => {
 app.post('/api/contact', rateLimit, async (req, res) => {
   const result = await handleSubmission(req.body);
   res.status(result.status).json(result.body);
+});
+
+// Unknown pages get the generated bilingual 404, as on Vercel.
+app.use((req, res) => {
+  res.status(404).sendFile(path.join(__dirname, '404.html'));
 });
 
 app.listen(PORT, () => {
