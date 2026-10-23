@@ -911,6 +911,21 @@ p { text-wrap: pretty; }
 .form-note { margin-top: 14px; font-size: var(--fs-xs); color: var(--muted); text-align: center; }
 .form-note a { color: var(--navy-900); }
 
+/* Confirmation shown once /api/contact has accepted the request */
+.form-confirm { display: grid; justify-items: start; gap: 14px; padding-block: 8px; }
+.form-confirm[hidden] { display: none; }
+.form-confirm-icon { width: 44px; height: 44px; color: var(--ok); }
+.form-confirm h2 { font-size: clamp(1.5rem, 1.25rem + 1vw, 1.9rem); }
+.form-confirm h2:focus { outline: none; }
+.form-confirm h2:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; border-radius: 4px; }
+.form-confirm-text { font-size: var(--fs-lead); line-height: 1.55; color: var(--text); max-width: 40ch; }
+.form-confirm-ref { width: 100%; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--paper); }
+.form-confirm-ref[hidden] { display: none; }
+.form-confirm-label { font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.form-confirm-value { margin-top: 4px; font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: 1.2rem; font-weight: 600; letter-spacing: 0.04em; color: var(--navy-900); }
+.form-confirm-hint { margin-top: 6px; font-size: var(--fs-xs); color: var(--muted); }
+.form-confirm .btn { margin-top: 6px; }
+
 .faq-list { display: grid; border-top: 1px solid var(--line); }
 .faq-list details { border-bottom: 1px solid var(--line); }
 .faq-list summary {
@@ -960,6 +975,16 @@ p { text-wrap: pretty; }
   border-top: 1px solid var(--line-ink);
   font-size: var(--fs-xs);
 }
+
+.footer-bottom a { color: var(--on-ink-muted); text-underline-offset: 3px; }
+.footer-bottom a:hover { color: var(--white); }
+
+/* ── Privacy (long-form text) ────────────────────────────── */
+.prose { max-width: 760px; }
+.prose-updated { font-size: var(--fs-small); color: var(--muted); }
+.prose h2 { margin-top: clamp(36px, 4vw, 48px); font-size: clamp(1.35rem, 1.2rem + 0.6vw, 1.65rem); scroll-margin-top: 96px; }
+.prose p { margin-top: 14px; line-height: 1.7; color: var(--text); }
+.prose a { color: var(--blue); font-weight: 600; text-underline-offset: 3px; }
 
 /* ── 404 ─────────────────────────────────────────────────── */
 .notfound-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; }

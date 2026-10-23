@@ -31,8 +31,9 @@
   <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
   <link rel="preload" href="/assets/fonts/bricolage-grotesque-latin-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/style.css?v=e14bb42476">
+  <link rel="stylesheet" href="/style.css?v=bf33df190a">
 
+  <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body data-page="contact">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -84,9 +85,9 @@
           <ol class="next-steps"><li><span class="step-num" aria-hidden="true">1</span><p>We read your request and reply to suggest times for a call.</p></li><li><span class="step-num" aria-hidden="true">2</span><p>A 30-minute discovery call about your goal, users and constraints.</p></li><li><span class="step-num" aria-hidden="true">3</span><p>A written scope with milestones and an estimate, if we are a good fit.</p></li></ol>
           <h2 class="aside-title">Prefer to reach us directly?</h2>
           <ul class="contact-list contact-list-aside">
-      <li><span class="contact-label">WhatsApp</span><a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-cta="whatsapp">+221 70 715 7070<span class="sr-only"> (opens in a new tab)</span></a></li>
-      <li><span class="contact-label">Email</span><a href="mailto:seckbara23@gmail.com" data-cta="email">seckbara23@gmail.com</a></li>
-      <li><span class="contact-label">Phone</span><a href="tel:+221707157070" data-cta="phone">+221 70 715 7070</a></li>
+      <li><span class="contact-label">WhatsApp</span><a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-cta="aside">+221 70 715 7070<span class="sr-only"> (opens in a new tab)</span></a></li>
+      <li><span class="contact-label">Email</span><a href="mailto:seckbara23@gmail.com" data-cta="aside">seckbara23@gmail.com</a></li>
+      <li><span class="contact-label">Phone</span><a href="tel:+221707157070" data-cta="aside">+221 70 715 7070</a></li>
       <li><span class="contact-label">Office</span><span>Ngor Almadies, Dakar, Senegal</span></li>
     </ul>
         </div>
@@ -141,8 +142,19 @@
         <span class="spinner" aria-hidden="true"></span>
         <span class="btn-text">Request a discovery call</span>
       </button>
-      <p class="form-note">We use your details only to reply to this request. To have them deleted, email <a href="mailto:seckbara23@gmail.com">seckbara23@gmail.com</a>.</p>
-    </form></div>
+      <p class="form-note">We use your details only to reply to this request. <a href="/privacy">How we handle your information</a></p>
+    </form>
+    <div id="f-confirm" class="form-confirm" hidden>
+      <svg class="form-confirm-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="m7 12.5 3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h2 id="f-confirm-title" tabindex="-1">Thank you.</h2>
+      <p class="form-confirm-text">Your project inquiry has been received. We aim to respond within one business day.</p>
+      <div class="form-confirm-ref" id="f-confirm-ref-box" hidden>
+        <p class="form-confirm-label">Your reference</p>
+        <p class="form-confirm-value" id="f-confirm-ref"></p>
+        <p class="form-confirm-hint">Quote it if you contact us about this request.</p>
+      </div>
+      <button type="button" class="btn btn-outline" id="f-again">Send another request</button>
+    </div></div>
       </div>
     </section>
 
@@ -179,9 +191,9 @@
       <div class="footer-col">
         <h2>Contact</h2>
         <ul class="contact-list contact-list-footer">
-      <li><span class="contact-label">WhatsApp</span><a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-cta="whatsapp">+221 70 715 7070<span class="sr-only"> (opens in a new tab)</span></a></li>
-      <li><span class="contact-label">Email</span><a href="mailto:seckbara23@gmail.com" data-cta="email">seckbara23@gmail.com</a></li>
-      <li><span class="contact-label">Phone</span><a href="tel:+221707157070" data-cta="phone">+221 70 715 7070</a></li>
+      <li><span class="contact-label">WhatsApp</span><a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-cta="footer">+221 70 715 7070<span class="sr-only"> (opens in a new tab)</span></a></li>
+      <li><span class="contact-label">Email</span><a href="mailto:seckbara23@gmail.com" data-cta="footer">seckbara23@gmail.com</a></li>
+      <li><span class="contact-label">Phone</span><a href="tel:+221707157070" data-cta="footer">+221 70 715 7070</a></li>
       <li><span class="contact-label">Office</span><span>Ngor Almadies, Dakar, Senegal</span></li>
     </ul>
       </div>
@@ -189,11 +201,12 @@
     <div class="container footer-bottom">
       <p>© 2026 Teranga Technologies. All rights reserved.</p>
       <p>Designed and engineered in Dakar, Senegal.</p>
+      <p><a href="/privacy">Privacy</a></p>
       <div class="lang-switch lang-switch-footer" role="group" aria-label="Language">
       <a href="/contact" lang="en" hreflang="en" aria-label="EN, English" aria-current="true">EN</a><a href="/fr/contact" lang="fr" hreflang="fr" aria-label="FR, Français" data-lang-link="fr">FR</a>
     </div>
     </div>
   </footer>
-  <script src="/main.js?v=0a2bb86aab"></script>
+  <script src="/main.js?v=b6bc000397"></script>
 </body>
 </html>

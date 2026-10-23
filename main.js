@@ -6,9 +6,9 @@
    - Old one-page links (/#services …) sent to the new pages
    - Mobile navigation
    - Hero demo animation (Radiora reporting flow)
-   - Discovery form → /api/contact (validation, fallback, attribution)
+   - Discovery form → /api/contact (validation, confirmation, fallback, attribution)
    - Entrance motion (respects reduced motion)
-   - Conversion events (forwarded to analytics if one is installed)
+   - Conversion events from one schema (docs/TERANGA-05A-analytics-taxonomy.md)
    ============================================================ */
 
 (function () {
@@ -31,8 +31,7 @@
       vEmail:   'Enter a valid email address, like name@company.com.',
       vService: 'Choose the service closest to your need.',
       vMessage: 'Tell us in a few words what you want to achieve (at least 10 characters).',
-      success:  'Request sent. We aim to reply within one business day to schedule your discovery call.',
-      error:    'We couldn’t send your request, but your message is not lost. Send it to <a href="mailto:seckbara23@gmail.com" data-fallback="email">seckbara23@gmail.com</a> or on <a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-fallback="whatsapp">WhatsApp</a>: both open with your message already filled in.'
+      error:   'We couldn’t send your request, but your message is not lost. Send it to <a href="mailto:seckbara23@gmail.com" data-fallback="email">seckbara23@gmail.com</a> or on <a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-fallback="whatsapp">WhatsApp</a>: both open with your message already filled in.'
     },
     fr: {
       menuOpen:  'Ouvrir le menu',
@@ -45,8 +44,7 @@
       vEmail:   'Indiquez une adresse e-mail valide, par exemple nom@entreprise.com.',
       vService: 'Choisissez le service le plus proche de votre besoin.',
       vMessage: 'Décrivez en quelques mots ce que vous voulez obtenir (10' + NB + 'caractères minimum).',
-      success:  'Demande envoyée. Nous nous efforçons de vous répondre sous un jour ouvré pour planifier votre appel découverte.',
-      error:    'Votre demande n’a pas pu être envoyée, mais votre message n’est pas perdu. Envoyez-le à <a href="mailto:seckbara23@gmail.com" data-fallback="email">seckbara23@gmail.com</a> ou sur <a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-fallback="whatsapp">WhatsApp</a>' + NB + ': les deux s’ouvrent avec votre message déjà rempli.'
+      error:   'Votre demande n’a pas pu être envoyée, mais votre message n’est pas perdu. Envoyez-le à <a href="mailto:seckbara23@gmail.com" data-fallback="email">seckbara23@gmail.com</a> ou sur <a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-fallback="whatsapp">WhatsApp</a>' + NB + ': les deux s’ouvrent avec votre message déjà rempli.'
     }
   };
   var M = MESSAGES[lang];
@@ -69,14 +67,60 @@
     return null;
   }
 
-  // ── Analytics bridge (no-op unless an analytics script exists) ─
-  function track(name, props) {
-    props = props || {};
+  // ── Conversion events ──────────────────────────────────────
+  // Every event and property is declared here, and each value must match its pattern, so nothing
+  // a visitor types (name, email, company, message) can reach analytics. Properties are listed by
+  // priority: when events are forwarded to Vercel only the first N are sent (N from the page).
+  // Events always go to the page itself (window.TT.events, "tt:analytics" DOM event) for checks.
+  // A lead is counted from the server's records, never from these events.
+  var SERVICE = /^(saas|ai|webapp|mobile|webdesign|support|other|none)$/;
+  var SLUG = /^[a-z0-9-]{1,40}$/;
+  var FIELD_LIST = /^(name|email|service|message)(,(name|email|service|message)){0,3}$/;
+  var EVENTS = {
+    service_cta_click:             { service: SERVICE, location: SLUG },
+    case_study_click:              { project: SLUG, action: /^(open|visit)$/ },
+    contact_form_start:            { service: SERVICE },
+    contact_form_validation_error: { fields: FIELD_LIST },
+    lead_submit_success:           { service: SERVICE },
+    lead_submit_failure:           { reason: /^(network|timeout|rate_limited|rejected|server)$/, service: SERVICE },
+    whatsapp_click:                { location: SLUG },
+    email_click:                   { location: SLUG }
+  };
+  var DEDUPE_MS = 1000;
+  var events = [];
+  var lastSeen = {};
+  var vaProps = Number(document.body.getAttribute('data-va-events')) || 0;
+  if (vaProps > 0) {
+    // Queue for the Vercel script, which loads after this one (deferred) and replays it.
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  }
+
+  function emit(name, props) {
     try {
-      if (typeof window.va === 'function') window.va('event', { name: name, data: props });
-      if (typeof window.plausible === 'function') window.plausible(name, { props: props });
-      if (Array.isArray(window.dataLayer)) window.dataLayer.push(Object.assign({ event: name }, props));
-    } catch { /* ignore */ }
+      var spec = EVENTS[name];
+      if (!spec) return;
+      var data = {};
+      Object.keys(spec).forEach(function (k) {
+        var v = props && props[k];
+        if (typeof v === 'string' && spec[k].test(v)) data[k] = v;
+      });
+      // The same event with the same properties within a second is a double click, not a second action.
+      var key = name + '|' + JSON.stringify(data);
+      var now = Date.now();
+      if (lastSeen[key] && now - lastSeen[key] < DEDUPE_MS) return;
+      lastSeen[key] = now;
+
+      var evt = { name: name, data: data, lang: lang, page: page, at: new Date(now).toISOString() };
+      events.push(evt);
+      if (events.length > 50) events.shift();
+      document.dispatchEvent(new CustomEvent('tt:analytics', { detail: evt }));
+
+      if (vaProps > 0 && typeof window.va === 'function') {
+        var sent = {};
+        Object.keys(data).slice(0, vaProps).forEach(function (k) { sent[k] = data[k]; });
+        window.va('event', { name: name, data: sent });
+      }
+    } catch { /* measurement must never break the page */ }
   }
 
   // ── Language: ?lang= → saved choice → browser (English pages only) ─
@@ -136,35 +180,50 @@
     return true;
   }
 
-  if (redirectForLanguage() || redirectLegacyHash()) return;
+  // ── Visit attribution (campaign tags, referring site's name, entry page) ─
+  // Kept for the tab's session so a lead sent from another page is still attributed. A new
+  // campaign link or referral starts a new attribution; moving around the site keeps it.
+  // Only the referrer's host name is kept, never its path or query. The server re-validates it all.
+  // It is read before the language redirects below: after one, the referrer is this site itself.
+  var UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
 
-  // ── Lead source (campaign tags and referring site only) ─────
-  // Kept for the visit so a lead can be attributed even if the form is sent from another page.
-  function leadSource() {
-    var src = {};
+  function visitSource() {
+    var here = window.location.pathname.slice(0, 80);
+    var saved = null;
+    try { saved = JSON.parse(session('tt-src') || 'null'); } catch { saved = null; }
+    if (!saved || typeof saved !== 'object') saved = null;
+    var hop = session('tt-hop');
+    if (hop) session('tt-hop', null);
+    if (hop && saved) {
+      // Arrived through our own redirect: same visit, now on the page actually shown.
+      saved.entry = here;
+      session('tt-src', JSON.stringify(saved));
+      return saved;
+    }
+    var fresh = {};
     try {
       var params = new URLSearchParams(window.location.search);
-      ['utm_source', 'utm_medium', 'utm_campaign'].forEach(function (k) {
-        if (params.get(k)) src[k] = params.get(k).slice(0, 100);
-      });
+      UTM_KEYS.forEach(function (k) { if (params.get(k)) fresh[k] = params.get(k).slice(0, 150); });
       var ref = document.referrer ? new URL(document.referrer).hostname : '';
-      if (ref && ref !== window.location.hostname) src.referrer = ref;
+      if (ref && ref !== window.location.hostname) fresh.referrer = ref;
     } catch { /* ignore */ }
-    if (Object.keys(src).length) session('tt-src', JSON.stringify(src));
-    else {
-      try { src = JSON.parse(session('tt-src') || '{}'); } catch { src = {}; }
-    }
-    return src;
+    if (saved && saved.entry && !Object.keys(fresh).length) return saved;
+    fresh.entry = here;
+    session('tt-src', JSON.stringify(fresh));
+    return fresh;
   }
 
-  var source = leadSource();
+  var source = visitSource();
+
+  if (redirectForLanguage() || redirectLegacyHash()) {
+    session('tt-hop', '1');
+    return;
+  }
 
   // ── Language links: remember the choice, keep a form draft ─
   document.querySelectorAll('[data-lang-link]').forEach(function (a) {
     a.addEventListener('click', function () {
-      var next = a.getAttribute('data-lang-link');
-      store('tt-lang', next);
-      track('language_switch', { lang: next });
+      store('tt-lang', a.getAttribute('data-lang-link'));
       saveDraft();
     });
   });
@@ -269,20 +328,33 @@
         io.unobserve(e.target);
       });
     }, { rootMargin: '0px 0px -8% 0px' });
+    // All positions are read before any class changes: alternating the two forced a layout per element.
     var fold = window.innerHeight;
-    document.querySelectorAll('[data-reveal]').forEach(function (el) {
-      if (el.getBoundingClientRect().top < fold) return;
+    var below = Array.prototype.filter.call(document.querySelectorAll('[data-reveal]'), function (el) {
+      return el.getBoundingClientRect().top >= fold;
+    });
+    below.forEach(function (el) {
       el.classList.add('reveal-pending');
       io.observe(el);
     });
   }
 
-  // ── CTA tracking ───────────────────────────────────────────
-  function initCtas() {
-    document.querySelectorAll('[data-cta]').forEach(function (el) {
-      el.addEventListener('click', function () {
-        track('cta_click', { location: el.getAttribute('data-cta'), service: el.getAttribute('data-service') || '' });
-      });
+  // ── Click events: discovery CTAs, case studies, WhatsApp and email ─
+  // data-cta names where a link sits (header, hero, svc-saas, footer …); the channel comes from the href.
+  function initClicks() {
+    var contactPath = lang === 'fr' ? '/fr/contact' : '/contact';
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href]');
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      var where = a.hasAttribute('data-fallback') ? 'form-fallback' : (a.getAttribute('data-cta') || 'inline');
+      if (href.indexOf('https://wa.me/') === 0) emit('whatsapp_click', { location: where });
+      else if (href.indexOf('mailto:') === 0) emit('email_click', { location: where });
+      else if (a.hasAttribute('data-case')) {
+        emit('case_study_click', { project: a.getAttribute('data-case'), action: a.target === '_blank' ? 'visit' : 'open' });
+      } else if (a.hasAttribute('data-cta') && a.pathname === contactPath) {
+        emit('service_cta_click', { service: a.getAttribute('data-service') || 'none', location: where });
+      }
     });
   }
 
@@ -333,8 +405,10 @@
     var label    = submit.querySelector('.btn-text');
     var idle     = label.textContent;
     var feedback = document.getElementById('f-feedback');
+    var confirm  = document.getElementById('f-confirm');
     var started  = false;
     var sending  = false;
+    var counted  = {}; // lead references already reported as a success
 
     preselectService();
     restoreDraft();
@@ -373,9 +447,15 @@
       });
     });
 
-    form.addEventListener('focusin', function () {
-      if (!started) { started = true; track('form_start'); }
-    });
+    // Started = the visitor typed or chose something (focus alone is not intent). The hidden
+    // anti-spam field is ignored.
+    function onFirstInput(e) {
+      if (started || e.target === fields.website) return;
+      started = true;
+      emit('contact_form_start', { service: fields.service.value || 'none' });
+    }
+    form.addEventListener('input', onFirstInput);
+    form.addEventListener('change', onFirstInput);
 
     function setLoading(on) {
       submit.disabled = on;
@@ -414,10 +494,29 @@
       if (wa) wa.href = 'https://wa.me/221707157070?text=' + encodeURIComponent(summary + message.slice(0, 600));
     }
 
-    feedback.addEventListener('click', function (e) {
-      var a = e.target.closest && e.target.closest('a[data-fallback]');
-      if (a) track('lead_fallback', { channel: a.getAttribute('data-fallback') });
+    // Shown only after /api/contact has answered 2xx, i.e. the notification was accepted for delivery.
+    function showConfirmation(ref) {
+      var box = document.getElementById('f-confirm-ref-box');
+      document.getElementById('f-confirm-ref').textContent = ref || '';
+      box.hidden = !ref;
+      form.hidden = true;
+      confirm.hidden = false;
+      document.getElementById('f-confirm-title').focus();
+      confirm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    document.getElementById('f-again').addEventListener('click', function () {
+      confirm.hidden = true;
+      form.hidden = false;
+      fields.name.focus();
     });
+
+    function failureReason(err, status) {
+      if (status === 429) return 'rate_limited';
+      if (status >= 500) return 'server';
+      if (status >= 400) return 'rejected';
+      return err && err.name === 'AbortError' ? 'timeout' : 'network';
+    }
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -428,12 +527,14 @@
       var problems = validate();
       if (problems.length) {
         fields[problems[0]].focus();
-        track('form_invalid', { fields: problems.join(',') });
+        emit('contact_form_validation_error', { fields: problems.join(',') });
         return;
       }
 
       sending = true;
       setLoading(true);
+      var service = fields.service.value;
+      var status = 0;
       var controller = ('AbortController' in window) ? new AbortController() : null;
       var timeout = setTimeout(function () { if (controller) controller.abort(); }, 15000);
 
@@ -456,33 +557,41 @@
         })
       })
         .then(function (res) {
+          status = res.status;
           if (!res.ok) throw new Error('HTTP ' + res.status);
-          show('success', M.success);
-          track('lead_submitted', { service: fields.service.value });
+          return res.json().catch(function () { return {}; });
+        })
+        .then(function (body) {
+          var ref = body && typeof body.ref === 'string' && /^TT-\d{8}-[0-9A-F]{4}$/.test(body.ref) ? body.ref : '';
+          // A repeated answer for the same reference (the server's duplicate guard) is one lead, not two.
+          if (!ref || !counted[ref]) emit('lead_submit_success', { service: service });
+          if (ref) counted[ref] = true;
           form.reset();
           started = false;
-        })
-        .catch(function (err) {
+          showConfirmation(ref);
+        }, function (err) {
           show('error', M.error);
           prefillFallback();
-          track('lead_failed', { reason: String(err && err.message || err) });
-        })
-        .then(function () {
-          clearTimeout(timeout);
-          sending = false;
-          setLoading(false);
+          emit('lead_submit_failure', { reason: failureReason(err, status), service: service });
           feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        });
+        })
+        .then(done, done);
+
+      function done() {
+        clearTimeout(timeout);
+        sending = false;
+        setLoading(false);
+      }
     });
   }
 
   // ── Boot ───────────────────────────────────────────────────
   initMenu();
-  initCtas();
+  initClicks();
   initForm();
   document.querySelectorAll('[data-demo]').forEach(initDemo);
   initReveal();
 
-  // expose for tests/debugging
-  window.TT = { lang: lang, messages: MESSAGES };
+  // expose for tests/debugging (events holds names and allow-listed properties only)
+  window.TT = { lang: lang, messages: MESSAGES, events: events, schema: Object.keys(EVENTS) };
 })();

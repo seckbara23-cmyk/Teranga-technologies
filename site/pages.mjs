@@ -1,7 +1,7 @@
 // Page bodies. Each returns { title, description, ogTitle?, body } for layout().
 
 import { html, rich } from './lib/html.mjs';
-import { PRODUCTS } from './config.mjs';
+import { PRODUCTS, PAGES, ANALYTICS } from './config.mjs';
 import {
   homeHero, pageHero, sectionHeading, capabilityCard, featuredProject, proofStatement, processTimeline,
   ctaSection, browserFrame, demoWindow, tag, button, textLink, contactList, contactForm, ctaHref, newTab,
@@ -135,7 +135,7 @@ function aiEngineering(ctx) {
           ${sectionHeading({ eyebrow: p.example.eyebrow, title: p.example.title, id: 'ai-example-title', tone: 'dark' })}
           <p class="example-text">${p.example.text}</p>
           <ul class="check-list on-dark">${p.example.points.map((pt) => html`<li>${pt}</li>`)}</ul>
-          ${textLink(p.example.link, ctx.link('work', 'radiora'))}
+          ${textLink(p.example.link, ctx.link('work', 'radiora'), html`data-case="radiora" data-cta="ai-example"`)}
         </div>
         <figure class="example-visual" aria-labelledby="ai-demo-caption">
           ${demoWindow(ctx)}
@@ -182,7 +182,7 @@ function work(ctx) {
           <div class="case-media" data-reveal>
             ${browserFrame(ctx, cs.key)}
             <div class="case-actions">
-              ${button(ctx, { label: L.visit, href: PRODUCTS[cs.key].url, variant: 'outline', cta: `case-${cs.id}-visit`, external: true })}
+              ${button(ctx, { label: L.visit, href: PRODUCTS[cs.key].url, variant: 'outline', cta: `case-${cs.id}-visit`, caseKey: cs.key, external: true })}
               ${button(ctx, { label: L.discuss, href: ctaHref(ctx, cs.service), variant: 'navy', cta: `case-${cs.id}`, service: cs.service })}
             </div>
           </div>
@@ -206,7 +206,7 @@ function work(ctx) {
             ${browserFrame(ctx, m.key)}
             <h3>${m.name}</h3>
             <p>${m.text}</p>
-            <a href="${PRODUCTS[m.key].url}" class="text-link" target="_blank" rel="noopener noreferrer" data-cta="more-${m.key}"><span>${m.linkLabel}</span>${newTab(ctx)}</a>
+            <a href="${PRODUCTS[m.key].url}" class="text-link" target="_blank" rel="noopener noreferrer" data-cta="more-${m.key}" data-case="${m.key}"><span>${m.linkLabel}</span>${newTab(ctx)}</a>
           </li>`)}
         </ul>
       </div>
@@ -292,6 +292,25 @@ function contact(ctx) {
   return { title: p.title, description: p.description, body };
 }
 
+function privacy(ctx) {
+  const p = ctx.c.pages.privacy;
+  // The analytics section describes the Vercel Web Analytics script, so it is published only with it.
+  const sections = p.sections.filter((s) => s.id !== 'analytics' || ANALYTICS.webAnalytics);
+  const body = html`
+    ${pageHero(ctx, p.hero)}
+
+    <div class="section">
+      <div class="container prose">
+        <p class="prose-updated">${p.updated}</p>
+        ${sections.map((s) => html`<h2 id="${s.id}">${s.title}</h2>
+        ${s.paragraphs.map((t) => html`<p>${rich(t)}</p>`)}`)}
+      </div>
+    </div>
+
+    ${ctaSection(ctx)}`;
+  return { title: p.title, description: p.description, body };
+}
+
 /** Bilingual 404, served by Vercel for unknown paths. */
 export function notFoundBody(ctxEn, ctxFr) {
   const block = (ctx) => {
@@ -300,7 +319,7 @@ export function notFoundBody(ctxEn, ctxFr) {
         <h2>${n.heading}</h2>
         <p>${n.text}</p>
         <ul class="notfound-links">
-          ${['home', 'services', 'ai-engineering', 'work', 'about', 'contact'].map((pg) => html`<li><a href="${ctx.link(pg)}">${ctx.c.common.nav[pg]}</a></li>`)}
+          ${PAGES.map((pg) => html`<li><a href="${ctx.link(pg)}">${ctx.c.common.nav[pg] || ctx.c.common.footer[pg]}</a></li>`)}
         </ul>
       </div>`;
   };
@@ -316,7 +335,7 @@ export function notFoundBody(ctxEn, ctxFr) {
     </section>`;
 }
 
-export const PAGE_RENDERERS = { home, services, 'ai-engineering': aiEngineering, work, about, contact };
+export const PAGE_RENDERERS = { home, services, 'ai-engineering': aiEngineering, work, about, contact, privacy };
 
 // Exposed for tests: content helpers that must stay in sync with rendering.
 export { rich };

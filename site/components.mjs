@@ -1,7 +1,7 @@
 // Reusable page components. Each returns markup from html``; ctx = { lang, c, page, link(), asset() }.
 
 import { html, rich } from './lib/html.mjs';
-import { CONTACT, PRODUCTS, PAGES, BOOKING_URL } from './config.mjs';
+import { CONTACT, PRODUCTS, NAV_PAGES, BOOKING_URL } from './config.mjs';
 
 const arrow = html`<svg class="icon-arrow" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
@@ -20,9 +20,9 @@ export function ctaLabel(ctx, label) {
   return BOOKING_URL ? ctx.c.common.ctaBook : label;
 }
 
-export function button(ctx, { label, href, variant = 'amber', size, cta, service, external }) {
+export function button(ctx, { label, href, variant = 'amber', size, cta, service, caseKey, external }) {
   const cls = ['btn', `btn-${variant}`, size ? `btn-${size}` : ''].filter(Boolean).join(' ');
-  return html`<a href="${href}" class="${cls}"${cta ? html` data-cta="${cta}"` : ''}${service ? html` data-service="${service}"` : ''}${external ? html` target="_blank" rel="noopener noreferrer"` : ''}>${label}${external ? newTab(ctx) : ''}</a>`;
+  return html`<a href="${href}" class="${cls}"${cta ? html` data-cta="${cta}"` : ''}${service ? html` data-service="${service}"` : ''}${caseKey ? html` data-case="${caseKey}"` : ''}${external ? html` target="_blank" rel="noopener noreferrer"` : ''}>${label}${external ? newTab(ctx) : ''}</a>`;
 }
 
 export function textLink(label, href, extra = '') {
@@ -137,7 +137,7 @@ export function featuredProject(ctx, p) {
         <p class="eyebrow">${p.sector}</p>
         <h3>${p.name}</h3>
         <p>${p.text}</p>
-        ${textLink(p.linkLabel, ctx.link(p.link.page, p.link.hash))}
+        ${textLink(p.linkLabel, ctx.link(p.link.page, p.link.hash), html`data-case="${p.key}" data-cta="home-work"`)}
       </div>
     </article>`;
 }
@@ -173,7 +173,7 @@ export function ctaSection(ctx, { title, text, button: label, service, cta = 'fi
       </div>
       <div class="cta-actions">
         ${button(ctx, { label: ctaLabel(ctx, label || f.button), href: ctaHref(ctx, service), size: 'lg', cta, service })}
-        <p class="cta-alt">${f.or} <a href="mailto:${CONTACT.email}" data-cta="email">${CONTACT.email}</a></p>
+        <p class="cta-alt">${f.or} <a href="mailto:${CONTACT.email}" data-cta="${cta}">${CONTACT.email}</a></p>
       </div>
     </div>
   </section>`;
@@ -200,7 +200,7 @@ export function languageSwitcher(ctx, variant = 'header') {
 /** GlobalHeader. */
 export function globalHeader(ctx) {
   const c = ctx.c.common;
-  const items = PAGES.map((p) => ({ p, label: c.nav[p], href: ctx.link(p), current: p === ctx.page }));
+  const items = NAV_PAGES.map((p) => ({ p, label: c.nav[p], href: ctx.link(p), current: p === ctx.page }));
   const navLink = (it) => html`<li><a href="${it.href}"${it.current ? html` aria-current="page"` : ''}>${it.label}</a></li>`;
   return html`<header class="site-header">
     <div class="container header-inner">
@@ -246,7 +246,7 @@ export function globalFooter(ctx) {
       </div>
       <nav class="footer-col" aria-labelledby="ft-pages">
         <h2 id="ft-pages">${c.footer.pages}</h2>
-        <ul>${PAGES.map((p) => html`<li><a href="${ctx.link(p)}">${c.nav[p]}</a></li>`)}</ul>
+        <ul>${NAV_PAGES.map((p) => html`<li><a href="${ctx.link(p)}">${c.nav[p]}</a></li>`)}</ul>
       </nav>
       <nav class="footer-col" aria-labelledby="ft-services">
         <h2 id="ft-services">${c.footer.services}</h2>
@@ -260,6 +260,7 @@ export function globalFooter(ctx) {
     <div class="container footer-bottom">
       <p>${c.footer.copy}</p>
       <p>${c.footer.made}</p>
+      <p><a href="${ctx.link('privacy')}"${ctx.page === 'privacy' ? html` aria-current="page"` : ''}>${c.footer.privacy}</a></p>
       ${languageSwitcher(ctx, 'footer')}
     </div>
   </footer>`;
@@ -269,14 +270,17 @@ export function globalFooter(ctx) {
 export function contactList(ctx, variant) {
   const c = ctx.c.common.contact;
   return html`<ul class="contact-list contact-list-${variant}">
-      <li><span class="contact-label">${c.whatsapp}</span><a href="${CONTACT.whatsapp}" target="_blank" rel="noopener noreferrer" data-cta="whatsapp">${CONTACT.phoneDisplay}${newTab(ctx)}</a></li>
-      <li><span class="contact-label">${c.email}</span><a href="mailto:${CONTACT.email}" data-cta="email">${CONTACT.email}</a></li>
-      <li><span class="contact-label">${c.phone}</span><a href="${CONTACT.phoneHref}" data-cta="phone">${CONTACT.phoneDisplay}</a></li>
+      <li><span class="contact-label">${c.whatsapp}</span><a href="${CONTACT.whatsapp}" target="_blank" rel="noopener noreferrer" data-cta="${variant}">${CONTACT.phoneDisplay}${newTab(ctx)}</a></li>
+      <li><span class="contact-label">${c.email}</span><a href="mailto:${CONTACT.email}" data-cta="${variant}">${CONTACT.email}</a></li>
+      <li><span class="contact-label">${c.phone}</span><a href="${CONTACT.phoneHref}" data-cta="${variant}">${CONTACT.phoneDisplay}</a></li>
       <li><span class="contact-label">${c.office}</span><span>${c.address}</span></li>
     </ul>`;
 }
 
-/** ContactForm: same field ids and API contract as before (main.js and /api/contact depend on them). */
+/**
+ * ContactForm: same field ids and API contract as before (main.js and /api/contact depend on them),
+ * followed by the confirmation main.js shows, with the lead reference, once the server has accepted the request.
+ */
 export function contactForm(ctx) {
   const f = ctx.c.pages.contact.form;
   const req = html`<span class="req" aria-hidden="true">*</span>`;
@@ -332,5 +336,16 @@ export function contactForm(ctx) {
         <span class="btn-text">${f.submit}</span>
       </button>
       <p class="form-note">${rich(f.privacy)}</p>
-    </form>`;
+    </form>
+    <div id="f-confirm" class="form-confirm" hidden>
+      <svg class="form-confirm-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="m7 12.5 3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h2 id="f-confirm-title" tabindex="-1">${f.confirmTitle}</h2>
+      <p class="form-confirm-text">${f.confirmText}</p>
+      <div class="form-confirm-ref" id="f-confirm-ref-box" hidden>
+        <p class="form-confirm-label">${f.confirmRef}</p>
+        <p class="form-confirm-value" id="f-confirm-ref"></p>
+        <p class="form-confirm-hint">${f.confirmRefHint}</p>
+      </div>
+      <button type="button" class="btn btn-outline" id="f-again">${f.confirmAgain}</button>
+    </div>`;
 }

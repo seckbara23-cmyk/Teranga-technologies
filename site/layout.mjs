@@ -1,7 +1,7 @@
 // Page shell shared by every page: <head> metadata, header, main, footer, script.
 
 import { html, raw } from './lib/html.mjs';
-import { SITE_URL, CONTACT } from './config.mjs';
+import { SITE_URL, CONTACT, ANALYTICS } from './config.mjs';
 import { globalHeader, globalFooter } from './components.mjs';
 
 function jsonLd(ctx) {
@@ -67,8 +67,9 @@ ${html`<html lang="${ctx.lang}">
   <link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="${ctx.asset('/style.css')}">
   ${ctx.page === 'home' && !noindex ? jsonLd(ctx) : ''}
+  ${ANALYTICS.webAnalytics ? html`<script defer src="/_vercel/insights/script.js"></script>` : ''}
 </head>
-<body${bodyClass ? html` class="${bodyClass}"` : ''} data-page="${ctx.page}">
+<body${bodyClass ? html` class="${bodyClass}"` : ''} data-page="${ctx.page}"${ANALYTICS.customEvents ? html` data-va-events="${ANALYTICS.maxEventProperties}"` : ''}>
   <a class="skip-link" href="#main">${c.skip}</a>
   ${globalHeader(ctx)}
   <main id="main" tabindex="-1">
