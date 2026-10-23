@@ -89,15 +89,52 @@ test('canonical, hreflang and Open Graph point at the right production URLs', ()
   }
 });
 
-test('header navigation links every page in the same language and marks the current one', () => {
+test('header navigation links every main page in the same language and marks the current one', () => {
+  assert.deepEqual(config.PAGES.filter((pg) => !config.NAV_PAGES.includes(pg)), ['privacy']);
   for (const p of pages) {
     const nav = attr(p.html, /<nav class="site-nav"[^>]*>([\s\S]*?)<\/nav>/);
     const hrefs = all(nav, /href="([^"]+)"/g);
-    assert.deepEqual(hrefs, config.PAGES.map((pg) => config.pathFor(p.lang, pg)), p.file);
-    assert.deepEqual(all(nav, /href="([^"]+)" aria-current="page"/g), [p.path], `${p.file} current`);
+    assert.deepEqual(hrefs, config.NAV_PAGES.map((pg) => config.pathFor(p.lang, pg)), p.file);
+    assert.deepEqual(all(nav, /href="([^"]+)" aria-current="page"/g), config.NAV_PAGES.includes(p.page) ? [p.path] : [], `${p.file} current`);
     const mobile = attr(p.html, /<div class="mobile-nav"[\s\S]*?<nav[^>]*>([\s\S]*?)<\/nav>/);
     assert.deepEqual(all(mobile, /href="([^"]+)"/g), hrefs, `${p.file} mobile nav`);
   }
+});
+
+test('every page links to the privacy page in its language from the footer and the form', () => {
+  for (const p of pages) {
+    const footer = attr(p.html, /<footer class="site-footer">([\s\S]*?)<\/footer>/);
+    assert.match(footer, new RegExp(`href="${config.pathFor(p.lang, 'privacy')}"`), p.file);
+  }
+  for (const p of pages.filter((q) => q.page === 'contact')) {
+    const note = attr(p.html, /<p class="form-note">([\s\S]*?)<\/p>/);
+    assert.match(note, new RegExp(`<a href="${config.pathFor(p.lang, 'privacy')}">`), p.file);
+  }
+});
+
+test('the privacy page describes what is actually collected, stored and processed', () => {
+  for (const lang of config.LANGS) {
+    const p = pages.find((q) => q.lang === lang && q.page === 'privacy');
+    const t = textOf(p.html);
+    for (const k of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'Vercel', 'Resend', 'Google', 'seckbara23@gmail.com']) assert.ok(t.includes(k), `${p.file}: ${k}`);
+    assert.match(t, lang === 'fr' ? /Aucun cookie/ : /No cookies/);
+    assert.match(t, lang === 'fr' ? /12\smois/ : /12 months/); // \s: French typography uses a non-breaking space
+    // The analytics section is published exactly when the analytics script is.
+    assert.equal(/id="analytics"/.test(p.html), config.ANALYTICS.webAnalytics, p.file);
+  }
+});
+
+test('Web Analytics loads from the first-party path only when enabled; events go to Vercel only on request', () => {
+  for (const p of [...pages, { file: '404.html', html: read('404.html') }]) {
+    const tags = all(p.html, /<script\b([^>]*)>/g).filter((a) => /src=/.test(a));
+    const insights = tags.filter((a) => /_vercel\/insights/.test(a));
+    assert.deepEqual(insights, config.ANALYTICS.webAnalytics ? [' defer src="/_vercel/insights/script.js"'] : [], p.file);
+    // No other analytics or marketing tracker is loaded.
+    assert.ok(tags.every((a) => /src="\/(main\.js\?v=|_vercel\/insights\/script\.js)/.test(a)), `${p.file}: ${tags}`);
+    assert.doesNotMatch(p.html, /googletagmanager|google-analytics|gtag\(|fbq\(|plausible|hotjar|clarity\.ms|segment\.com/i, p.file);
+    assert.equal(/data-va-events="\d+"/.test(p.html), config.ANALYTICS.customEvents, p.file);
+  }
+  assert.ok(config.ANALYTICS.maxEventProperties >= 1 && config.ANALYTICS.maxEventProperties <= 8);
 });
 
 test('the language switcher goes to the same page in the other language', () => {
@@ -188,13 +225,96 @@ test('every discovery CTA goes to the contact page (with a valid service) or a r
     const contact = config.pathFor(p.lang, 'contact');
     for (const m of p.html.matchAll(/<a\b[^>]*data-cta="[^"]*"[^>]*>/g)) {
       const href = attr(m[0], /href="([^"]+)"/);
-      const ok = href === contact || href.startsWith(`${contact}?service=`) || /^(https:|mailto:|tel:)/.test(href) || pages.some((q) => q.path === href);
+      const ok = href === contact || href.startsWith(`${contact}?service=`) || /^(https:|mailto:|tel:)/.test(href) || pages.some((q) => q.path === href.split('#')[0]);
       assert.ok(ok, `${p.file}: ${href}`);
       const svc = /\?service=([a-z]+)/.exec(href);
       if (svc) assert.ok(SERVICES[svc[1]], `${p.file}: unknown service ${svc[1]}`);
     }
     for (const s of all(p.html, /data-service="([^"]+)"/g)) assert.ok(SERVICES[s], s);
   }
+});
+
+test('discovery CTAs use the standard wording and preselect their service', () => {
+  const lead = { en: /^Discuss (your|ongoing|a similar)/, fr: /^Parlons (de|du|d’)/ };
+  for (const [lang, c] of [['en', en], ['fr', fr]]) {
+    assert.equal(c.common.cta, lang === 'fr' ? 'Parlons de votre projet' : 'Discuss your project');
+    assert.equal(c.common.finalCta.button, c.common.cta);
+    for (const s of c.pages.services.items) assert.match(s.cta, lead[lang], `${lang} ${s.id}: ${s.cta}`);
+    assert.match(c.pages['ai-engineering'].cta.button, lead[lang]);
+    assert.match(c.pages.work.labels.discuss, lead[lang]);
+  }
+  for (const p of pages) {
+    for (const m of p.html.matchAll(/<a\b[^>]*data-service="([^"]+)"[^>]*>/g)) {
+      assert.match(m[0], new RegExp(`href="${config.pathFor(p.lang, 'contact')}\\?service=${m[1]}"`), `${p.file}: ${m[0]}`);
+    }
+  }
+});
+
+test('case-study and product links name their project for measurement', () => {
+  const keys = Object.keys(config.PRODUCTS);
+  for (const p of pages) {
+    for (const m of p.html.matchAll(/<a\b[^>]*href="(\/(?:fr\/)?work#[a-z]+)"[^>]*>/g)) {
+      if (/class="text-link"/.test(m[0])) assert.match(m[0], /data-case="[a-z]+"/, `${p.file}: ${m[0]}`);
+    }
+    for (const k of all(p.html, /data-case="([^"]+)"/g)) assert.ok(keys.includes(k), `${p.file}: ${k}`);
+  }
+});
+
+test('the confirmation panel is hidden until the server accepts, and is accessible', () => {
+  for (const p of pages.filter((q) => q.page === 'contact')) {
+    const c = p.lang === 'fr' ? fr : en;
+    const panel = attr(p.html, /(<div id="f-confirm"[\s\S]*?<\/button>\s*<\/div>)/);
+    assert.ok(panel, p.file);
+    assert.match(panel, /^<div id="f-confirm" class="form-confirm" hidden>/);
+    assert.match(panel, /<h2 id="f-confirm-title" tabindex="-1">/);
+    assert.match(panel, /id="f-confirm-ref-box" hidden/);
+    assert.match(panel, /<button type="button" class="btn btn-outline" id="f-again">/);
+    const t = textOf(panel).replace(/\s+/g, ' ');
+    const expected = p.lang === 'fr'
+      ? 'Merci. Nous avons bien reçu votre demande. Nous nous efforçons de vous répondre sous un jour ouvré.'
+      : 'Thank you. Your project inquiry has been received. We aim to respond within one business day.';
+    assert.ok(t.includes(expected), `${p.file}: ${t}`);
+    assert.ok(t.includes(c.pages.contact.form.confirmRef), `${p.file}: reference label`);
+    assert.doesNotMatch(t, /booked|réservé|confirmed call|appel confirmé/i, 'no booking claim');
+  }
+  const js = read('main.js');
+  // Success is shown and counted only in the branch reached after res.ok.
+  const okAt = js.indexOf("if (!res.ok) throw new Error('HTTP ' + res.status);");
+  assert.ok(okAt > 0);
+  assert.ok(js.indexOf("emit('lead_submit_success'") > okAt);
+  assert.ok(js.indexOf('showConfirmation(ref)', okAt) > okAt);
+  assert.equal((js.match(/showConfirmation\(/g) || []).length, 2, 'defined once, called once');
+});
+
+test('the event schema is the documented taxonomy and carries no personal data', () => {
+  const js = read('main.js');
+  const block = /var EVENTS = (\{[\s\S]*?\n {2}\});/.exec(js)[1];
+  const schema = Function(`var SERVICE = /x/, SLUG = /x/, FIELD_LIST = /x/; return (${block});`)();
+  assert.deepEqual(Object.keys(schema).sort(), [
+    'case_study_click', 'contact_form_start', 'contact_form_validation_error', 'email_click',
+    'lead_submit_failure', 'lead_submit_success', 'service_cta_click', 'whatsapp_click',
+  ]);
+  const props = new Set(Object.values(schema).flatMap((s) => Object.keys(s)));
+  for (const pii of ['name', 'email', 'company', 'message', 'phone', 'ref', 'reference', 'ip', 'url', 'referrer', 'text', 'value']) assert.ok(!props.has(pii), pii);
+  for (const s of Object.values(schema)) for (const re of Object.values(s)) assert.ok(re instanceof RegExp);
+  // Every emit() uses a declared event; the taxonomy document lists each one.
+  const used = [...js.matchAll(/emit\('([a-z_]+)'/g)].map((m) => m[1]);
+  assert.deepEqual([...new Set(used)].sort(), Object.keys(schema).sort());
+  const doc = read('docs/TERANGA-05A-analytics-taxonomy.md');
+  for (const name of Object.keys(schema)) assert.match(doc, new RegExp('`' + name + '`'), name);
+  // Old names and other vendors' globals are gone.
+  assert.doesNotMatch(js, /\btrack\(|'(cta_click|form_start|form_invalid|lead_submitted|lead_failed|lead_fallback|language_switch)'|plausible|dataLayer/);
+});
+
+test('the browser sends only the attribution keys the server accepts', async () => {
+  const js = read('main.js');
+  const keys = Function(`return ${/var UTM_KEYS = (\[[^\]]*\]);/.exec(js)[1]};`)();
+  const { cleanAttribution } = require('../api/_lib/contact');
+  const sample = Object.fromEntries(keys.map((k) => [k, 'x']));
+  assert.deepEqual(Object.keys(cleanAttribution({ ...sample, referrer: 'example.org', entry: '/' }, '/contact')).sort(),
+    [...keys, 'referrer', 'entry', 'page', 'channel'].sort());
+  assert.match(js, /fresh\.referrer = ref;/);
+  assert.match(js, /new URL\(document\.referrer\)\.hostname/, 'only the referrer host is read');
 });
 
 test('French pages use a non-breaking space before ? ! : ;', () => {
@@ -276,7 +396,7 @@ test('deployment serves clean URLs and keeps internal and source files private',
   assert.equal(v.cleanUrls, true);
   assert.ok(v.redirects.some((r) => r.source === '/' && r.destination === '/fr' && r.has[0].key === 'lang' && r.has[0].value === 'fr'));
   const ignored = read('.vercelignore').split('\n').map((l) => l.trim());
-  for (const p of ['docs/', 'Pictures/', 'server.js', 'tests/', '.github/', 'site/']) assert.ok(ignored.includes(p), p);
+  for (const p of ['docs/', 'Pictures/', 'server.js', 'tests/', '.github/', 'site/', 'scripts/']) assert.ok(ignored.includes(p), p);
   // Vercel runs a "build" (or "vercel-build") script automatically; the generator source is not
   // uploaded, so such a script would fail the deployment. The committed HTML is what gets served.
   const scripts = JSON.parse(read('package.json')).scripts;

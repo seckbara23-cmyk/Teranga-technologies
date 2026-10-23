@@ -86,3 +86,34 @@ test('the rate-limit key is the first forwarded address', () => {
   const ip = handler._test.clientIp({ headers: { 'x-forwarded-for': '203.0.113.5, 10.0.0.1' } });
   assert.equal(ip, '203.0.113.5');
 });
+
+test('the address set by Vercel wins over one a client can forge', () => {
+  const { clientIp } = handler._test;
+  assert.equal(clientIp({ headers: { 'x-vercel-forwarded-for': '198.51.100.20', 'x-real-ip': '198.51.100.21', 'x-forwarded-for': '1.2.3.4' } }), '198.51.100.20');
+  assert.equal(clientIp({ headers: { 'x-real-ip': '198.51.100.21', 'x-forwarded-for': '1.2.3.4' } }), '198.51.100.21');
+  assert.equal(clientIp({ headers: {}, socket: { remoteAddress: '::1' } }), '::1');
+});
+
+test('a forged x-forwarded-for does not escape the limit when Vercel reports the real address', async () => {
+  for (let i = 1; i <= 5; i++) await call({ ip: `10.0.0.${i}`, headers: { 'x-vercel-forwarded-for': '198.51.100.9' } });
+  const sixth = await call({ ip: '10.0.0.99', headers: { 'x-vercel-forwarded-for': '198.51.100.9' } });
+  assert.equal(sixth.statusCode, 429);
+});
+
+test('oversized requests are refused with 413 before parsing', async () => {
+  const big = JSON.stringify({ ...VALID, message: 'x'.repeat(40 * 1024) });
+  const declared = await call({ body: big, headers: { 'content-length': String(Buffer.byteLength(big)) } });
+  assert.equal(declared.statusCode, 413);
+  assert.equal(declared.body.message, 'Request too large.');
+  const undeclared = await call({ body: big });
+  assert.equal(undeclared.statusCode, 413);
+  // A normal request is well under the limit.
+  assert.notEqual((await call({ body: JSON.stringify(VALID) })).statusCode, 413);
+});
+
+test('error answers are generic and never echo the input', async () => {
+  const res = await call({ body: { ...VALID, email: '<script>x</script>' } });
+  assert.equal(res.statusCode, 400);
+  assert.doesNotMatch(JSON.stringify(res.body), /script/);
+  assert.deepEqual(Object.keys(res.body), ['message']);
+});

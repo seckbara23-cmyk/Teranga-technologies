@@ -84,4 +84,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr/contact"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/contact"/>
   </url>
+  <url>
+    <loc>https://teranga-tech.com/privacy</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/privacy"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr/privacy"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/privacy"/>
+  </url>
+  <url>
+    <loc>https://teranga-tech.com/fr/privacy</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://teranga-tech.com/privacy"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://teranga-tech.com/fr/privacy"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teranga-tech.com/privacy"/>
+  </url>
 </urlset>

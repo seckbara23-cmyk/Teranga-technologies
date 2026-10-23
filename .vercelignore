@@ -16,3 +16,6 @@ Pictures/
 
 # Repository tooling
 .github/
+
+# Owner tooling (lead report); works on private tracker exports, never part of the site
+scripts/

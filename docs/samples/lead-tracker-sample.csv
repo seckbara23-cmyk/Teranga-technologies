@@ -1,0 +1,13 @@
+Reference,Submitted (UTC),Company,Service,Language,Channel,Source,Medium,Campaign,Entry page,Status,First reply (UTC),Last contact (UTC),Owner,Lost at,Notes
+TT-20260902-A101,2026-09-02 08:14 UTC,Sample Clinic A,AI integration,FR,referral,www.google.com,,,/fr/ai-engineering,WON,2026-09-02 11:40 UTC,2026-09-30 10:00 UTC,Owner A,,SYNTHETIC SAMPLE ROW
+TT-20260905-A102,2026-09-05 15:02 UTC,Sample School B,SaaS development,FR,direct,,,,/fr,PROPOSAL,2026-09-06 09:10 UTC,2026-10-20 15:00 UTC,Owner A,,SYNTHETIC SAMPLE ROW
+TT-20260909-A103,2026-09-09 10:30 UTC,,Mobile applications,EN,campaign,linkedin,social,launch-q3,/services,LOST,2026-09-09 16:05 UTC,2026-09-25 09:00 UTC,Owner B,QUALIFIED,SYNTHETIC SAMPLE ROW
+TT-20260912-A104,2026-09-12 19:47 UTC,Sample Retail C,Website design and development,FR,referral,www.facebook.com,,,/fr/work,CONTACTED,2026-09-14 08:30 UTC,2026-09-14 08:30 UTC,Owner B,,SYNTHETIC SAMPLE ROW
+TT-20260918-A105,2026-09-18 07:55 UTC,,Not sure yet,EN,direct,,,,/,SPAM,,,,,SYNTHETIC SAMPLE ROW
+TT-20260923-A106,2026-09-23 12:20 UTC,Sample Logistics D,Custom web applications,EN,campaign,linkedin,social,launch-q3,/services,QUALIFIED,2026-09-23 14:00 UTC,2026-10-15 11:00 UTC,Owner A,,SYNTHETIC SAMPLE ROW
+TT-20261001-A107,2026-10-01 09:05 UTC,Sample NGO E,Maintenance and ongoing support,FR,direct,,,,/fr/contact,LOST,2026-10-01 10:15 UTC,2026-10-01 10:15 UTC,Owner B,,SYNTHETIC SAMPLE ROW
+TT-20261006-A108,2026-10-06 16:40 UTC,Sample Lab F,AI integration and automation,EN,campaign,newsletter,email,october-ai,/ai-engineering,PROPOSAL,2026-10-07 08:20 UTC,2026-10-21 16:00 UTC,Owner A,,SYNTHETIC SAMPLE ROW
+TT-20261009-A109,2026-10-09 11:11 UTC,,SaaS development,FR,referral,www.google.com,,,/fr/services,NEW,,,,,SYNTHETIC SAMPLE ROW
+TT-20261014-A110,2026-10-14 08:02 UTC,Sample Bank G,Custom web applications,FR,campaign,newsletter,email,october-ai,/fr,QUALIFIED,2026-10-14 09:30 UTC,2026-10-22 09:00 UTC,Owner A,,SYNTHETIC SAMPLE ROW
+TT-20261017-A111,2026-10-17 21:18 UTC,,Not sure yet,EN,direct,,,,/contact,SPAM,,,,,SYNTHETIC SAMPLE ROW
+TT-20261020-A112,2026-10-20 13:45 UTC,Sample Transport H,Mobile applications,FR,direct,,,,/fr,CONTACTED,2026-10-21 08:05 UTC,2026-10-21 08:05 UTC,Owner B,,SYNTHETIC SAMPLE ROW

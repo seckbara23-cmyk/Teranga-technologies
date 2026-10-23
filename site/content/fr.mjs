@@ -39,6 +39,7 @@ export default {
       reach: 'Contact',
       copy: '© 2026 Teranga Technologies. Tous droits réservés.',
       made: 'Conçu et développé à Dakar, au Sénégal.',
+      privacy: 'Confidentialité',
     },
     demo: {
       product: 'Radiora Medical',
@@ -149,7 +150,7 @@ export default {
           deliver: ['Architecture multi-clients avec comptes et rôles sécurisés', 'Abonnements, intégration de la facturation et outils d’administration', 'Une première version ciblée, puis une feuille de route'],
           uses: ['Un MVP pour une startup financée', 'Transformer un outil interne en produit', 'Des plateformes multi-sites pour cliniques, écoles ou agences'],
           outcome: 'Un produit entre les mains de vos clients, sur des fondations qui supportent les versions suivantes. Un MVP ciblé se cadre généralement sur 4 à 8 semaines, une fois le périmètre validé.',
-          cta: 'Parler de votre projet SaaS',
+          cta: 'Parlons de votre projet SaaS',
         },
         {
           id: 'ai', service: 'ai', name: 'Intégration d’IA et automatisation',
@@ -158,7 +159,7 @@ export default {
           deliver: ['Des modèles reliés à vos documents, données et outils', 'Extraction structurée et rédaction avec étapes de relecture', 'Tests de qualité, maîtrise des coûts et pistes d’audit'],
           uses: ['Transformer dictées et documents en données structurées', 'Préparer réponses et rapports relus par vos équipes', 'Interroger vos connaissances internes en français et en anglais'],
           outcome: 'Du temps gagné sur un processus précis et mesuré, l’humain gardant le dernier mot.',
-          cta: 'Étudier un cas d’usage IA',
+          cta: 'Parlons de votre projet IA',
           more: { label: 'Notre approche de l’IA', link: { page: 'ai-engineering' } },
         },
         {
@@ -168,7 +169,7 @@ export default {
           deliver: ['Portails, tableaux de bord et outils de gestion', 'Intégration avec les systèmes que vous utilisez déjà', 'Paiements et messagerie, comme Wave, Orange Money ou WhatsApp'],
           uses: ['Tableaux de bord et reporting opérationnels', 'Portails clients, partenaires et collaborateurs', 'Circuits de validation et de réservation'],
           outcome: 'Une source de vérité unique, moins de tâches manuelles et une visibilité en temps réel pour vos équipes.',
-          cta: 'Planifier votre application web',
+          cta: 'Parlons de votre application web',
         },
         {
           id: 'mobile-apps', service: 'mobile', name: 'Applications mobiles',
@@ -177,7 +178,7 @@ export default {
           deliver: ['Applications iOS et Android pour vos clients ou vos équipes terrain', 'Inscription, paiements et notifications', 'Le même backend que votre plateforme web'],
           uses: ['Applications clients pour réservations, commandes et paiements', 'Applications terrain pour la collecte et le reporting', 'Une application compagnon pour un SaaS existant'],
           outcome: 'Une expérience mobile qui partage données et règles avec le reste de votre produit.',
-          cta: 'Cadrer votre application mobile',
+          cta: 'Parlons de votre application mobile',
         },
         {
           id: 'websites', service: 'webdesign', name: 'Conception et développement de sites web',
@@ -186,7 +187,7 @@ export default {
           deliver: ['Un positionnement et une structure de pages clairs', 'Des pages rapides, accessibles et bilingues', 'Un parcours de contact fonctionnel, avec notification des demandes'],
           uses: ['Sites d’entreprise et de produit', 'Pages de lancement et de campagne', 'Sites bilingues français/anglais'],
           outcome: 'Un site crédible, que les prospects comprennent vite et qui facilite la prise de contact.',
-          cta: 'Améliorer votre site',
+          cta: 'Parlons de votre site web',
         },
         {
           id: 'support', service: 'support', name: 'Maintenance et accompagnement',
@@ -195,7 +196,7 @@ export default {
           deliver: ['Supervision, mises à jour et correctifs de sécurité', 'Corrections et petites évolutions à un rythme convenu', 'Une documentation tenue à jour'],
           uses: ['Les produits que nous avons développés', 'Des produits existants repris après un audit du code'],
           outcome: 'Un produit qui reste fiable tout en évoluant avec votre activité.',
-          cta: 'Parler de l’accompagnement',
+          cta: 'Parlons du suivi de votre produit',
         },
       ],
       note: 'Chaque mission est cadrée individuellement : les délais dépendent du périmètre, des intégrations et du niveau de finition attendu au lancement. Nous les confirmons par écrit après l’appel découverte.',
@@ -252,7 +253,7 @@ export default {
           { title: 'Déployer sous contrôle', text: 'Une validation humaine là où l’enjeu l’exige, une supervision, et un coût par requête que vous pouvez planifier.' },
         ],
       },
-      cta: { title: 'Un processus vous coûte des heures chaque semaine ?', text: 'Décrivez-le en quelques phrases. Nous vous dirons franchement si l’IA est le bon outil.', button: 'Étudier un cas d’usage IA' },
+      cta: { title: 'Un processus vous coûte des heures chaque semaine ?', text: 'Décrivez-le en quelques phrases. Nous vous dirons franchement si l’IA est le bon outil.', button: 'Parlons de votre projet IA' },
     },
 
     work: {
@@ -269,7 +270,7 @@ export default {
         solution: 'Ce que nous avons construit',
         results: 'Résultats',
         visit: 'Découvrir le produit',
-        discuss: 'Parler d’un projet similaire',
+        discuss: 'Parlons d’un projet similaire',
       },
       cases: [
         {
@@ -417,7 +418,12 @@ export default {
         messageHint: 'Quelques phrases suffisent : le problème, pour qui, et l’échéance éventuelle.',
         submit: 'Demander un appel découverte',
         sending: 'Envoi…',
-        privacy: 'Vos informations servent uniquement à répondre à cette demande. Pour les faire supprimer, écrivez à [seckbara23@gmail.com](mailto:seckbara23@gmail.com).',
+        privacy: 'Vos informations servent uniquement à répondre à cette demande. [Comment nous traitons vos données](/fr/privacy)',
+        confirmTitle: 'Merci.',
+        confirmText: 'Nous avons bien reçu votre demande. Nous nous efforçons de vous répondre sous un jour ouvré.',
+        confirmRef: 'Votre référence',
+        confirmRefHint: 'Indiquez-la si vous nous contactez au sujet de cette demande.',
+        confirmAgain: 'Envoyer une autre demande',
       },
       faq: {
         eyebrow: 'FAQ',
@@ -432,6 +438,27 @@ export default {
           { q: 'Que se passe-t-il après le lancement ?', a: 'Nous pouvons assurer la maintenance, la supervision, les mises à jour et les nouvelles fonctionnalités dans la durée, ou tout transmettre à votre équipe avec documentation et présentation guidée.' },
         ],
       },
+    },
+
+    privacy: {
+      title: 'Confidentialité — vos données | Teranga Technologies',
+      description: 'Ce que le site de Teranga Technologies collecte via le formulaire et la mesure d’audience, pourquoi, qui le traite, combien de temps et comment le faire supprimer.',
+      hero: {
+        eyebrow: 'Confidentialité',
+        title: 'Comment nous traitons vos données',
+        lead: 'Ce que ce site collecte, pourquoi, qui le traite et combien de temps nous le conservons, en termes simples.',
+      },
+      updated: 'Dernière mise à jour : 23 octobre 2026',
+      sections: [
+        { id: 'who', title: 'Qui sommes-nous', paragraphs: ['Teranga Technologies, Ngor Almadies, Dakar, Sénégal. Pour toute question sur vos données, écrivez à [seckbara23@gmail.com](mailto:seckbara23@gmail.com).'] },
+        { id: 'form', title: 'Ce que le formulaire collecte', paragraphs: ['Lorsque vous envoyez une demande : votre nom, votre e-mail professionnel, votre entreprise (facultatif), le service qui vous intéresse, la date de démarrage souhaitée (facultatif) et votre message.', 'La page y joint le contexte de votre visite : la langue de la page, la page d’arrivée et celle où vous avez envoyé le formulaire, les paramètres de campagne du lien suivi (utm_source, utm_medium, utm_campaign, utm_content, utm_term) et le nom du site qui vous a dirigé vers nous, jamais le reste de son adresse.'] },
+        { id: 'use', title: 'Pourquoi nous les utilisons', paragraphs: ['Pour répondre à votre demande et organiser un appel découverte, et pour comprendre, de façon agrégée, quelles pages et quelles campagnes génèrent des demandes. Nous n’envoyons pas d’e-mails marketing depuis ce formulaire et nous ne vendons ni ne louons vos données.'] },
+        { id: 'processors', title: 'Qui les traite', paragraphs: ['Vercel héberge le site et traite votre adresse IP pour afficher les pages et protéger le formulaire contre les abus. Resend envoie la notification de votre demande vers notre boîte de réception, hébergée par Google. Ces prestataires peuvent traiter des données hors du Sénégal.'] },
+        { id: 'analytics', title: 'Mesure d’audience', paragraphs: ['Nous utilisons Vercel Web Analytics pour compter les pages vues. L’outil n’utilise pas de cookies et ne vous identifie pas : il enregistre la page consultée (avec les éventuels paramètres de campagne de son lien), le site d’origine, le pays, le type d’appareil, le système et le navigateur, et les restitue sous forme de statistiques agrégées. Il ne reçoit jamais ce que vous saisissez dans le formulaire.'] },
+        { id: 'storage', title: 'Ce qui est conservé dans votre navigateur', paragraphs: ['Aucun cookie. Votre choix de langue est conservé dans le stockage local. Les paramètres de campagne, la page d’arrivée et, uniquement lors d’un changement de langue, un brouillon de formulaire non envoyé sont conservés dans le stockage de session et disparaissent à la fermeture de l’onglet.'] },
+        { id: 'retention', title: 'Durée de conservation', paragraphs: ['Les demandes sont conservées dans notre boîte de réception et notre suivi interne tant que nous sommes en contact. Notre pratique est de les supprimer au plus tard 12 mois après le dernier échange, sauf si nous travaillons ensemble, et plus tôt si vous le demandez. Les statistiques d’audience sont agrégées et conservées par Vercel pendant une durée limitée.'] },
+        { id: 'rights', title: 'Vos choix et vos droits', paragraphs: ['Vous pouvez demander à consulter, corriger ou supprimer les informations que vous nous avez transmises en écrivant à [seckbara23@gmail.com](mailto:seckbara23@gmail.com). Au Sénégal, vous pouvez également saisir la Commission de Protection des Données Personnelles (CDP).'] },
+      ],
     },
 
     notFound: {

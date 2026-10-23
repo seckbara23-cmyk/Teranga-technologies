@@ -41,6 +41,7 @@ export default {
       reach: 'Contact',
       copy: '© 2026 Teranga Technologies. All rights reserved.',
       made: 'Designed and engineered in Dakar, Senegal.',
+      privacy: 'Privacy',
     },
     demo: {
       product: 'Radiora Medical',
@@ -151,7 +152,7 @@ export default {
           deliver: ['Multi-tenant architecture with secure accounts and roles', 'Subscriptions, billing integration and admin tools', 'A focused first version, then a roadmap'],
           uses: ['An MVP for a funded startup', 'Turning an internal tool into a product', 'Multi-site platforms for clinics, schools or agencies'],
           outcome: 'A product in customers’ hands, on foundations that support the next releases. A focused MVP is typically scoped for 4–8 weeks once the scope is agreed.',
-          cta: 'Discuss a SaaS project',
+          cta: 'Discuss your SaaS project',
         },
         {
           id: 'ai', service: 'ai', name: 'AI integration and automation',
@@ -160,7 +161,7 @@ export default {
           deliver: ['Models connected to your documents, data and tools', 'Structured extraction and drafting with review steps', 'Quality testing, cost controls and audit trails'],
           uses: ['Turning dictation and documents into structured records', 'Drafting replies and reports for your team to review', 'Searching internal knowledge in French and English'],
           outcome: 'Time saved on a specific, measured process, with people keeping the final say.',
-          cta: 'Explore an AI use case',
+          cta: 'Discuss your AI project',
           more: { label: 'How we engineer AI', link: { page: 'ai-engineering' } },
         },
         {
@@ -170,7 +171,7 @@ export default {
           deliver: ['Portals, dashboards and back-office tools', 'Integrations with the systems you already use', 'Payments and messaging such as Wave, Orange Money or WhatsApp'],
           uses: ['Operations dashboards and reporting', 'Client, partner and staff portals', 'Approval and booking workflows'],
           outcome: 'One source of truth, fewer manual steps and real-time visibility for your team.',
-          cta: 'Plan your web application',
+          cta: 'Discuss your web application',
         },
         {
           id: 'mobile-apps', service: 'mobile', name: 'Mobile applications',
@@ -179,7 +180,7 @@ export default {
           deliver: ['iOS and Android apps for customers or field teams', 'Sign-up, payments and notifications', 'The same backend as your web platform'],
           uses: ['Customer apps for bookings, orders and payments', 'Field apps for data collection and reporting', 'A companion app for an existing SaaS'],
           outcome: 'A mobile experience that shares data and rules with the rest of your product.',
-          cta: 'Scope your mobile app',
+          cta: 'Discuss your mobile app',
         },
         {
           id: 'websites', service: 'webdesign', name: 'Website design and development',
@@ -188,7 +189,7 @@ export default {
           deliver: ['Clear positioning and page structure', 'Fast, accessible, bilingual pages', 'A working contact path with lead notifications'],
           uses: ['Company and product websites', 'Landing pages for launches and campaigns', 'Bilingual French/English sites'],
           outcome: 'A credible site that prospects understand quickly and can contact easily.',
-          cta: 'Improve your website',
+          cta: 'Discuss your website',
         },
         {
           id: 'support', service: 'support', name: 'Maintenance and ongoing support',
@@ -254,7 +255,7 @@ export default {
           { title: 'Roll out with oversight', text: 'Human approval where the stakes are high, monitoring, and a cost per request you can plan for.' },
         ],
       },
-      cta: { title: 'Have a process that takes hours every week?', text: 'Describe it in a few sentences. We will tell you honestly whether AI is the right tool.', button: 'Explore an AI use case' },
+      cta: { title: 'Have a process that takes hours every week?', text: 'Describe it in a few sentences. We will tell you honestly whether AI is the right tool.', button: 'Discuss your AI project' },
     },
 
     work: {
@@ -419,7 +420,12 @@ export default {
         messageHint: 'A few sentences is enough: the problem, who it is for, and any deadline.',
         submit: 'Request a discovery call',
         sending: 'Sending…',
-        privacy: 'We use your details only to reply to this request. To have them deleted, email [seckbara23@gmail.com](mailto:seckbara23@gmail.com).',
+        privacy: 'We use your details only to reply to this request. [How we handle your information](/privacy)',
+        confirmTitle: 'Thank you.',
+        confirmText: 'Your project inquiry has been received. We aim to respond within one business day.',
+        confirmRef: 'Your reference',
+        confirmRefHint: 'Quote it if you contact us about this request.',
+        confirmAgain: 'Send another request',
       },
       faq: {
         eyebrow: 'FAQ',
@@ -434,6 +440,27 @@ export default {
           { q: 'What happens after launch?', a: 'We can handle maintenance, monitoring, updates and new features on an ongoing basis, or hand everything over to your team with documentation and a walkthrough.' },
         ],
       },
+    },
+
+    privacy: {
+      title: 'Privacy — how we handle your information | Teranga Technologies',
+      description: 'What the Teranga Technologies website collects through its contact form and analytics, why, who processes it, how long it is kept and how to have it deleted.',
+      hero: {
+        eyebrow: 'Privacy',
+        title: 'How we handle your information',
+        lead: 'What this website collects, why, who processes it and how long it is kept, in plain language.',
+      },
+      updated: 'Last updated: 23 October 2026',
+      sections: [
+        { id: 'who', title: 'Who we are', paragraphs: ['Teranga Technologies, Ngor Almadies, Dakar, Senegal. For any question about your information, email [seckbara23@gmail.com](mailto:seckbara23@gmail.com).'] },
+        { id: 'form', title: 'What the contact form collects', paragraphs: ['When you send a request: your name, work email, company (optional), the service you are interested in, when you would like to start (optional) and your message.', 'With it, the page sends context about how you found us: the language of the page, the page where you arrived and the page where you sent the form, the campaign tags in the link you followed (utm_source, utm_medium, utm_campaign, utm_content, utm_term) and the name of the website that referred you, never the rest of its address.'] },
+        { id: 'use', title: 'Why we use it', paragraphs: ['To reply to your request and arrange a discovery call, and to understand, in aggregate, which pages and campaigns bring inquiries. We do not send marketing emails from this form and we do not sell or rent your information.'] },
+        { id: 'processors', title: 'Who processes it', paragraphs: ['Vercel hosts the website and processes your IP address to deliver pages and to protect the contact form from abuse. Resend sends the notification of your request to our inbox, which is hosted by Google. These providers may process data outside Senegal.'] },
+        { id: 'analytics', title: 'Website analytics', paragraphs: ['We use Vercel Web Analytics to count page views. It does not use cookies and does not identify you: it records the page visited (with any campaign tags in its link), the referring website, the country, and the type of device, operating system and browser, and reports them as aggregated statistics. It never receives what you type in the form.'] },
+        { id: 'storage', title: 'What is stored in your browser', paragraphs: ['No cookies. Your language choice is kept in local storage. The campaign tags, the page where you arrived and, only while you switch language, an unsent form draft are kept in session storage and disappear when you close the tab.'] },
+        { id: 'retention', title: 'How long we keep it', paragraphs: ['Requests are kept in our inbox and private lead tracker while we are in contact. Our practice is to delete them at most 12 months after the last exchange unless we start working together, and sooner if you ask. Analytics are aggregated statistics kept by Vercel for a limited period.'] },
+        { id: 'rights', title: 'Your choices and rights', paragraphs: ['You can ask to see, correct or delete the information you sent us by emailing [seckbara23@gmail.com](mailto:seckbara23@gmail.com). In Senegal you can also contact the Commission de Protection des Données Personnelles (CDP).'] },
+      ],
     },
 
     notFound: {
