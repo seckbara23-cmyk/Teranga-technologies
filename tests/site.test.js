@@ -316,6 +316,18 @@ test('search verification tags are absent until a token is set, then escaped', (
   }
 });
 
+test('portfolio links match the proof register; nothing links to private folders', () => {
+  const register = read('docs/TERANGA-05B-proof-register.md');
+  for (const [key, product] of Object.entries(config.PRODUCTS)) {
+    assert.ok(register.includes(product.url), `proof register covers ${key} (${product.url})`);
+    for (const p of pages.filter((q) => q.page === 'work')) assert.ok(p.html.includes(`href="${product.url}"`), `${p.file} links ${product.url}`);
+  }
+  for (const p of [...pages, { file: '404.html', html: read('404.html') }, { file: 'sitemap.xml', html: read('sitemap.xml') }]) {
+    assert.doesNotMatch(p.html, /(href|src)="\/?(docs|tests|scripts|site|Pictures)\//, p.file);
+    assert.doesNotMatch(p.html, /teranga-tech\.com\/(docs|tests|scripts|site)\//, p.file);
+  }
+});
+
 test('the contact form keeps its API contract and accessible markup in both languages', () => {
   for (const p of pages.filter((q) => q.page === 'contact')) {
     for (const f of ['name', 'email', 'service', 'message']) {
@@ -441,6 +453,9 @@ test('no unapproved promises, fake proof or broken-flow labels are published', (
   for (const p of pages) {
     const t = textOf(p.html);
     assert.doesNotMatch(t, /24 hours|24\s?heures|guarantee|garanti|testimonial|témoignage|certified|certifié|award|world-class|leading|n°\s?1/i, p.file);
+    // Generic or unsupported positioning (TERANGA-05B): no boilerplate superlatives, no "in production" labels
+    // for products whose usage is not documented (docs/TERANGA-05B-proof-register.md).
+    assert.doesNotMatch(t, /innovative solutions|solutions innovantes|cutting-edge|de pointe|best-in-class|state-of-the-art|trusted by|ils nous font confiance|In production\s*:|En production\s*:/i, p.file);
     assert.doesNotMatch(t, /Get a (Free )?Quote|Request Submitted|Book a discovery call|Réserver un appel/i, p.file);
   }
   assert.match(read('site/config.mjs'), /export const BOOKING_URL = '';/);

@@ -763,6 +763,7 @@ p { text-wrap: pretty; }
 }
 .feature-card:hover { border-color: #C3CCDA; box-shadow: var(--shadow-1); }
 .feature-card p:not(.tag) { color: var(--muted); }
+.audience-grid .text-link { margin-top: auto; padding-top: 4px; }
 .tag {
   align-self: flex-start;
   padding: 4px 10px;

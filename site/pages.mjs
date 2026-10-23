@@ -47,6 +47,19 @@ function home(ctx) {
       </div>
     </section>
 
+    <section class="section surface-paper" id="who" aria-labelledby="who-title">
+      <div class="container">
+        ${sectionHeading({ eyebrow: p.audience.eyebrow, title: p.audience.title, intro: p.audience.intro, id: 'who-title' })}
+        <ul class="feature-grid audience-grid">
+          ${p.audience.items.map((it) => html`<li class="feature-card" data-reveal>
+            <h3>${it.title}</h3>
+            <p>${it.text}</p>
+            ${textLink(it.linkLabel, ctx.link(it.link.page, it.link.hash))}
+          </li>`)}
+        </ul>
+      </div>
+    </section>
+
     <section class="section" id="process" aria-labelledby="process-title">
       <div class="container">
         ${sectionHeading({ eyebrow: p.process.eyebrow, title: p.process.title, intro: p.process.intro, id: 'process-title' })}

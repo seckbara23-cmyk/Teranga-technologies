@@ -35,7 +35,7 @@ export default {
       address: 'Ngor Almadies, Dakar, Senegal',
     },
     footer: {
-      tagline: 'Intelligent software for ambitious businesses, engineered in Dakar for clients worldwide.',
+      tagline: 'Custom software and AI engineering for startups, growing companies and established organisations, from Dakar, Senegal.',
       pages: 'Pages',
       services: 'Services',
       reach: 'Contact',
@@ -74,16 +74,16 @@ export default {
 
   pages: {
     home: {
-      title: 'Teranga Technologies — AI-first software engineering | Dakar',
-      description: 'Custom SaaS platforms, practical AI integration and business applications for ambitious companies. Delivered in French or English from Dakar, Senegal.',
-      ogTitle: 'Teranga Technologies — Engineering intelligent software for ambitious businesses',
+      title: 'Teranga Technologies — Custom software & AI engineering in Dakar',
+      description: 'Custom software, SaaS platforms and AI integration for startups, growing SMEs and established organisations. Engineered in Dakar, Senegal, in French or English.',
+      ogTitle: 'Teranga Technologies — Custom software and AI engineering from Dakar',
       hero: {
         eyebrow: 'AI-first software engineering · Dakar, Senegal',
         title: 'Engineering intelligent software for ambitious businesses.',
-        sub: 'We build custom platforms, integrate practical AI, and engineer digital products that help businesses operate smarter and grow.',
+        sub: 'We design and build custom software, SaaS platforms and AI-powered workflows, with the engineering discipline that keeps them secure, maintainable and reliable after launch.',
         primary: 'Discuss your project',
         secondary: 'Explore our work',
-        note: 'For startups, growing SMEs and enterprise teams, in French or English.',
+        note: 'For funded startups, growing SMEs, established organisations and international teams, in French or English.',
         caption: 'Radiora Medical, a product we built: dictation becomes a structured draft that only the radiologist can sign. Illustrative example, not patient data.',
       },
       capabilities: {
@@ -119,6 +119,17 @@ export default {
         ],
         more: 'About Teranga',
       },
+      audience: {
+        eyebrow: 'Who we work with',
+        title: 'An engineering partner for four kinds of teams',
+        intro: 'Different stages, the same standard: a written scope, regular demos and software your team can maintain.',
+        items: [
+          { title: 'Funded startups', text: 'You need an MVP that real customers can use, on foundations that will carry the next features instead of forcing a rewrite.', link: { page: 'services', hash: 'saas' }, linkLabel: 'SaaS development' },
+          { title: 'Growing SMEs', text: 'Your operations have outgrown spreadsheets and email. We replace manual steps with one reliable system and automate the repetitive work.', link: { page: 'services', hash: 'web-applications' }, linkLabel: 'Custom web applications' },
+          { title: 'Established organisations', text: 'You want to modernise a workflow or bring AI into it without putting existing systems or data at risk. We start with one process and prove it on real cases.', link: { page: 'ai-engineering' }, linkLabel: 'AI integration and automation' },
+          { title: 'International companies', text: 'You are looking for a dependable engineering partner in Senegal or West Africa: French and English, UTC+0 hours, written scopes and regular demos.', link: { page: 'about' }, linkLabel: 'How we work with clients' },
+        ],
+      },
       process: {
         eyebrow: 'How we work',
         title: 'From first call to a product in use',
@@ -135,12 +146,12 @@ export default {
     },
 
     services: {
-      title: 'Services — SaaS, AI, web and mobile development | Teranga',
-      description: 'SaaS development, AI integration, custom web and mobile applications, websites and ongoing support, each scoped around the business problem to solve.',
+      title: 'Software development services — SaaS, AI, web & mobile | Teranga',
+      description: 'Custom software development from Dakar: SaaS products, AI integration and automation, web and mobile applications, websites and ongoing support.',
       hero: {
         eyebrow: 'Services',
         title: 'Software services built around business outcomes',
-        lead: 'Six ways we work with startups, growing SMEs and enterprise teams. Each starts from the problem, not the technology.',
+        lead: 'Custom software development for startups, growing SMEs and established organisations: six ways to work with us, each starting from the problem, not the technology.',
       },
       jump: 'Jump to a service',
       labels: { problem: 'The problem', deliver: 'What we deliver', uses: 'Typical uses', outcome: 'The outcome' },
@@ -159,7 +170,7 @@ export default {
           headline: 'Put AI to work inside your real workflows.',
           problem: 'Teams lose hours to repetitive reading, typing and sorting, and generic AI tools do not fit their data, language or approval rules.',
           deliver: ['Models connected to your documents, data and tools', 'Structured extraction and drafting with review steps', 'Quality testing, cost controls and audit trails'],
-          uses: ['Turning dictation and documents into structured records', 'Drafting replies and reports for your team to review', 'Searching internal knowledge in French and English'],
+          uses: ['Turning dictation and documents into structured records', 'Drafting replies and reports for your team to review', 'Searching internal knowledge in French and English', 'Automating repetitive back-office steps, with a review where it matters'],
           outcome: 'Time saved on a specific, measured process, with people keeping the final say.',
           cta: 'Discuss your AI project',
           more: { label: 'How we engineer AI', link: { page: 'ai-engineering' } },
@@ -169,7 +180,7 @@ export default {
           headline: 'Replace spreadsheets and manual steps with one reliable system.',
           problem: 'Operations run on spreadsheets, email threads and re-typing, so nobody has a reliable, current picture.',
           deliver: ['Portals, dashboards and back-office tools', 'Integrations with the systems you already use', 'Payments and messaging such as Wave, Orange Money or WhatsApp'],
-          uses: ['Operations dashboards and reporting', 'Client, partner and staff portals', 'Approval and booking workflows'],
+          uses: ['Operations dashboards and reporting', 'Client, partner and staff portals', 'Approval and booking workflows', 'Modernising a legacy system one workflow at a time'],
           outcome: 'One source of truth, fewer manual steps and real-time visibility for your team.',
           cta: 'Discuss your web application',
         },
@@ -205,18 +216,18 @@ export default {
     },
 
     'ai-engineering': {
-      title: 'AI Engineering — practical AI for real workflows | Teranga',
-      description: 'How we integrate AI into business workflows: document processing, AI-assisted reporting, human approval, evaluation, data protection and cost control.',
+      title: 'AI integration and process automation for businesses | Teranga',
+      description: 'AI integrated into real business workflows: document processing, assisted reporting and process automation, with human approval, evaluation and cost control.',
       hero: {
         eyebrow: 'AI Engineering',
         title: 'Practical AI, engineered for real workflows',
         lead: 'We treat AI as a component to design, test and monitor, not a demo. Where it saves time or improves decisions, we build it in. Where a simpler solution works better, we say so.',
       },
-      tags: { shipped: 'In production: Radiora Medical', both: 'In production: Radiora Medical and EduSen', offered: 'Service we build', method: 'How we work' },
+      tags: { shipped: 'Live in Radiora Medical', both: 'Built into Radiora Medical and EduSen', offered: 'Service we build', method: 'How we work' },
       capabilities: {
         eyebrow: 'What we build',
         title: 'AI capabilities for your business',
-        intro: 'Services we design and build for clients. Where a capability already runs in one of our own products, it says so.',
+        intro: 'Services we design and build for clients. Where a capability already runs in a product we built, the label says so.',
         items: [
           { title: 'AI workflow integration', text: 'Language models connected to the tools your team already uses, at the step where they save the most time.', tag: 'offered' },
           { title: 'Document processing and structured extraction', text: 'PDFs, scans, forms and dictation turned into structured, validated data your systems can use.', tag: 'offered' },
@@ -259,8 +270,8 @@ export default {
     },
 
     work: {
-      title: 'Our Work — Radiora Medical, EduSen and more | Teranga',
-      description: 'Case studies of products we designed and built: Radiora Medical, AI-assisted radiology reporting, and EduSen, school management SaaS for Senegal.',
+      title: 'Our work — software and AI case studies | Teranga Technologies',
+      description: 'Case studies of software we designed and built: Radiora Medical, AI-assisted radiology reporting, and EduSen, school management SaaS for Senegal.',
       hero: {
         eyebrow: 'Our work',
         title: 'Products we designed and built',
@@ -270,7 +281,7 @@ export default {
         context: 'Context',
         problem: 'The problem',
         solution: 'What we built',
-        results: 'Results',
+        results: 'Status and results',
         visit: 'Visit the product',
         discuss: 'Discuss a similar project',
       },
@@ -296,7 +307,7 @@ export default {
           ],
           safeguardTitle: 'Human oversight',
           safeguard: 'The AI never diagnoses and never signs. The radiologist reviews, edits, validates and signs every report.',
-          results: 'Quantitative outcomes are not yet published. We share current figures on a discovery call.',
+          results: 'A live product with a public 30-day free trial. Quantitative outcomes are not yet published; we share current figures on a discovery call.',
         },
         {
           key: 'edusen', id: 'edusen', service: 'saas',
@@ -335,7 +346,7 @@ export default {
     },
 
     about: {
-      title: 'About Teranga Technologies — engineering partner in Dakar',
+      title: 'About Teranga Technologies — software engineering partner in Dakar',
       description: 'A software engineering company in Dakar, Senegal, building SaaS, AI and web products in French and English for clients in Africa and beyond.',
       hero: {
         eyebrow: 'About',
