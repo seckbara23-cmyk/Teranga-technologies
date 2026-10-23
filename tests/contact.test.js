@@ -117,11 +117,48 @@ test('flattens line breaks in single-line fields and bounds lengths', () => {
 test('keeps only allow-listed, bounded source attribution', () => {
   const v = contact.validate({
     ...VALID,
-    source: { utm_source: 'linkedin', utm_medium: 'social\r\nX', utm_campaign: 'q'.repeat(300), referrer: 'www.google.com', email: 'leak@example.com' },
+    page: '/contact',
+    source: {
+      utm_source: 'linkedin', utm_medium: 'social\r\nX', utm_campaign: 'q'.repeat(300), utm_content: 'banner-a', utm_term: 'saas dakar',
+      referrer: 'www.google.com', entry: '/fr/services', email: 'leak@example.com', name: 'Awa',
+    },
   });
   assert.equal(v.ok, true);
-  assert.match(v.data.source, /^utm_source=linkedin · utm_medium=social X · utm_campaign=q{100} · referrer=www\.google\.com$/);
-  assert.doesNotMatch(v.data.source, /leak/);
+  assert.deepEqual(v.data.attribution, {
+    utm_source: 'linkedin', utm_medium: 'social X', utm_campaign: 'q'.repeat(150), utm_content: 'banner-a', utm_term: 'saas dakar',
+    referrer: 'www.google.com', entry: '/fr/services', page: '/contact', channel: 'campaign',
+  });
+  assert.doesNotMatch(JSON.stringify(v.data.attribution), /leak|Awa/);
+});
+
+test('attribution is untrusted: markup, URLs, paths and non-objects are reduced or dropped', () => {
+  const a = (source, page) => contact.validate({ ...VALID, source, page }).data.attribution;
+  // Markup and quotes are stripped from tags; the result can never be HTML.
+  assert.equal(a({ utm_source: '<script>alert(1)</script>"x\'`' }).utm_source, 'scriptalert(1)/scriptx');
+  // A full referrer URL is reduced to its host: no path, query or token is kept.
+  assert.equal(a({ referrer: 'https://www.linkedin.com/feed/?token=secret#x' }).referrer, 'www.linkedin.com');
+  for (const bad of ['javascript:alert(1)', 'not a host', 'localhost', '127.0.0.1', '-x.com', 'a..b.com', 'x'.repeat(300) + '.com']) {
+    assert.equal(a({ referrer: bad }).referrer, undefined, bad);
+  }
+  // The site itself is not a referral.
+  assert.equal(a({ referrer: 'teranga-tech.com' }).referrer, undefined);
+  assert.equal(a({ referrer: 'www.teranga-tech.com' }).channel, 'direct');
+  // Pages keep the path only, lower-case, from the site's own character set.
+  assert.equal(a({}, '/contact?email=awa@example.com#form').page, '/contact');
+  for (const bad of ['https://evil.test/contact', '//evil.test', '/a b', '/<x>', 'contact', '/' + 'a'.repeat(90)]) {
+    assert.equal(a({ entry: bad }).entry, undefined, bad);
+  }
+  // Wrong types fall back to "direct" without failing the request.
+  for (const source of [null, 'utm_source=x', ['x'], 42]) assert.deepEqual(a(source), { channel: 'direct' });
+  assert.equal(a({ utm_source: { nested: 'x' } }).utm_source, undefined);
+});
+
+test('the channel is decided by the server: campaign, then referral, then direct', () => {
+  const ch = (source) => contact.validate({ ...VALID, source }).data.attribution.channel;
+  assert.equal(ch({ utm_medium: 'email', referrer: 'mail.google.com' }), 'campaign');
+  assert.equal(ch({ referrer: 'www.google.com' }), 'referral');
+  assert.equal(ch({ entry: '/' }), 'direct');
+  assert.equal(ch({ channel: 'campaign' }), 'direct', 'a channel sent by the browser is ignored');
 });
 
 test('lead references are dated and short', () => {
@@ -131,24 +168,55 @@ test('lead references are dated and short', () => {
 // ── Notification content ─────────────────────────────────────
 
 test('notification escapes visitor HTML and has a readable plain-text part', () => {
-  const v = contact.validate({ ...VALID, name: '<img src=x onerror=alert(1)>', company: '"><script>alert(1)</script>', message: 'Hello <b>team</b> & <a href="javascript:x">click</a>', source: { utm_source: 'newsletter' } });
+  const v = contact.validate({ ...VALID, name: '<img src=x onerror=alert(1)>', company: '"><script>alert(1)</script>', message: 'Hello <b>team</b> & <a href="javascript:x">click</a>', page: '/contact', source: { utm_source: 'newsletter', utm_medium: 'email', referrer: 'mail.google.com', entry: '/fr/services' } });
   const mail = contact.buildEmail(v.data, { ref: 'TT-20261022-ABCD', received: new Date('2026-10-22T09:05:00Z') });
   assert.doesNotMatch(mail.html, /<script>|<img |<b>|<a href="javascript/);
   assert.match(mail.html, /&lt;script&gt;/);
   assert.match(mail.html, /&lt;img src=x onerror=alert\(1\)&gt;/);
   assert.match(mail.subject, /^New Teranga Technologies Inquiry — SaaS development — .* · TT-20261022-ABCD$/);
   assert.doesNotMatch(mail.subject, /[\r\n]/);
-  for (const line of ['Inquiry type: Discovery call request', 'Reference: TT-20261022-ABCD', 'Submitted: 2026-10-22 09:05 UTC', 'Submitted from: Website discovery-call form — teranga-tech.com', 'Service: SaaS development', 'Timeline: Within 1–3 months', 'Language: English', 'Source: utm_source=newsletter', 'Hello <b>team</b> & <a href="javascript:x">click</a>']) {
+  for (const line of ['Inquiry type: Discovery call request', 'Reference: TT-20261022-ABCD', 'Submitted: 2026-10-22 09:05 UTC', 'Submitted from: Website discovery-call form — teranga-tech.com', 'Service: SaaS development', 'Timeline: Within 1–3 months', 'Language: English', 'Hello <b>team</b> & <a href="javascript:x">click</a>',
+    "Attribution (as reported by the visitor's browser):", 'Channel: Campaign (UTM tags)', 'Source: newsletter', 'Medium: email', 'Referrer: mail.google.com', 'Entry page: /fr/services', 'Conversion page: /contact']) {
     assert.ok(mail.text.includes(line), line);
   }
+  assert.match(mail.html, /Attribution/);
+  assert.match(mail.html, /Campaign \(UTM tags\)/);
 });
 
 test('fields that were not supplied are left out, never invented', () => {
   const v = contact.validate({ name: 'Awa Ndiaye', email: 'awa@example.com', service: 'other', message: 'Just exploring options for now.' });
   const mail = contact.buildEmail(v.data, { ref: 'TT-20261022-ABCD', received: new Date() });
-  assert.doesNotMatch(mail.text, /Company:|Phone:|Timeline:|Budget|Subject:/);
-  assert.ok(mail.text.includes('Source: Direct or unknown'));
+  assert.doesNotMatch(mail.text, /Company:|Phone:|Timeline:|Budget|Subject:|Source:|Medium:|Campaign:|Referrer:|Entry page:|Conversion page:/);
+  assert.ok(mail.text.includes('Channel: Direct or unknown'));
   assert.match(mail.subject, /— Not sure yet — Awa Ndiaye ·/);
+});
+
+test('the notification carries a lead tracker row in the documented column order', () => {
+  const v = contact.validate({ ...VALID, lang: 'fr', page: '/fr/contact', source: { referrer: 'www.google.com', entry: '/fr' } });
+  const mail = contact.buildEmail(v.data, { ref: 'TT-20261022-ABCD', received: new Date('2026-10-22T09:05:00Z') });
+  const row = mail.text.split('\n').find((l) => l.startsWith('TT-20261022-ABCD\t'));
+  assert.ok(row, 'tracker row in the text part');
+  const cells = row.split('\t');
+  assert.equal(cells.length, contact.TRACKER_COLUMNS.length);
+  assert.deepEqual(Object.fromEntries(contact.TRACKER_COLUMNS.map((c, i) => [c, cells[i]])), {
+    'Reference': 'TT-20261022-ABCD', 'Submitted (UTC)': '2026-10-22 09:05 UTC', 'Company': 'Acme SA', 'Service': 'SaaS development',
+    'Language': 'FR', 'Channel': 'referral', 'Source': 'www.google.com', 'Medium': '', 'Campaign': '', 'Entry page': '/fr', 'Status': 'NEW',
+  });
+  assert.ok(mail.text.includes(contact.TRACKER_COLUMNS.join(' · ')), 'header names the columns');
+  assert.match(mail.html, /<pre[^>]*>TT-20261022-ABCD\t/);
+  // No email address, name or message text in the row: it is safe to paste into a shared sheet.
+  assert.doesNotMatch(row, /@|Awa|booking/);
+});
+
+test('tracker cells cannot break the row or run as spreadsheet formulas', () => {
+  const { tsvCell } = contact._test;
+  assert.equal(tsvCell('=HYPERLINK("http://evil.test","x")'), '\'=HYPERLINK("http://evil.test","x")');
+  for (const s of ['+1', '-1', '@SUM(A1)']) assert.equal(tsvCell(s), `'${s}`);
+  assert.equal(tsvCell('a\tb\r\nc'), 'a b c');
+  assert.equal(tsvCell(undefined), '');
+  const v = contact.validate({ ...VALID, company: '=cmd|"/c calc"!A1' });
+  const row = contact.buildEmail(v.data, { ref: 'TT-20261022-ABCD', received: new Date() }).text.split('\n').find((l) => l.startsWith('TT-'));
+  assert.equal(row.split('\t')[2], '\'=cmd|"/c calc"!A1');
 });
 
 test('contact-form notifications are labelled differently from discovery requests', () => {
@@ -207,8 +275,12 @@ test('a lead accepted by Resend returns 200 with the expected message', async ()
     const r = await contact.handleSubmission(unique({ name: 'Awa "Boss" Ndiaye\r\nBcc: x@evil.test', source: { utm_source: 'linkedin' } }), ENV, deps(client));
     assert.equal(r.status, 200);
     assert.equal(r.body.message, 'Request sent.');
+    // The reference shown to the visitor is the one in the notification subject.
+    assert.match(r.body.ref, /^TT-\d{8}-[0-9A-F]{4}$/);
+    assert.deepEqual(Object.keys(r.body).sort(), ['message', 'ref']);
     assert.equal(client.calls.length, 1);
     const { payload, options } = client.calls[0];
+    assert.ok(payload.subject.endsWith(` · ${r.body.ref}`));
     assert.equal(payload.from, 'Teranga Technologies <notifications@teranga-tech.com>');
     assert.deepEqual(payload.to, ['owner@example.com']);
     assert.equal(payload.replyTo, 'awa@example.com');
@@ -232,7 +304,7 @@ test('legacy service labels are sent as valid Resend tags', async () => {
     const r = await contact.handleSubmission({ name: 'Moussa Diop', email: 'moussa@example.com', service: 'Maintenance & Support', message: 'Our site is down since Monday.' }, ENV, deps(client));
     assert.equal(r.status, 200);
     const tags = Object.fromEntries(client.calls[0].payload.tags.map((t) => [t.name, t.value]));
-    assert.deepEqual(tags, { inquiry_type: 'contact', service: 'Maintenance___Support', lang: 'en' });
+    assert.deepEqual(tags, { inquiry_type: 'contact', service: 'Maintenance___Support', lang: 'en', channel: 'direct' });
   });
 });
 
@@ -293,6 +365,7 @@ test('the same request sent twice is delivered once', async () => {
     assert.equal(first.status, 200);
     assert.equal(second.status, 200);
     assert.equal(second.body.message, 'Request already received.');
+    assert.equal(second.body.ref, first.body.ref, 'the visitor sees the reference of the lead already sent');
     assert.equal(client.calls.length, 1);
     assert.match(lines.join('\n'), /Duplicate lead not resent/);
   });

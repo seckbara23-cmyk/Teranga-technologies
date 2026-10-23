@@ -8,10 +8,16 @@ const WINDOW_MS = 10 * 60 * 1000;
 const MAX_PER_WINDOW = Number(process.env.CONTACT_RATE_LIMIT) || 5;
 const hits = new Map();
 
+// A discovery request is a few kilobytes; anything far larger is refused before it is parsed.
+const MAX_BODY_BYTES = 32 * 1024;
+
+// Vercel sets x-vercel-forwarded-for and x-real-ip itself (a client cannot supply them), so they come
+// first; x-forwarded-for is only a fallback for other hosts.
 function clientIp(req) {
   const h = req.headers || {};
-  const fwd = String(h['x-forwarded-for'] || '').split(',')[0].trim();
-  return fwd || String(h['x-real-ip'] || '') || (req.socket && req.socket.remoteAddress) || 'unknown';
+  const first = (v) => String(v || '').split(',')[0].trim();
+  return first(h['x-vercel-forwarded-for']) || first(h['x-real-ip']) || first(h['x-forwarded-for'])
+    || (req.socket && req.socket.remoteAddress) || 'unknown';
 }
 
 function limited(ip, now = Date.now()) {
@@ -51,9 +57,13 @@ module.exports = async (req, res) => {
     return res.status(429).json({ message: 'Too many requests. Please try again later.' });
   }
 
+  const declared = Number((req.headers || {})['content-length']);
+  if (declared > MAX_BODY_BYTES) return res.status(413).json({ message: 'Request too large.' });
+
   let body = req.body;
   if (typeof body === 'string') {
-    try { body = JSON.parse(body); } catch (e) { return res.status(400).json({ message: 'Invalid JSON.' }); }
+    if (Buffer.byteLength(body) > MAX_BODY_BYTES) return res.status(413).json({ message: 'Request too large.' });
+    try { body = JSON.parse(body); } catch { return res.status(400).json({ message: 'Invalid JSON.' }); }
   }
 
   const result = await handleSubmission(body);
