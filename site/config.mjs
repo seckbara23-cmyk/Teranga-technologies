@@ -7,16 +7,18 @@ export const SITE_URL = 'https://teranga-tech.com';
 // the header and hero CTAs then link to it directly.
 export const BOOKING_URL = '';
 
-// Measurement (docs/TERANGA-05A-architecture.md).
+// Measurement (docs/TERANGA-05A-architecture.md, docs/TERANGA-05A-analytics-activation.md).
 // - webAnalytics: adds the Vercel Web Analytics script (cookieless page views) to every page.
-//   Enable Web Analytics for the project in the Vercel dashboard before deploying with this on,
-//   otherwise /_vercel/insights/script.js answers 404.
-// - customEvents: also forward the conversion events to Vercel. Custom events need a Pro plan
-//   (2 properties per event; 8 with Web Analytics Plus). When off, events stay in the page
+//   Vercel serves /_vercel/insights/* only on deployments created after Web Analytics was enabled
+//   for the project (2026-10-23 19:33 UTC); an older deployment answers 404 for the script.
+//   Check a deployment with: node scripts/check-analytics.mjs <url>
+// - customEvents: also forward the conversion events to Vercel. The team is on Pro (checked
+//   2026-10-23): custom events are available with 2 properties per event (8 with Web Analytics
+//   Plus), and each page view or event is billed as usage. When off, events stay in the page
 //   (window.TT.events and the "tt:analytics" DOM event) for verification only.
 export const ANALYTICS = {
   webAnalytics: true,
-  customEvents: false,
+  customEvents: true,
   maxEventProperties: 2,
 };
 

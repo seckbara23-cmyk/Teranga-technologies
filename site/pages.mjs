@@ -294,8 +294,11 @@ function contact(ctx) {
 
 function privacy(ctx) {
   const p = ctx.c.pages.privacy;
-  // The analytics section describes the Vercel Web Analytics script, so it is published only with it.
-  const sections = p.sections.filter((s) => s.id !== 'analytics' || ANALYTICS.webAnalytics);
+  // The analytics section describes the Vercel Web Analytics script, so it is published only with it,
+  // and says that actions are recorded only while conversion events are sent to Vercel.
+  const sections = p.sections
+    .filter((s) => s.id !== 'analytics' || ANALYTICS.webAnalytics)
+    .map((s) => (s.events && ANALYTICS.customEvents ? { ...s, paragraphs: [...s.paragraphs, s.events] } : s));
   const body = html`
     ${pageHero(ctx, p.hero)}
 

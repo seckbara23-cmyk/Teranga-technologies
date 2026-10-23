@@ -121,6 +121,19 @@ test('the privacy page describes what is actually collected, stored and processe
     assert.match(t, lang === 'fr' ? /12\smois/ : /12 months/); // \s: French typography uses a non-breaking space
     // The analytics section is published exactly when the analytics script is.
     assert.equal(/id="analytics"/.test(p.html), config.ANALYTICS.webAnalytics, p.file);
+    // Recorded actions are disclosed exactly when conversion events are sent to Vercel.
+    const events = (lang === 'fr' ? fr : en).pages.privacy.sections.find((s) => s.id === 'analytics').events;
+    assert.ok(typeof events === 'string' && events.length > 40, 'events disclosure written');
+    assert.equal(/(also records a few actions|enregistre aussi quelques actions)/.test(t), config.ANALYTICS.webAnalytics && config.ANALYTICS.customEvents, `${p.file} events disclosure`);
+  }
+});
+
+test('custom events are sent with no more properties than the Pro plan records', () => {
+  // Vercel Pro records 2 properties per custom event (8 with Web Analytics Plus).
+  assert.ok([2, 8].includes(config.ANALYTICS.maxEventProperties), `maxEventProperties ${config.ANALYTICS.maxEventProperties}`);
+  for (const p of pages) {
+    const v = attr(p.html, /<body\b[^>]*\bdata-va-events="(\d+)"/);
+    assert.equal(v, config.ANALYTICS.customEvents ? String(config.ANALYTICS.maxEventProperties) : undefined, p.file);
   }
 });
 
