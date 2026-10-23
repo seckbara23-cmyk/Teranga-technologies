@@ -19,7 +19,7 @@ Marketing site for Teranga Technologies (teranga-tech.com): six pages in English
 
 ```
 ├── site/                 # Page generator (not deployed)
-│   ├── build.mjs         # npm run build → *.html, fr/*.html, 404.html, sitemap.xml
+│   ├── build.mjs         # npm run generate → *.html, fr/*.html, 404.html, sitemap.xml
 │   ├── content/en.mjs    # All English copy
 │   ├── content/fr.mjs    # All French copy (same structure, checked by tests)
 │   ├── components.mjs    # Header, footer, hero, cards, timeline, CTA, contact form …
@@ -52,7 +52,7 @@ Marketing site for Teranga Technologies (teranga-tech.com): six pages in English
 ```bash
 npm install
 cp .env.example .env      # fill in the Resend settings
-npm run build             # regenerate the pages after editing site/, style.css or main.js
+npm run generate             # regenerate the pages after editing site/, style.css or main.js
 npm start                 # http://localhost:3000
 ```
 
@@ -72,7 +72,7 @@ Delivery: the API returns success only after Resend accepts the message (an emai
 
 ## Editing content
 
-- Text lives in `site/content/en.mjs` and `site/content/fr.mjs`; layout and components in `site/`. Run `npm run build` and commit the regenerated HTML. `npm test` fails if the committed pages differ from the generator output, or if the two languages drift apart in structure.
+- Text lives in `site/content/en.mjs` and `site/content/fr.mjs`; layout and components in `site/`. Run `npm run generate` and commit the regenerated HTML. `npm test` fails if the committed pages differ from the generator output, or if the two languages drift apart in structure.
 - Write French with ordinary spaces: the build adds non-breaking spaces before ? ! : ; and inside « ».
 - Internal links are written as `{ page, hash }` and resolved per language (`/services#saas`, `/fr/services#saas`).
 - The CSS and JS URLs carry a content hash (`?v=…`) computed by the build, so returning visitors always get the current files.
@@ -99,7 +99,7 @@ Every lead email carries a reference (`TT-YYYYMMDD-XXXX`, also in the subject an
 
 ```bash
 npm test     # node --check on the scripts + node:test suite in tests/ (no extra dependencies),
-             # including a check that the committed pages match `npm run build`
+             # including a check that the committed pages match `npm run generate`
 ```
 
 GitHub Actions (`.github/workflows/ci.yml`) runs `npm ci`, `npm test` and `npm audit --omit=dev --audit-level=high` on every push.

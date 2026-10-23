@@ -40,7 +40,7 @@ function shape(v) {
   return typeof v;
 }
 
-test('committed pages match the generator output (run npm run build)', () => {
+test('committed pages match the generator output (run npm run generate)', () => {
   const stale = [];
   for (const [file, content] of build.renderSite()) {
     if (!fs.existsSync(path.join(root, file)) || read(file) !== content) stale.push(file);
@@ -277,4 +277,9 @@ test('deployment serves clean URLs and keeps internal and source files private',
   assert.ok(v.redirects.some((r) => r.source === '/' && r.destination === '/fr' && r.has[0].key === 'lang' && r.has[0].value === 'fr'));
   const ignored = read('.vercelignore').split('\n').map((l) => l.trim());
   for (const p of ['docs/', 'Pictures/', 'server.js', 'tests/', '.github/', 'site/']) assert.ok(ignored.includes(p), p);
+  // Vercel runs a "build" (or "vercel-build") script automatically; the generator source is not
+  // uploaded, so such a script would fail the deployment. The committed HTML is what gets served.
+  const scripts = JSON.parse(read('package.json')).scripts;
+  assert.equal(scripts.build, undefined);
+  assert.equal(scripts['vercel-build'], undefined);
 });

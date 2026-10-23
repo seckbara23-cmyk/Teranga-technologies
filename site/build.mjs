@@ -1,10 +1,12 @@
 // Static site generator: renders every page in English and French from site/content/*.mjs
 // into plain HTML at the repository root (/, /services …) and under /fr. No dependencies.
 //
-//   npm run build      write the pages, 404.html and sitemap.xml
+//   npm run generate      write the pages, 404.html and sitemap.xml
 //
 // The generated files are committed: Vercel serves them as they are (no build step), and
 // tests/site.test.js fails if they differ from what this script would produce.
+// The npm script is deliberately not called "build": Vercel runs a "build" script automatically,
+// and this source folder is not uploaded (.vercelignore).
 
 import fs from 'node:fs';
 import path from 'node:path';
