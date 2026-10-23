@@ -8,8 +8,12 @@ Audience: the owner, before approving the merge. About 25 minutes on the preview
 - [ ] Home hero: the line under the headline and the note below the buttons read naturally to you in both languages.
 - [ ] Footer tagline (every page) is acceptable in both languages.
 - [ ] Services: each section heading shows the service name above the headline, as before. Two new typical uses: "Modernising a legacy system…" (Web applications) and "Automating repetitive back-office steps…" (AI).
-- [ ] AI Engineering: labels now read "Live in Radiora Medical" / "Built into Radiora Medical and EduSen". Correct?
+- [ ] AI Engineering: labels now read "Live in Radiora Medical" / "Built into Radiora Medical and ScolaTech". Correct?
 - [ ] Work: "Status and results"; Radiora's status mentions the public 30-day free trial. Correct?
+- [ ] **ScolaTech (formerly EduSen) / ScolaTech (anciennement EduSen)** (decision D1): home card and Work case study show the new name and a current ScolaTech screenshot; "Visit the product" opens https://scolatech.app.
+- [ ] **XP Client Academy** (decision D2): the Work card reads "Designed and built for XP Client Consulting: …" / "Conçue et développée pour XP Client Consulting : …". No other claim was added.
+- [ ] **Timelines** (decision D3): Services → SaaS and the FAQ "How long does an MVP take?" now say timelines depend on scope, integrations, complexity and readiness, set during discovery. No week count anywhere.
+- [ ] Services → Mobile now reads "Installable mobile apps (PWA) … on iOS and Android" (there was no public evidence of native app work). If you have delivered native apps, say so and the wording can be restored: ______________
 
 ## B. Search results appearance
 
@@ -20,13 +24,16 @@ Titles and descriptions as they may appear in Google (Google can rewrite them):
 
 ## C. Proof register decisions (`docs/TERANGA-05B-proof-register.md`)
 
-- [ ] **EduSen / ScolaTech:** rename, relink or explain (brand credibility §2): ______________
-- [ ] Relationship for each product: Radiora (own product or client?), EduSen, SunuPermis, CHMS: ______________
-- [ ] Permission to name XP Client Academy (a client) and show its screenshot: ______________
-- [ ] "MVP typically 4–8 weeks": keep / change / remove: ______________
+Decided on 2026-10-23 (recorded in proof register §0): ✅ D1 ScolaTech (formerly EduSen), lineage verified · ✅ D2 XP Client Academy permission · ✅ D3 no fixed MVP timeline.
+
+Still open:
+- [ ] Radiora Medical: your own brand or a separate company's? Marketing permission: ______________
+- [ ] SunuPermis and Clinic Management System: ownership and permission to name them: ______________
 - [ ] Code ownership wording matches your contract: yes / no
-- [ ] Wave / Orange Money / WhatsApp integrations and native iOS/Android apps: delivered before? (keep or reword): ______________
+- [ ] Wave / Orange Money / WhatsApp: built in ScolaTech. Used live with real transactions? (keep the capability wording, or claim live use): ______________
+- [ ] Native iOS/Android delivered before? (see §A): ______________
 - [ ] Office line "Ngor Almadies, Dakar" is current and should stay public: yes / no
+- [ ] Optional: add a "Designed by Teranga Technologies" credit on scolatech.app
 
 ## D. Technical (preview)
 

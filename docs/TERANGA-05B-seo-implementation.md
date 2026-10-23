@@ -62,7 +62,12 @@ On the preview, the graph was also checked for syntax and required properties (r
 - Services: `<h2><span class="eyebrow">SaaS development</span><span class="sr-only">. </span>Launch a SaaS product…</h2>`. The page looks the same, but the heading now names the service, for screen-reader navigation and for search.
 - Home: new "Who we work with" section (`#who`). Four audience cards (funded startups, growing SMEs, established organisations, international companies), each linking to the relevant service or page. They state needs, not clients.
 - Hero sub-line, hero note and footer tagline rewritten to remove generic phrasing. The H1 is unchanged.
-- AI Engineering labels: "Live in Radiora Medical" and "Built into Radiora Medical and EduSen" replace "In production: …" (proof register §5).
+- AI Engineering labels: "Live in Radiora Medical" and "Built into Radiora Medical and ScolaTech" replace "In production: …" (proof register §5).
+- Owner decisions D1–D3 (proof register §0):
+  - "ScolaTech (formerly EduSen)" / "ScolaTech (anciennement EduSen)", linked to https://scolatech.app with a current screenshot. The internal key and the `/work#edusen` anchor are unchanged, so existing links keep working.
+  - XP Client Academy attributed to XP Client Consulting.
+  - No fixed MVP duration.
+- Work description now names ScolaTech (formerly EduSen): EN 150 characters, FR 161.
 - Work: "Status and results" label; Radiora's status states the verified public 30-day trial.
 
 Tests:
