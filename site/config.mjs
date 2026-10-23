@@ -44,7 +44,8 @@ export const CONTACT = {
 
 export const PRODUCTS = {
   radiora:  { url: 'https://radiora.vercel.app', image: 'radiora-medical', width: 436, height: 282, webp: true },
-  edusen:   { url: 'https://senegal-school-management-system.vercel.app', image: 'edusen', width: 436, height: 269, webp: true },
+  // ScolaTech, formerly EduSen (renamed 2026-06-09; key kept so /work#edusen links and analytics values stay stable)
+  edusen:   { url: 'https://scolatech.app', image: 'scolatech', width: 872, height: 538, webp: true },
   xp:       { url: 'https://www.xpclient-academy.com', image: 'xp-client-academy', width: 445, height: 295, webp: false },
   sunu:     { url: 'https://sunu-permis.vercel.app', image: 'sunupermis', width: 439, height: 279, webp: false },
   clinic:   { url: 'https://clinic-health-management-system.vercel.app', image: 'clinic-management-system', width: 446, height: 272, webp: false },

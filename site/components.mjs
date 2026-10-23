@@ -92,7 +92,7 @@ export function demoWindow(ctx) {
     </div>`;
 }
 
-/** HeroSection for the home page: copy + composition of the Radiora flow and a real EduSen screenshot. */
+/** HeroSection for the home page: copy + composition of the Radiora flow and a real ScolaTech screenshot. */
 export function homeHero(ctx) {
   const h = ctx.c.pages.home.hero;
   return html`<section class="hero" aria-labelledby="hero-title">

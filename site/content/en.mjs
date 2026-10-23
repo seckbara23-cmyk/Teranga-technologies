@@ -59,7 +59,7 @@ export default {
     },
     shotAlt: {
       radiora: 'Radiora Medical home page: AI-assisted radiology reports for clinics',
-      edusen: 'EduSen home page: modern school management for Senegalese schools',
+      edusen: 'ScolaTech home page: school management platform for Senegalese schools',
       xp: 'XP Client Academy home page',
       sunu: 'SunuPermis sign-in page',
       clinic: 'Clinic Management System sign-in page',
@@ -103,7 +103,7 @@ export default {
         intro: 'Two flagship products, described by what they do today.',
         projects: [
           { key: 'radiora', sector: 'Healthcare AI', name: 'Radiora Medical', text: 'AI-assisted radiology reporting: dictation is structured into a draft report that the radiologist reviews, validates and signs.', link: { page: 'work', hash: 'radiora' }, linkLabel: 'Read the case study' },
-          { key: 'edusen', sector: 'Education SaaS', name: 'EduSen', text: 'School management for private schools in Senegal: student records, attendance, tuition and report cards in one platform.', link: { page: 'work', hash: 'edusen' }, linkLabel: 'Read the case study' },
+          { key: 'edusen', sector: 'Education SaaS', name: 'ScolaTech (formerly EduSen)', text: 'School management for private schools in Senegal: student records, attendance, tuition and report cards in one platform.', link: { page: 'work', hash: 'edusen' }, linkLabel: 'Read the case study' },
         ],
         all: 'See all our work',
       },
@@ -162,7 +162,7 @@ export default {
           problem: 'A product idea or an internal tool needs to become software customers pay for, without a rewrite at the first sign of growth.',
           deliver: ['Multi-tenant architecture with secure accounts and roles', 'Subscriptions, billing integration and admin tools', 'A focused first version, then a roadmap'],
           uses: ['An MVP for a funded startup', 'Turning an internal tool into a product', 'Multi-site platforms for clinics, schools or agencies'],
-          outcome: 'A product in customers’ hands, on foundations that support the next releases. A focused MVP is typically scoped for 4–8 weeks once the scope is agreed.',
+          outcome: 'A product in customers’ hands, on foundations that support the next releases. Delivery timelines depend on scope, integrations, technical complexity and readiness: we set milestones and a realistic delivery plan during discovery.',
           cta: 'Discuss your SaaS project',
         },
         {
@@ -188,7 +188,7 @@ export default {
           id: 'mobile-apps', service: 'mobile', name: 'Mobile applications',
           headline: 'Put your service in your customers’ pocket.',
           problem: 'Customers and field teams need to act from their phones, but the platform was not designed for it.',
-          deliver: ['iOS and Android apps for customers or field teams', 'Sign-up, payments and notifications', 'The same backend as your web platform'],
+          deliver: ['Installable mobile apps (PWA) for customers or field teams, on iOS and Android', 'Sign-up, payments and notifications', 'The same backend as your web platform'],
           uses: ['Customer apps for bookings, orders and payments', 'Field apps for data collection and reporting', 'A companion app for an existing SaaS'],
           outcome: 'A mobile experience that shares data and rules with the rest of your product.',
           cta: 'Discuss your mobile app',
@@ -223,7 +223,7 @@ export default {
         title: 'Practical AI, engineered for real workflows',
         lead: 'We treat AI as a component to design, test and monitor, not a demo. Where it saves time or improves decisions, we build it in. Where a simpler solution works better, we say so.',
       },
-      tags: { shipped: 'Live in Radiora Medical', both: 'Built into Radiora Medical and EduSen', offered: 'Service we build', method: 'How we work' },
+      tags: { shipped: 'Live in Radiora Medical', both: 'Built into Radiora Medical and ScolaTech', offered: 'Service we build', method: 'How we work' },
       capabilities: {
         eyebrow: 'What we build',
         title: 'AI capabilities for your business',
@@ -271,7 +271,7 @@ export default {
 
     work: {
       title: 'Our work — software and AI case studies | Teranga Technologies',
-      description: 'Case studies of software we designed and built: Radiora Medical, AI-assisted radiology reporting, and EduSen, school management SaaS for Senegal.',
+      description: 'Software we designed and built: Radiora Medical, AI-assisted radiology reporting, and ScolaTech (formerly EduSen), school management SaaS for Senegal.',
       hero: {
         eyebrow: 'Our work',
         title: 'Products we designed and built',
@@ -312,7 +312,7 @@ export default {
         {
           key: 'edusen', id: 'edusen', service: 'saas',
           sector: 'Education SaaS · Senegal',
-          name: 'EduSen',
+          name: 'ScolaTech (formerly EduSen)',
           summary: 'School management SaaS designed for private schools in Senegal.',
           context: 'Private schools manage enrolment, attendance, tuition and report cards, often across paper registers and spreadsheets.',
           problem: 'Re-entering the same information in several places makes records hard to keep current and term report cards slow to produce.',
@@ -338,7 +338,7 @@ export default {
         eyebrow: 'Also built by Teranga',
         title: 'More products we designed and built',
         items: [
-          { key: 'xp', name: 'XP Client Academy', text: 'Customer-experience learning platform with courses, quizzes, certificates and corporate training.', linkLabel: 'Visit the site' },
+          { key: 'xp', name: 'XP Client Academy', text: 'Designed and built for XP Client Consulting: a customer-experience learning platform with courses, quizzes, certificates and training for individuals and companies.', linkLabel: 'Visit the site' },
           { key: 'sunu', name: 'SunuPermis', text: 'Driving-licence administration: driving schools, exam sessions, appointments and oversight.', linkLabel: 'Open the product (sign-in page)' },
           { key: 'clinic', name: 'Clinic Management System', text: 'Patient records, appointments, consultations, billing and documents in one system.', linkLabel: 'Open the product (sign-in page)' },
         ],
@@ -443,7 +443,7 @@ export default {
         title: 'Questions clients ask before starting',
         items: [
           { q: 'How much does a project cost?', a: 'It depends on scope, integrations and the level of polish you need at launch. After the discovery call, we send a written estimate tied to clear milestones. For larger products we often recommend a phased plan, so you invest in the first release before committing to the full roadmap.' },
-          { q: 'How long does an MVP take?', a: 'A focused first version is typically scoped for 4–8 weeks. We confirm the timeline once the scope is agreed, and we tell you early if anything puts it at risk.' },
+          { q: 'How long does an MVP take?', a: 'It depends on the product’s scope, integrations, technical complexity and how ready the project is to start. We define milestones and a realistic delivery plan during discovery, confirm it in writing, and tell you early if anything puts it at risk.' },
           { q: 'Do you work with clients outside Senegal?', a: 'Yes. We work remotely with clients in Senegal and internationally, in French or English. Dakar is on UTC+0 all year, which makes collaboration with Europe straightforward and leaves a good daily overlap with North America.' },
           { q: 'How do you use AI responsibly?', a: 'We start from a specific workflow, test output quality on real cases before launch, keep people in charge of high-stakes decisions and control who can access what data. In Radiora Medical, for example, the AI structures reports but only a radiologist can validate and sign them.' },
           { q: 'Can you work on our existing product or with our team?', a: 'Yes. We can extend an existing codebase, integrate with your current systems, or add AI features to a product already in use. We start by reviewing what exists so recommendations are grounded in your actual code and constraints.' },

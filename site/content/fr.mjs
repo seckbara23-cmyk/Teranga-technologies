@@ -57,7 +57,7 @@ export default {
     },
     shotAlt: {
       radiora: 'Page d’accueil de Radiora Medical : comptes rendus radiologiques assistés par IA pour les cliniques',
-      edusen: 'Page d’accueil d’EduSen : gestion scolaire moderne pour les établissements sénégalais',
+      edusen: 'Page d’accueil de ScolaTech : plateforme de gestion scolaire pour les établissements sénégalais',
       xp: 'Page d’accueil de XP Client Academy',
       sunu: 'Page de connexion de SunuPermis',
       clinic: 'Page de connexion du système de gestion de clinique',
@@ -101,7 +101,7 @@ export default {
         intro: 'Deux produits phares, décrits par ce qu’ils font aujourd’hui.',
         projects: [
           { key: 'radiora', sector: 'IA santé', name: 'Radiora Medical', text: 'Compte rendu radiologique assisté par IA : la dictée devient un brouillon structuré que le radiologue relit, valide et signe.', link: { page: 'work', hash: 'radiora' }, linkLabel: 'Lire l’étude de cas' },
-          { key: 'edusen', sector: 'SaaS éducation', name: 'EduSen', text: 'Gestion scolaire pour les écoles privées du Sénégal : dossiers élèves, présences, frais de scolarité et bulletins sur une seule plateforme.', link: { page: 'work', hash: 'edusen' }, linkLabel: 'Lire l’étude de cas' },
+          { key: 'edusen', sector: 'SaaS éducation', name: 'ScolaTech (anciennement EduSen)', text: 'Gestion scolaire pour les écoles privées du Sénégal : dossiers élèves, présences, frais de scolarité et bulletins sur une seule plateforme.', link: { page: 'work', hash: 'edusen' }, linkLabel: 'Lire l’étude de cas' },
         ],
         all: 'Voir toutes nos réalisations',
       },
@@ -160,7 +160,7 @@ export default {
           problem: 'Une idée de produit ou un outil interne doit devenir un logiciel que des clients paient, sans tout réécrire dès les premiers signes de croissance.',
           deliver: ['Architecture multi-clients avec comptes et rôles sécurisés', 'Abonnements, intégration de la facturation et outils d’administration', 'Une première version ciblée, puis une feuille de route'],
           uses: ['Un MVP pour une startup financée', 'Transformer un outil interne en produit', 'Des plateformes multi-sites pour cliniques, écoles ou agences'],
-          outcome: 'Un produit entre les mains de vos clients, sur des fondations qui supportent les versions suivantes. Un MVP ciblé se cadre généralement sur 4 à 8 semaines, une fois le périmètre validé.',
+          outcome: 'Un produit entre les mains de vos clients, sur des fondations qui supportent les versions suivantes. Les délais dépendent du périmètre fonctionnel, des intégrations, de la complexité technique et de l’état de préparation du projet : nous définissons les étapes et un calendrier réaliste lors du cadrage.',
           cta: 'Parlons de votre projet SaaS',
         },
         {
@@ -186,7 +186,7 @@ export default {
           id: 'mobile-apps', service: 'mobile', name: 'Applications mobiles',
           headline: 'Votre service, dans la poche de vos clients.',
           problem: 'Vos clients et vos équipes terrain doivent agir depuis leur téléphone, mais la plateforme n’a pas été pensée pour cela.',
-          deliver: ['Applications iOS et Android pour vos clients ou vos équipes terrain', 'Inscription, paiements et notifications', 'Le même backend que votre plateforme web'],
+          deliver: ['Applications mobiles installables (PWA) pour vos clients ou vos équipes terrain, sur iOS et Android', 'Inscription, paiements et notifications', 'Le même backend que votre plateforme web'],
           uses: ['Applications clients pour réservations, commandes et paiements', 'Applications terrain pour la collecte et le reporting', 'Une application compagnon pour un SaaS existant'],
           outcome: 'Une expérience mobile qui partage données et règles avec le reste de votre produit.',
           cta: 'Parlons de votre application mobile',
@@ -221,7 +221,7 @@ export default {
         title: 'Une IA utile, conçue pour vos processus réels',
         lead: 'Pour nous, l’IA est un composant à concevoir, tester et surveiller, pas une démo. Là où elle fait gagner du temps ou améliore les décisions, nous l’intégrons. Là où une solution plus simple suffit, nous le disons.',
       },
-      tags: { shipped: 'En service dans Radiora Medical', both: 'Intégré à Radiora Medical et EduSen', offered: 'Service proposé', method: 'Notre méthode' },
+      tags: { shipped: 'En service dans Radiora Medical', both: 'Intégré à Radiora Medical et ScolaTech', offered: 'Service proposé', method: 'Notre méthode' },
       capabilities: {
         eyebrow: 'Ce que nous construisons',
         title: 'Des capacités d’IA au service de votre activité',
@@ -269,7 +269,7 @@ export default {
 
     work: {
       title: 'Réalisations — études de cas logiciels et IA | Teranga Technologies',
-      description: 'Études de cas de logiciels que nous avons conçus et développés : Radiora Medical, comptes rendus radiologiques assistés par IA, et EduSen, gestion scolaire.',
+      description: 'Nos études de cas : Radiora Medical, comptes rendus radiologiques assistés par IA, et ScolaTech (anciennement EduSen), plateforme de gestion scolaire au Sénégal.',
       hero: {
         eyebrow: 'Réalisations',
         title: 'Des produits que nous avons conçus et développés',
@@ -310,7 +310,7 @@ export default {
         {
           key: 'edusen', id: 'edusen', service: 'saas',
           sector: 'SaaS éducation · Sénégal',
-          name: 'EduSen',
+          name: 'ScolaTech (anciennement EduSen)',
           summary: 'SaaS de gestion scolaire conçu pour les écoles privées du Sénégal.',
           context: 'Les écoles privées gèrent inscriptions, présences, frais de scolarité et bulletins, souvent entre registres papier et tableurs.',
           problem: 'Ressaisir les mêmes informations à plusieurs endroits rend les dossiers difficiles à tenir à jour et les bulletins trimestriels longs à produire.',
@@ -336,7 +336,7 @@ export default {
         eyebrow: 'Également développés par Teranga',
         title: 'D’autres produits que nous avons conçus et développés',
         items: [
-          { key: 'xp', name: 'XP Client Academy', text: 'Plateforme de formation à l’expérience client : cours, quiz, certificats et formations en entreprise.', linkLabel: 'Découvrir le site' },
+          { key: 'xp', name: 'XP Client Academy', text: 'Conçue et développée pour XP Client Consulting : plateforme de formation à l’expérience client, avec cours, quiz, certificats et formations pour les particuliers et les entreprises.', linkLabel: 'Découvrir le site' },
           { key: 'sunu', name: 'SunuPermis', text: 'Administration du permis de conduire : auto-écoles, sessions d’examen, rendez-vous et supervision.', linkLabel: 'Ouvrir le produit (page de connexion)' },
           { key: 'clinic', name: 'Système de gestion de clinique', text: 'Dossiers patients, rendez-vous, consultations, facturation et documents dans un seul système.', linkLabel: 'Ouvrir le produit (page de connexion)' },
         ],
@@ -441,7 +441,7 @@ export default {
         title: 'Les questions posées avant de démarrer',
         items: [
           { q: 'Combien coûte un projet ?', a: 'Cela dépend du périmètre, des intégrations et du niveau de finition attendu au lancement. Après l’appel découverte, nous envoyons une estimation écrite liée à des jalons clairs. Pour les produits plus ambitieux, nous recommandons souvent un plan par phases : vous investissez dans une première version avant de vous engager sur toute la feuille de route.' },
-          { q: 'Combien de temps faut-il pour un MVP ?', a: 'Une première version ciblée se cadre généralement sur 4 à 8 semaines. Nous confirmons le délai une fois le périmètre validé, et nous vous alertons tôt si quelque chose le menace.' },
+          { q: 'Combien de temps faut-il pour un MVP ?', a: 'Cela dépend du périmètre fonctionnel, des intégrations, de la complexité technique et de l’état de préparation du projet. Nous définissons les étapes et un calendrier réaliste lors du cadrage, nous le confirmons par écrit, et nous vous alertons tôt si quelque chose le menace.' },
           { q: 'Travaillez-vous avec des clients hors du Sénégal ?', a: 'Oui. Nous travaillons à distance avec des clients au Sénégal et à l’international, en français ou en anglais. Dakar est à UTC+0 toute l’année, ce qui simplifie la collaboration avec l’Europe et laisse un bon créneau commun avec l’Amérique du Nord.' },
           { q: 'Comment utilisez-vous l’IA de façon responsable ?', a: 'Nous partons d’un processus précis, testons la qualité des résultats sur des cas réels avant le lancement, gardons l’humain aux commandes des décisions sensibles et contrôlons qui accède à quelles données. Dans Radiora Medical, par exemple, l’IA structure les comptes rendus mais seul un radiologue peut les valider et les signer.' },
           { q: 'Pouvez-vous intervenir sur notre produit existant ou avec notre équipe ?', a: 'Oui. Nous pouvons faire évoluer une base de code existante, l’intégrer à vos systèmes actuels ou ajouter des fonctionnalités d’IA à un produit déjà en service. Nous commençons par examiner l’existant, pour que nos recommandations s’appuient sur votre code et vos contraintes réels.' },

@@ -316,6 +316,51 @@ test('search verification tags are absent until a token is set, then escaped', (
   }
 });
 
+test('ScolaTech is presented as formerly EduSen, with its own URL and a screenshot of its current identity', () => {
+  const label = { en: 'ScolaTech (formerly EduSen)', fr: 'ScolaTech (anciennement EduSen)' };
+  for (const p of pages.filter((q) => ['home', 'work'].includes(q.page))) {
+    const t = textOf(p.html).replace(/\s+/g, ' ');
+    assert.ok(t.includes(label[p.lang]), `${p.file}: ${label[p.lang]}`);
+    // "EduSen" only ever appears as the former name.
+    assert.equal(t.split('EduSen').length - 1, t.split(`${p.lang === 'fr' ? 'anciennement' : 'formerly'} EduSen`).length - 1, `${p.file}: bare EduSen`);
+  }
+  assert.equal(config.PRODUCTS.edusen.url, 'https://scolatech.app');
+  assert.equal(config.PRODUCTS.edusen.image, 'scolatech');
+  for (const p of pages) {
+    assert.doesNotMatch(p.html, /senegal-school-management-system\.vercel\.app|assets\/portfolio\/edusen\./, p.file);
+    for (const m of p.html.matchAll(/<img\b[^>]*src="\/assets\/portfolio\/scolatech\.png"[^>]*>/g)) assert.match(m[0], /alt="[^"]*ScolaTech[^"]*"/, `${p.file}: alt names ScolaTech`);
+  }
+  assert.ok(!fs.existsSync(path.join(root, 'assets/portfolio/edusen.png')), 'old EduSen-branded screenshot removed');
+  // The lineage is recorded with its evidence before the name is published.
+  const register = read('docs/TERANGA-05B-proof-register.md');
+  assert.match(register, /ScolaTech \(formerly EduSen\)[\s\S]*Lineage verified/);
+  assert.match(register, /aec8d08/);
+  assert.match(register, /"name": "EduSen"[\s\S]*"name": "ScolaTech"/);
+});
+
+test('no fixed delivery timeline is published (scope-dependent wording only)', () => {
+  for (const p of [...pages, { file: '404.html', html: read('404.html') }]) {
+    // The contact form's own start-date options ("Within 1–3 months") are the visitor's choice, not a promise.
+    const t = textOf(p.html.replace(/<select[\s\S]*?<\/select>/g, '')).replace(/\s+/g, ' ');
+    assert.doesNotMatch(t, /\d+\s*(?:–|-|à|to)\s*\d+\s*(?:weeks?|semaines?|months?|mois)\b/i, p.file);
+    assert.doesNotMatch(t, /\b(?:in|within|en|sous)\s+\d+\s*(?:weeks?|semaines?)\b/i, p.file);
+  }
+  for (const [lang, c] of [['en', en], ['fr', fr]]) {
+    const saas = c.pages.services.items.find((s) => s.id === 'saas').outcome;
+    assert.match(saas, lang === 'fr' ? /calendrier réaliste lors du cadrage/ : /realistic delivery plan during discovery/);
+    const faq = c.pages.contact.faq.items.find((f) => /MVP/.test(f.q)).a;
+    assert.match(faq, lang === 'fr' ? /calendrier réaliste lors du cadrage/ : /realistic delivery plan during discovery/);
+  }
+});
+
+test('XP Client Academy is attributed to its owner, XP Client Consulting; no native-app claim', () => {
+  for (const p of pages.filter((q) => q.page === 'work')) {
+    const item = attr(p.html, /(<li class="more-card"[\s\S]*?xpclient-academy\.com[\s\S]*?<\/li>)/);
+    assert.match(textOf(item), p.lang === 'fr' ? /pour XP Client Consulting/ : /for XP Client Consulting/, p.file);
+  }
+  for (const p of pages) assert.doesNotMatch(textOf(p.html), /native (iOS|Android|mobile) app|application native|appli native|iOS and Android apps|Applications iOS et Android/i, p.file);
+});
+
 test('portfolio links match the proof register; nothing links to private folders', () => {
   const register = read('docs/TERANGA-05B-proof-register.md');
   for (const [key, product] of Object.entries(config.PRODUCTS)) {

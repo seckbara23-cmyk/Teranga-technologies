@@ -9,7 +9,7 @@ Marketing site for Teranga Technologies (teranga-tech.com): six pages plus a pri
 | `/` | `/fr` | Home: hero, capabilities, selected work, why Teranga, process, call to action |
 | `/services` | `/fr/services` | Six services: problem, deliverables, typical uses, outcome |
 | `/ai-engineering` | `/fr/ai-engineering` | AI capabilities, safeguards, the Radiora example |
-| `/work` | `/fr/work` | Radiora Medical and EduSen case studies, three more products |
+| `/work` | `/fr/work` | Radiora Medical and ScolaTech (formerly EduSen) case studies, three more products |
 | `/about` | `/fr/about` | Name, principles, collaboration, location |
 | `/contact` | `/fr/contact` | Discovery-call form, next steps, direct contacts, FAQ |
 | `/privacy` | `/fr/privacy` | What the form and analytics collect, processors, storage, retention, rights (linked from the footer and the form) |
