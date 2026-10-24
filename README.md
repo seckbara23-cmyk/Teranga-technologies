@@ -36,7 +36,8 @@ Marketing site for Teranga Technologies (teranga-tech.com): six pages plus a pri
 │   ├── contact.js        # Vercel function: POST /api/contact
 │   └── _lib/contact.js   # Shared validation + Resend notification (also used by server.js)
 ├── server.js             # Local Express server (same clean URLs, /api/contact, /api/health)
-├── scripts/lead-report.mjs # Monthly lead report from a tracker export — not deployed
+├── scripts/               # Owner tooling, not deployed: lead-report.mjs (tracker export → pipeline, follow-ups),
+│                         #   analytics-report.mjs (weekly Vercel Web Analytics figures), check-analytics.mjs
 ├── assets/
 │   ├── brand/            # Interim logo mark (SVG), touch icon, social share image
 │   ├── fonts/            # Self-hosted Bricolage Grotesque + Inter (SIL OFL)
@@ -86,14 +87,14 @@ Delivery: the API returns success only after Resend accepts the message (an emai
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/api/contact` | Discovery-call request. JSON: `name`, `email`, `service`, `message` (required); `type`, `company`, `timeline`, `phone`, `subject`, `lang`, `page`, `source` (optional); `website` is a honeypot. Body ≤ 32 KB (else 413). Success: `200 {"message", "ref"}` |
+| POST | `/api/contact` | Discovery-call request. JSON: `name`, `email`, `service`, `message` (required); `type`, `company`, `timeline`, `phone`, `subject`, `lang`, `page`, `source` (optional); `website` is a honeypot (the page field is `tt_hp`, a name autofill does not fill). A field that fails validation is named in the 400 answer: `{"message", "field"}` (not for the honeypot). Body ≤ 32 KB (else 413). Success: `200 {"message", "ref"}` |
 | GET | `/api/health` | Health check (local server only) |
 
 `service` accepts `saas`, `ai`, `webapp`, `mobile`, `webdesign`, `support`, `other` (and the labels sent by the previous version of the site). `type` is `discovery` (the site form) or `contact` (the previous site's contact form; inferred from its legacy service labels when absent); anything else is a 400.
 
 ## Measurement and attribution
 
-- **Leads** are counted from the notifications (one per request accepted by Resend), recorded in a private tracker and reported with `node scripts/lead-report.mjs <export.csv> [--from] [--to] [--visitors]`. See `docs/TERANGA-05A-lead-operations.md`.
+- **Leads** are counted from the notifications (one per request accepted by Resend), recorded in a private tracker and reported with `node scripts/lead-report.mjs <export.csv> [--from] [--to] [--analytics week.json]`, which also lists replies due and overdue follow-ups. Website figures: `node scripts/analytics-report.mjs --from … --to … [--json week.json]`. Statuses and tracker: `docs/TERANGA-05A-lead-operations.md`; pipeline and weekly routine: `docs/TERANGA-05C-lead-operations.md`, `docs/TERANGA-05C-growth-reporting.md`.
 - **Attribution:** the page keeps the visit's `utm_*` tags, the referring site's host and the entry page for the tab session and sends them with the form. The server re-validates them, computes the channel (campaign / referral / direct) and adds an attribution section and a ready-to-paste tracker row to the notification.
 - **Analytics:** `ANALYTICS` in `site/config.mjs`. `webAnalytics` adds the cookieless Vercel Web Analytics script to every page. Vercel serves the script only on deployments created after Web Analytics was enabled: after enabling, redeploy and check with `node scripts/check-analytics.mjs <url>`. `customEvents` (available on the team's Pro plan) also forwards the conversion events. Events are defined once in `main.js` (`EVENTS`), carry no personal data and are listed in `docs/TERANGA-05A-analytics-taxonomy.md`. In any case they are available in the page as `window.TT.events`.
 - Design and data flow: `docs/TERANGA-05A-architecture.md`; privacy and security review: `docs/TERANGA-05A-privacy-security.md`.
