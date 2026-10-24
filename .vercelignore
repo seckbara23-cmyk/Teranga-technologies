@@ -19,3 +19,6 @@ Pictures/
 
 # Owner tooling (lead report); works on private tracker exports, never part of the site
 scripts/
+
+# Private lead exports and weekly reports: never deployed, even by a CLI deploy of the working folder
+private/

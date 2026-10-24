@@ -606,7 +606,9 @@ test('deployment serves clean URLs and keeps internal and source files private',
   assert.equal(v.cleanUrls, true);
   assert.ok(v.redirects.some((r) => r.source === '/' && r.destination === '/fr' && r.has[0].key === 'lang' && r.has[0].value === 'fr'));
   const ignored = read('.vercelignore').split('\n').map((l) => l.trim());
-  for (const p of ['docs/', 'Pictures/', 'server.js', 'tests/', '.github/', 'site/', 'scripts/']) assert.ok(ignored.includes(p), p);
+  for (const p of ['docs/', 'Pictures/', 'server.js', 'tests/', '.github/', 'site/', 'scripts/', 'private/']) assert.ok(ignored.includes(p), p);
+  // Lead exports and weekly reports live in private/: never committed either.
+  assert.ok(read('.gitignore').split('\n').map((l) => l.trim()).includes('private/'));
   // Vercel runs a "build" (or "vercel-build") script automatically; the generator source is not
   // uploaded, so such a script would fail the deployment. The committed HTML is what gets served.
   const scripts = JSON.parse(read('package.json')).scripts;
