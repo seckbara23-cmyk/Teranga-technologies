@@ -33,7 +33,7 @@ export default {
       address: 'Ngor Almadies, Dakar, Sénégal',
     },
     footer: {
-      tagline: 'Des logiciels intelligents pour les entreprises ambitieuses, conçus à Dakar pour des clients du monde entier.',
+      tagline: 'Logiciels sur mesure et ingénierie IA pour les startups, les entreprises en croissance et les organisations établies, depuis Dakar, au Sénégal.',
       pages: 'Pages',
       services: 'Services',
       reach: 'Contact',
@@ -57,7 +57,7 @@ export default {
     },
     shotAlt: {
       radiora: 'Page d’accueil de Radiora Medical : comptes rendus radiologiques assistés par IA pour les cliniques',
-      edusen: 'Page d’accueil d’EduSen : gestion scolaire moderne pour les établissements sénégalais',
+      edusen: 'Page d’accueil de ScolaTech : plateforme de gestion scolaire pour les établissements sénégalais',
       xp: 'Page d’accueil de XP Client Academy',
       sunu: 'Page de connexion de SunuPermis',
       clinic: 'Page de connexion du système de gestion de clinique',
@@ -72,16 +72,16 @@ export default {
 
   pages: {
     home: {
-      title: 'Teranga Technologies — ingénierie logicielle et IA | Dakar',
-      description: 'Plateformes SaaS sur mesure, intégration d’IA pragmatique et applications métier pour les entreprises ambitieuses, en français ou en anglais depuis Dakar.',
-      ogTitle: 'Teranga Technologies — Des logiciels intelligents pour les entreprises ambitieuses',
+      title: 'Teranga Technologies — logiciels sur mesure et IA à Dakar',
+      description: 'Logiciels sur mesure, plateformes SaaS et intégration de l’IA pour les startups, les PME et les organisations établies. Conçus à Dakar, en français ou en anglais.',
+      ogTitle: 'Teranga Technologies — Logiciels sur mesure et ingénierie IA depuis Dakar',
       hero: {
         eyebrow: 'Ingénierie logicielle et IA · Dakar, Sénégal',
         title: 'Des logiciels intelligents, conçus pour les entreprises ambitieuses.',
-        sub: 'Nous développons des plateformes sur mesure, intégrons une IA utile au quotidien et concevons des produits numériques qui aident les entreprises à mieux fonctionner et à grandir.',
+        sub: 'Nous concevons et développons des logiciels sur mesure, des plateformes SaaS et des processus enrichis par l’IA, avec la rigueur d’ingénierie qui les garde sûrs, maintenables et fiables après le lancement.',
         primary: 'Parlons de votre projet',
         secondary: 'Voir nos réalisations',
-        note: 'Pour les startups, les PME en croissance et les grandes équipes, en français ou en anglais.',
+        note: 'Pour les startups financées, les PME en croissance, les organisations établies et les équipes internationales, en français ou en anglais.',
         caption: 'Radiora Medical, un produit que nous avons développé : la dictée devient un brouillon structuré que seul le radiologue peut signer. Exemple illustratif, sans données patient.',
       },
       capabilities: {
@@ -101,7 +101,7 @@ export default {
         intro: 'Deux produits phares, décrits par ce qu’ils font aujourd’hui.',
         projects: [
           { key: 'radiora', sector: 'IA santé', name: 'Radiora Medical', text: 'Compte rendu radiologique assisté par IA : la dictée devient un brouillon structuré que le radiologue relit, valide et signe.', link: { page: 'work', hash: 'radiora' }, linkLabel: 'Lire l’étude de cas' },
-          { key: 'edusen', sector: 'SaaS éducation', name: 'EduSen', text: 'Gestion scolaire pour les écoles privées du Sénégal : dossiers élèves, présences, frais de scolarité et bulletins sur une seule plateforme.', link: { page: 'work', hash: 'edusen' }, linkLabel: 'Lire l’étude de cas' },
+          { key: 'edusen', sector: 'SaaS éducation', name: 'ScolaTech (anciennement EduSen)', text: 'Gestion scolaire pour les écoles privées du Sénégal : dossiers élèves, présences, frais de scolarité et bulletins sur une seule plateforme.', link: { page: 'work', hash: 'edusen' }, linkLabel: 'Lire l’étude de cas' },
         ],
         all: 'Voir toutes nos réalisations',
       },
@@ -116,6 +116,17 @@ export default {
           { title: 'Un logiciel maintenable et documenté', text: 'Architecture claire, documentation et passation soignée : votre équipe, ou une autre, peut reprendre le projet.' },
         ],
         more: 'Découvrir Teranga',
+      },
+      audience: {
+        eyebrow: 'Avec qui nous travaillons',
+        title: 'Un partenaire d’ingénierie pour quatre types d’équipes',
+        intro: 'Des étapes différentes, la même exigence : un périmètre écrit, des démos régulières et un logiciel que votre équipe peut maintenir.',
+        items: [
+          { title: 'Startups financées', text: 'Vous avez besoin d’un MVP utilisable par de vrais clients, sur des fondations qui porteront les prochaines fonctionnalités au lieu d’imposer une réécriture.', link: { page: 'services', hash: 'saas' }, linkLabel: 'Développement SaaS' },
+          { title: 'PME en croissance', text: 'Votre activité a dépassé les tableurs et les e-mails. Nous remplaçons les tâches manuelles par un seul système fiable et automatisons le travail répétitif.', link: { page: 'services', hash: 'web-applications' }, linkLabel: 'Applications web sur mesure' },
+          { title: 'Organisations établies', text: 'Vous voulez moderniser un processus ou y intégrer l’IA sans mettre en risque vos systèmes ni vos données. Nous commençons par un processus et le prouvons sur des cas réels.', link: { page: 'ai-engineering' }, linkLabel: 'Intégration d’IA et automatisation' },
+          { title: 'Entreprises internationales', text: 'Vous cherchez un partenaire d’ingénierie fiable au Sénégal ou en Afrique de l’Ouest : français et anglais, horaires UTC+0, périmètres écrits et démos régulières.', link: { page: 'about' }, linkLabel: 'Notre façon de travailler' },
+        ],
       },
       process: {
         eyebrow: 'Notre méthode',
@@ -133,12 +144,12 @@ export default {
     },
 
     services: {
-      title: 'Services — SaaS, IA, applications web et mobiles | Teranga',
-      description: 'Développement SaaS, intégration d’IA, applications web et mobiles, sites web et maintenance, chacun cadré autour du problème métier à résoudre.',
+      title: 'Développement logiciel sur mesure : SaaS, IA, web, mobile | Teranga',
+      description: 'Développement de logiciels sur mesure depuis Dakar : produits SaaS, intégration d’IA et automatisation, applications web et mobiles, sites web et maintenance.',
       hero: {
         eyebrow: 'Services',
         title: 'Des services logiciels pensés pour vos résultats',
-        lead: 'Six façons de travailler avec les startups, les PME en croissance et les grandes équipes. Chacune part du problème, pas de la technologie.',
+        lead: 'Du développement logiciel sur mesure pour les startups, les PME en croissance et les organisations établies : six façons de travailler avec nous, chacune partant du problème, pas de la technologie.',
       },
       jump: 'Aller à un service',
       labels: { problem: 'Le problème', deliver: 'Ce que nous livrons', uses: 'Cas d’usage types', outcome: 'Le résultat' },
@@ -149,7 +160,7 @@ export default {
           problem: 'Une idée de produit ou un outil interne doit devenir un logiciel que des clients paient, sans tout réécrire dès les premiers signes de croissance.',
           deliver: ['Architecture multi-clients avec comptes et rôles sécurisés', 'Abonnements, intégration de la facturation et outils d’administration', 'Une première version ciblée, puis une feuille de route'],
           uses: ['Un MVP pour une startup financée', 'Transformer un outil interne en produit', 'Des plateformes multi-sites pour cliniques, écoles ou agences'],
-          outcome: 'Un produit entre les mains de vos clients, sur des fondations qui supportent les versions suivantes. Un MVP ciblé se cadre généralement sur 4 à 8 semaines, une fois le périmètre validé.',
+          outcome: 'Un produit entre les mains de vos clients, sur des fondations qui supportent les versions suivantes. Les délais dépendent du périmètre fonctionnel, des intégrations, de la complexité technique et de l’état de préparation du projet : nous définissons les étapes et un calendrier réaliste lors du cadrage.',
           cta: 'Parlons de votre projet SaaS',
         },
         {
@@ -157,7 +168,7 @@ export default {
           headline: 'Mettez l’IA au travail dans vos processus réels.',
           problem: 'Les équipes perdent des heures à lire, saisir et trier, et les outils d’IA génériques ne s’adaptent ni à leurs données, ni à leur langue, ni à leurs règles de validation.',
           deliver: ['Des modèles reliés à vos documents, données et outils', 'Extraction structurée et rédaction avec étapes de relecture', 'Tests de qualité, maîtrise des coûts et pistes d’audit'],
-          uses: ['Transformer dictées et documents en données structurées', 'Préparer réponses et rapports relus par vos équipes', 'Interroger vos connaissances internes en français et en anglais'],
+          uses: ['Transformer dictées et documents en données structurées', 'Préparer réponses et rapports relus par vos équipes', 'Interroger vos connaissances internes en français et en anglais', 'Automatiser les tâches administratives répétitives, avec une relecture là où elle compte'],
           outcome: 'Du temps gagné sur un processus précis et mesuré, l’humain gardant le dernier mot.',
           cta: 'Parlons de votre projet IA',
           more: { label: 'Notre approche de l’IA', link: { page: 'ai-engineering' } },
@@ -167,7 +178,7 @@ export default {
           headline: 'Remplacez tableurs et tâches manuelles par un seul système fiable.',
           problem: 'L’activité repose sur des tableurs, des fils d’e-mails et des ressaisies : personne n’a une vision fiable et à jour.',
           deliver: ['Portails, tableaux de bord et outils de gestion', 'Intégration avec les systèmes que vous utilisez déjà', 'Paiements et messagerie, comme Wave, Orange Money ou WhatsApp'],
-          uses: ['Tableaux de bord et reporting opérationnels', 'Portails clients, partenaires et collaborateurs', 'Circuits de validation et de réservation'],
+          uses: ['Tableaux de bord et reporting opérationnels', 'Portails clients, partenaires et collaborateurs', 'Circuits de validation et de réservation', 'Moderniser un système existant, un processus à la fois'],
           outcome: 'Une source de vérité unique, moins de tâches manuelles et une visibilité en temps réel pour vos équipes.',
           cta: 'Parlons de votre application web',
         },
@@ -175,7 +186,7 @@ export default {
           id: 'mobile-apps', service: 'mobile', name: 'Applications mobiles',
           headline: 'Votre service, dans la poche de vos clients.',
           problem: 'Vos clients et vos équipes terrain doivent agir depuis leur téléphone, mais la plateforme n’a pas été pensée pour cela.',
-          deliver: ['Applications iOS et Android pour vos clients ou vos équipes terrain', 'Inscription, paiements et notifications', 'Le même backend que votre plateforme web'],
+          deliver: ['Applications mobiles installables (PWA) pour vos clients ou vos équipes terrain, sur iOS et Android', 'Inscription, paiements et notifications', 'Le même backend que votre plateforme web'],
           uses: ['Applications clients pour réservations, commandes et paiements', 'Applications terrain pour la collecte et le reporting', 'Une application compagnon pour un SaaS existant'],
           outcome: 'Une expérience mobile qui partage données et règles avec le reste de votre produit.',
           cta: 'Parlons de votre application mobile',
@@ -203,18 +214,18 @@ export default {
     },
 
     'ai-engineering': {
-      title: 'Ingénierie IA — une IA utile, au cœur de vos processus | Teranga',
-      description: 'Notre façon d’intégrer l’IA aux processus métier : traitement de documents, rapports assistés, validation humaine, évaluation, protection des données et coûts.',
+      title: 'Intégration de l’IA et automatisation des processus | Teranga',
+      description: 'L’IA intégrée à vos processus métier : traitement de documents, rapports assistés et automatisation, avec validation humaine, évaluation et maîtrise des coûts.',
       hero: {
         eyebrow: 'Ingénierie IA',
         title: 'Une IA utile, conçue pour vos processus réels',
         lead: 'Pour nous, l’IA est un composant à concevoir, tester et surveiller, pas une démo. Là où elle fait gagner du temps ou améliore les décisions, nous l’intégrons. Là où une solution plus simple suffit, nous le disons.',
       },
-      tags: { shipped: 'En production : Radiora Medical', both: 'En production : Radiora Medical et EduSen', offered: 'Service proposé', method: 'Notre méthode' },
+      tags: { shipped: 'En service dans Radiora Medical', both: 'Intégré à Radiora Medical et ScolaTech', offered: 'Service proposé', method: 'Notre méthode' },
       capabilities: {
         eyebrow: 'Ce que nous construisons',
         title: 'Des capacités d’IA au service de votre activité',
-        intro: 'Des services que nous concevons et développons pour nos clients. Quand une capacité fonctionne déjà dans l’un de nos produits, nous le précisons.',
+        intro: 'Des services que nous concevons et développons pour nos clients. Quand une capacité fonctionne déjà dans un produit que nous avons développé, l’étiquette le précise.',
         items: [
           { title: 'Intégration de l’IA dans vos processus', text: 'Des modèles de langage reliés aux outils de vos équipes, à l’étape où ils font gagner le plus de temps.', tag: 'offered' },
           { title: 'Traitement de documents et extraction structurée', text: 'PDF, scans, formulaires et dictées transformés en données structurées et vérifiées, exploitables par vos systèmes.', tag: 'offered' },
@@ -257,8 +268,8 @@ export default {
     },
 
     work: {
-      title: 'Réalisations — Radiora Medical, EduSen et autres | Teranga',
-      description: 'Études de cas de produits que nous avons conçus et développés : Radiora Medical, comptes rendus radiologiques assistés par IA, et EduSen, gestion scolaire.',
+      title: 'Réalisations — études de cas logiciels et IA | Teranga Technologies',
+      description: 'Nos études de cas : Radiora Medical, comptes rendus radiologiques assistés par IA, et ScolaTech (anciennement EduSen), plateforme de gestion scolaire au Sénégal.',
       hero: {
         eyebrow: 'Réalisations',
         title: 'Des produits que nous avons conçus et développés',
@@ -268,7 +279,7 @@ export default {
         context: 'Contexte',
         problem: 'Le problème',
         solution: 'Ce que nous avons construit',
-        results: 'Résultats',
+        results: 'Statut et résultats',
         visit: 'Découvrir le produit',
         discuss: 'Parlons d’un projet similaire',
       },
@@ -294,12 +305,12 @@ export default {
           ],
           safeguardTitle: 'Contrôle humain',
           safeguard: 'L’IA ne pose jamais de diagnostic et ne signe jamais. Le radiologue relit, corrige, valide et signe chaque compte rendu.',
-          results: 'Les résultats chiffrés ne sont pas encore publiés. Nous partageons les chiffres à jour lors d’un appel découverte.',
+          results: 'Un produit en ligne, avec un essai gratuit public de 30 jours. Les résultats chiffrés ne sont pas encore publiés ; nous partageons les chiffres à jour lors d’un appel découverte.',
         },
         {
           key: 'edusen', id: 'edusen', service: 'saas',
           sector: 'SaaS éducation · Sénégal',
-          name: 'EduSen',
+          name: 'ScolaTech (anciennement EduSen)',
           summary: 'SaaS de gestion scolaire conçu pour les écoles privées du Sénégal.',
           context: 'Les écoles privées gèrent inscriptions, présences, frais de scolarité et bulletins, souvent entre registres papier et tableurs.',
           problem: 'Ressaisir les mêmes informations à plusieurs endroits rend les dossiers difficiles à tenir à jour et les bulletins trimestriels longs à produire.',
@@ -325,7 +336,7 @@ export default {
         eyebrow: 'Également développés par Teranga',
         title: 'D’autres produits que nous avons conçus et développés',
         items: [
-          { key: 'xp', name: 'XP Client Academy', text: 'Plateforme de formation à l’expérience client : cours, quiz, certificats et formations en entreprise.', linkLabel: 'Découvrir le site' },
+          { key: 'xp', name: 'XP Client Academy', text: 'Conçue et développée pour XP Client Consulting : plateforme de formation à l’expérience client, avec cours, quiz, certificats et formations pour les particuliers et les entreprises.', linkLabel: 'Découvrir le site' },
           { key: 'sunu', name: 'SunuPermis', text: 'Administration du permis de conduire : auto-écoles, sessions d’examen, rendez-vous et supervision.', linkLabel: 'Ouvrir le produit (page de connexion)' },
           { key: 'clinic', name: 'Système de gestion de clinique', text: 'Dossiers patients, rendez-vous, consultations, facturation et documents dans un seul système.', linkLabel: 'Ouvrir le produit (page de connexion)' },
         ],
@@ -430,7 +441,7 @@ export default {
         title: 'Les questions posées avant de démarrer',
         items: [
           { q: 'Combien coûte un projet ?', a: 'Cela dépend du périmètre, des intégrations et du niveau de finition attendu au lancement. Après l’appel découverte, nous envoyons une estimation écrite liée à des jalons clairs. Pour les produits plus ambitieux, nous recommandons souvent un plan par phases : vous investissez dans une première version avant de vous engager sur toute la feuille de route.' },
-          { q: 'Combien de temps faut-il pour un MVP ?', a: 'Une première version ciblée se cadre généralement sur 4 à 8 semaines. Nous confirmons le délai une fois le périmètre validé, et nous vous alertons tôt si quelque chose le menace.' },
+          { q: 'Combien de temps faut-il pour un MVP ?', a: 'Cela dépend du périmètre fonctionnel, des intégrations, de la complexité technique et de l’état de préparation du projet. Nous définissons les étapes et un calendrier réaliste lors du cadrage, nous le confirmons par écrit, et nous vous alertons tôt si quelque chose le menace.' },
           { q: 'Travaillez-vous avec des clients hors du Sénégal ?', a: 'Oui. Nous travaillons à distance avec des clients au Sénégal et à l’international, en français ou en anglais. Dakar est à UTC+0 toute l’année, ce qui simplifie la collaboration avec l’Europe et laisse un bon créneau commun avec l’Amérique du Nord.' },
           { q: 'Comment utilisez-vous l’IA de façon responsable ?', a: 'Nous partons d’un processus précis, testons la qualité des résultats sur des cas réels avant le lancement, gardons l’humain aux commandes des décisions sensibles et contrôlons qui accède à quelles données. Dans Radiora Medical, par exemple, l’IA structure les comptes rendus mais seul un radiologue peut les valider et les signer.' },
           { q: 'Pouvez-vous intervenir sur notre produit existant ou avec notre équipe ?', a: 'Oui. Nous pouvons faire évoluer une base de code existante, l’intégrer à vos systèmes actuels ou ajouter des fonctionnalités d’IA à un produit déjà en service. Nous commençons par examiner l’existant, pour que nos recommandations s’appuient sur votre code et vos contraintes réels.' },

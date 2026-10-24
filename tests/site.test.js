@@ -209,11 +209,167 @@ test('pages work under the Content-Security-Policy', () => {
   }
 });
 
-test('structured data appears only on the home pages and is valid JSON', () => {
+test('structured data: one valid graph per indexable page, describing only what the page shows', () => {
+  const ORG = `${config.SITE_URL}/#organization`;
+  const SITE = `${config.SITE_URL}/#website`;
   for (const p of pages) {
-    const ld = attr(p.html, /<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
-    if (p.page === 'home') assert.equal(JSON.parse(ld)['@type'], 'ProfessionalService');
-    else assert.equal(ld, undefined, p.file);
+    const blocks = all(p.html, /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g);
+    assert.equal(blocks.length, 1, `${p.file}: one JSON-LD block`);
+    const data = JSON.parse(blocks[0]);
+    assert.equal(data['@context'], 'https://schema.org');
+    const graph = data['@graph'];
+    const byId = new Map(graph.filter((n) => n['@id']).map((n) => [n['@id'], n]));
+    const org = byId.get(ORG);
+    assert.equal(org['@type'], 'Organization', p.file);
+    assert.equal(byId.get(SITE)['@type'], 'WebSite', p.file);
+    // Organization facts are the ones shown in the footer of every page.
+    const text = textOf(p.html);
+    assert.ok(text.includes(org.email), `${p.file}: email visible`);
+    assert.ok(p.html.includes(`href="tel:${org.telephone}"`), `${p.file}: phone visible`);
+    assert.equal(org.address.addressLocality, 'Dakar');
+    assert.equal(org.address.addressCountry, 'SN');
+    assert.equal(org.address.streetAddress, undefined, 'no street address: the office line is a neighbourhood');
+    // The page node matches the page's own metadata.
+    const page = graph.find((n) => n['@id'] === `${config.SITE_URL}${p.path}#webpage`);
+    assert.ok(page, `${p.file}: WebPage node`);
+    assert.equal(page.url, attr(p.html, /<link rel="canonical" href="([^"]+)">/));
+    assert.equal(page.name, attr(p.html, /<title>([^<]*)<\/title>/).replace(/&amp;/g, '&').replace(/&#39;/g, "'"));
+    assert.equal(page.inLanguage, p.lang);
+    assert.equal(page['@type'], { about: 'AboutPage', contact: 'ContactPage' }[p.page] || 'WebPage');
+    // Every reference resolves inside the graph.
+    for (const n of graph) for (const k of ['provider', 'isPartOf', 'about', 'publisher']) if (n[k]) assert.ok(byId.has(n[k]['@id']), `${p.file}: ${k} → ${n[k]['@id']}`);
+    // Nothing that is not on the site: no ratings, reviews, founders, awards, profiles or FAQ markup.
+    assert.doesNotMatch(blocks[0], /aggregateRating|"review|"Review|founder|award|sameAs|FAQPage|LocalBusiness|ProfessionalService/, p.file);
+  }
+  for (const p of pages.filter((q) => q.page === 'services')) {
+    const graph = JSON.parse(attr(p.html, /<script type="application\/ld\+json">([\s\S]*?)<\/script>/))['@graph'];
+    const services = graph.filter((n) => n['@type'] === 'Service');
+    const c = p.lang === 'fr' ? fr : en;
+    assert.deepEqual(services.map((s) => s.url), c.pages.services.items.map((s) => `${config.SITE_URL}${p.path}#${s.id}`));
+    for (const s of services) {
+      assert.match(p.html, new RegExp(`<span class="eyebrow">${s.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</span>`), `${p.file}: ${s.name} is the visible heading`);
+      assert.match(p.html, new RegExp(`\\sid="${s.url.split('#')[1]}"`));
+    }
+  }
+  assert.doesNotMatch(read('404.html'), /application\/ld\+json/, '404 has no structured data');
+});
+
+test('every page has one h1 first in main and no skipped heading levels', () => {
+  for (const p of [...pages, { file: '404.html', html: read('404.html') }]) {
+    const main = attr(p.html, /(<main\b[\s\S]*<\/main>)/);
+    const levels = all(main, /<h([1-6])\b/g).map(Number);
+    assert.equal(levels[0], 1, `${p.file}: h1 first`);
+    assert.equal(levels.filter((l) => l === 1).length, 1, `${p.file}: one h1`);
+    for (let i = 1; i < levels.length; i++) assert.ok(levels[i] <= levels[i - 1] + 1, `${p.file}: h${levels[i - 1]} → h${levels[i]}`);
+  }
+});
+
+test('production stays indexable; previews keep Vercel\'s protection; duplicates redirect to the canonical host', () => {
+  const v = JSON.parse(read('vercel.json'));
+  // No X-Robots-Tag of our own: Vercel adds "noindex" to preview deployments itself, and production must stay indexable.
+  assert.doesNotMatch(JSON.stringify(v.headers), /x-robots-tag/i);
+  assert.equal(v.trailingSlash, false, '/services/ redirects to /services');
+  const host = v.redirects.find((r) => r.has && r.has.some((h) => h.type === 'host'));
+  assert.deepEqual(host, { source: '/:path*', has: [{ type: 'host', value: 'teranga-technologies.vercel.app' }], destination: 'https://teranga-tech.com/:path*', permanent: true });
+  for (const p of pages) assert.doesNotMatch(p.html, /<meta name="robots"/, `${p.file} is indexable`);
+  assert.match(read('404.html'), /<meta name="robots" content="noindex">/);
+  const robots = read('robots.txt');
+  assert.match(robots, /^User-agent: \*\nAllow: \/\n/);
+  assert.doesNotMatch(robots, /Disallow: \/\s*$/m);
+});
+
+test('the sitemap lists exactly the canonical URLs, with reciprocal language alternates', () => {
+  const sm = read('sitemap.xml');
+  const locs = all(sm, /<loc>([^<]+)<\/loc>/g);
+  assert.deepEqual(locs.sort(), pages.map((p) => attr(p.html, /<link rel="canonical" href="([^"]+)">/)).sort());
+  for (const entry of all(sm, /<url>([\s\S]*?)<\/url>/g)) {
+    const loc = attr(entry, /<loc>([^<]+)<\/loc>/);
+    const p = pages.find((q) => `${config.SITE_URL}${q.path}` === loc);
+    assert.match(attr(entry, /<lastmod>([^<]+)<\/lastmod>/), /^\d{4}-\d{2}-\d{2}$/);
+    for (const l of ['en', 'fr']) assert.equal(attr(entry, new RegExp(`hreflang="${l}" href="([^"]+)"`)), attr(p.html, new RegExp(`<link rel="alternate" hreflang="${l}" href="([^"]+)">`)), `${loc} ${l}`);
+  }
+});
+
+test('a real favicon.ico is served and referenced next to the SVG icon', () => {
+  const ico = fs.readFileSync(path.join(root, 'favicon.ico'));
+  assert.deepEqual([ico.readUInt16LE(0), ico.readUInt16LE(2)], [0, 1], 'ICO header');
+  const sizes = [...Array(ico.readUInt16LE(4)).keys()].map((i) => ico[6 + 16 * i]);
+  assert.ok(sizes.includes(48), `sizes ${sizes}`);
+  for (const p of pages) {
+    assert.match(p.html, /<link rel="icon" href="\/favicon\.ico" sizes="48x48">/);
+    assert.match(p.html, /<link rel="icon" href="\/assets\/brand\/teranga-mark\.svg" type="image\/svg\+xml">/);
+  }
+});
+
+test('search verification tags are absent until a token is set, then escaped', () => {
+  for (const p of pages) assert.doesNotMatch(p.html, /google-site-verification|msvalidate/, p.file);
+  const saved = { ...config.SEARCH_VERIFICATION };
+  try {
+    config.SEARCH_VERIFICATION.google = 'tok"en<x';
+    config.SEARCH_VERIFICATION.bing = 'B1NG';
+    const home = build.renderSite().get('index.html');
+    assert.match(home, /<meta name="google-site-verification" content="tok&quot;en&lt;x">/);
+    assert.match(home, /<meta name="msvalidate\.01" content="B1NG">/);
+    assert.doesNotMatch(build.renderSite().get('404.html'), /google-site-verification/, 'not on the noindex page');
+  } finally {
+    Object.assign(config.SEARCH_VERIFICATION, saved);
+  }
+});
+
+test('ScolaTech is presented as formerly EduSen, with its own URL and a screenshot of its current identity', () => {
+  const label = { en: 'ScolaTech (formerly EduSen)', fr: 'ScolaTech (anciennement EduSen)' };
+  for (const p of pages.filter((q) => ['home', 'work'].includes(q.page))) {
+    const t = textOf(p.html).replace(/\s+/g, ' ');
+    assert.ok(t.includes(label[p.lang]), `${p.file}: ${label[p.lang]}`);
+    // "EduSen" only ever appears as the former name.
+    assert.equal(t.split('EduSen').length - 1, t.split(`${p.lang === 'fr' ? 'anciennement' : 'formerly'} EduSen`).length - 1, `${p.file}: bare EduSen`);
+  }
+  assert.equal(config.PRODUCTS.edusen.url, 'https://scolatech.app');
+  assert.equal(config.PRODUCTS.edusen.image, 'scolatech');
+  for (const p of pages) {
+    assert.doesNotMatch(p.html, /senegal-school-management-system\.vercel\.app|assets\/portfolio\/edusen\./, p.file);
+    for (const m of p.html.matchAll(/<img\b[^>]*src="\/assets\/portfolio\/scolatech\.png"[^>]*>/g)) assert.match(m[0], /alt="[^"]*ScolaTech[^"]*"/, `${p.file}: alt names ScolaTech`);
+  }
+  assert.ok(!fs.existsSync(path.join(root, 'assets/portfolio/edusen.png')), 'old EduSen-branded screenshot removed');
+  // The lineage is recorded with its evidence before the name is published.
+  const register = read('docs/TERANGA-05B-proof-register.md');
+  assert.match(register, /ScolaTech \(formerly EduSen\)[\s\S]*Lineage verified/);
+  assert.match(register, /aec8d08/);
+  assert.match(register, /"name": "EduSen"[\s\S]*"name": "ScolaTech"/);
+});
+
+test('no fixed delivery timeline is published (scope-dependent wording only)', () => {
+  for (const p of [...pages, { file: '404.html', html: read('404.html') }]) {
+    // The contact form's own start-date options ("Within 1–3 months") are the visitor's choice, not a promise.
+    const t = textOf(p.html.replace(/<select[\s\S]*?<\/select>/g, '')).replace(/\s+/g, ' ');
+    assert.doesNotMatch(t, /\d+\s*(?:–|-|à|to)\s*\d+\s*(?:weeks?|semaines?|months?|mois)\b/i, p.file);
+    assert.doesNotMatch(t, /\b(?:in|within|en|sous)\s+\d+\s*(?:weeks?|semaines?)\b/i, p.file);
+  }
+  for (const [lang, c] of [['en', en], ['fr', fr]]) {
+    const saas = c.pages.services.items.find((s) => s.id === 'saas').outcome;
+    assert.match(saas, lang === 'fr' ? /calendrier réaliste lors du cadrage/ : /realistic delivery plan during discovery/);
+    const faq = c.pages.contact.faq.items.find((f) => /MVP/.test(f.q)).a;
+    assert.match(faq, lang === 'fr' ? /calendrier réaliste lors du cadrage/ : /realistic delivery plan during discovery/);
+  }
+});
+
+test('XP Client Academy is attributed to its owner, XP Client Consulting; no native-app claim', () => {
+  for (const p of pages.filter((q) => q.page === 'work')) {
+    const item = attr(p.html, /(<li class="more-card"[\s\S]*?xpclient-academy\.com[\s\S]*?<\/li>)/);
+    assert.match(textOf(item), p.lang === 'fr' ? /pour XP Client Consulting/ : /for XP Client Consulting/, p.file);
+  }
+  for (const p of pages) assert.doesNotMatch(textOf(p.html), /native (iOS|Android|mobile) app|application native|appli native|iOS and Android apps|Applications iOS et Android/i, p.file);
+});
+
+test('portfolio links match the proof register; nothing links to private folders', () => {
+  const register = read('docs/TERANGA-05B-proof-register.md');
+  for (const [key, product] of Object.entries(config.PRODUCTS)) {
+    assert.ok(register.includes(product.url), `proof register covers ${key} (${product.url})`);
+    for (const p of pages.filter((q) => q.page === 'work')) assert.ok(p.html.includes(`href="${product.url}"`), `${p.file} links ${product.url}`);
+  }
+  for (const p of [...pages, { file: '404.html', html: read('404.html') }, { file: 'sitemap.xml', html: read('sitemap.xml') }]) {
+    assert.doesNotMatch(p.html, /(href|src)="\/?(docs|tests|scripts|site|Pictures)\//, p.file);
+    assert.doesNotMatch(p.html, /teranga-tech\.com\/(docs|tests|scripts|site)\//, p.file);
   }
 });
 
@@ -342,6 +498,9 @@ test('no unapproved promises, fake proof or broken-flow labels are published', (
   for (const p of pages) {
     const t = textOf(p.html);
     assert.doesNotMatch(t, /24 hours|24\s?heures|guarantee|garanti|testimonial|témoignage|certified|certifié|award|world-class|leading|n°\s?1/i, p.file);
+    // Generic or unsupported positioning (TERANGA-05B): no boilerplate superlatives, no "in production" labels
+    // for products whose usage is not documented (docs/TERANGA-05B-proof-register.md).
+    assert.doesNotMatch(t, /innovative solutions|solutions innovantes|cutting-edge|de pointe|best-in-class|state-of-the-art|trusted by|ils nous font confiance|In production\s*:|En production\s*:/i, p.file);
     assert.doesNotMatch(t, /Get a (Free )?Quote|Request Submitted|Book a discovery call|Réserver un appel/i, p.file);
   }
   assert.match(read('site/config.mjs'), /export const BOOKING_URL = '';/);

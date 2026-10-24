@@ -35,7 +35,7 @@ export default {
       address: 'Ngor Almadies, Dakar, Senegal',
     },
     footer: {
-      tagline: 'Intelligent software for ambitious businesses, engineered in Dakar for clients worldwide.',
+      tagline: 'Custom software and AI engineering for startups, growing companies and established organisations, from Dakar, Senegal.',
       pages: 'Pages',
       services: 'Services',
       reach: 'Contact',
@@ -59,7 +59,7 @@ export default {
     },
     shotAlt: {
       radiora: 'Radiora Medical home page: AI-assisted radiology reports for clinics',
-      edusen: 'EduSen home page: modern school management for Senegalese schools',
+      edusen: 'ScolaTech home page: school management platform for Senegalese schools',
       xp: 'XP Client Academy home page',
       sunu: 'SunuPermis sign-in page',
       clinic: 'Clinic Management System sign-in page',
@@ -74,16 +74,16 @@ export default {
 
   pages: {
     home: {
-      title: 'Teranga Technologies — AI-first software engineering | Dakar',
-      description: 'Custom SaaS platforms, practical AI integration and business applications for ambitious companies. Delivered in French or English from Dakar, Senegal.',
-      ogTitle: 'Teranga Technologies — Engineering intelligent software for ambitious businesses',
+      title: 'Teranga Technologies — Custom software & AI engineering in Dakar',
+      description: 'Custom software, SaaS platforms and AI integration for startups, growing SMEs and established organisations. Engineered in Dakar, Senegal, in French or English.',
+      ogTitle: 'Teranga Technologies — Custom software and AI engineering from Dakar',
       hero: {
         eyebrow: 'AI-first software engineering · Dakar, Senegal',
         title: 'Engineering intelligent software for ambitious businesses.',
-        sub: 'We build custom platforms, integrate practical AI, and engineer digital products that help businesses operate smarter and grow.',
+        sub: 'We design and build custom software, SaaS platforms and AI-powered workflows, with the engineering discipline that keeps them secure, maintainable and reliable after launch.',
         primary: 'Discuss your project',
         secondary: 'Explore our work',
-        note: 'For startups, growing SMEs and enterprise teams, in French or English.',
+        note: 'For funded startups, growing SMEs, established organisations and international teams, in French or English.',
         caption: 'Radiora Medical, a product we built: dictation becomes a structured draft that only the radiologist can sign. Illustrative example, not patient data.',
       },
       capabilities: {
@@ -103,7 +103,7 @@ export default {
         intro: 'Two flagship products, described by what they do today.',
         projects: [
           { key: 'radiora', sector: 'Healthcare AI', name: 'Radiora Medical', text: 'AI-assisted radiology reporting: dictation is structured into a draft report that the radiologist reviews, validates and signs.', link: { page: 'work', hash: 'radiora' }, linkLabel: 'Read the case study' },
-          { key: 'edusen', sector: 'Education SaaS', name: 'EduSen', text: 'School management for private schools in Senegal: student records, attendance, tuition and report cards in one platform.', link: { page: 'work', hash: 'edusen' }, linkLabel: 'Read the case study' },
+          { key: 'edusen', sector: 'Education SaaS', name: 'ScolaTech (formerly EduSen)', text: 'School management for private schools in Senegal: student records, attendance, tuition and report cards in one platform.', link: { page: 'work', hash: 'edusen' }, linkLabel: 'Read the case study' },
         ],
         all: 'See all our work',
       },
@@ -118,6 +118,17 @@ export default {
           { title: 'Maintainable, documented software', text: 'Clear architecture, documentation and a clean handover, so your team or any other can take it over.' },
         ],
         more: 'About Teranga',
+      },
+      audience: {
+        eyebrow: 'Who we work with',
+        title: 'An engineering partner for four kinds of teams',
+        intro: 'Different stages, the same standard: a written scope, regular demos and software your team can maintain.',
+        items: [
+          { title: 'Funded startups', text: 'You need an MVP that real customers can use, on foundations that will carry the next features instead of forcing a rewrite.', link: { page: 'services', hash: 'saas' }, linkLabel: 'SaaS development' },
+          { title: 'Growing SMEs', text: 'Your operations have outgrown spreadsheets and email. We replace manual steps with one reliable system and automate the repetitive work.', link: { page: 'services', hash: 'web-applications' }, linkLabel: 'Custom web applications' },
+          { title: 'Established organisations', text: 'You want to modernise a workflow or bring AI into it without putting existing systems or data at risk. We start with one process and prove it on real cases.', link: { page: 'ai-engineering' }, linkLabel: 'AI integration and automation' },
+          { title: 'International companies', text: 'You are looking for a dependable engineering partner in Senegal or West Africa: French and English, UTC+0 hours, written scopes and regular demos.', link: { page: 'about' }, linkLabel: 'How we work with clients' },
+        ],
       },
       process: {
         eyebrow: 'How we work',
@@ -135,12 +146,12 @@ export default {
     },
 
     services: {
-      title: 'Services — SaaS, AI, web and mobile development | Teranga',
-      description: 'SaaS development, AI integration, custom web and mobile applications, websites and ongoing support, each scoped around the business problem to solve.',
+      title: 'Software development services — SaaS, AI, web & mobile | Teranga',
+      description: 'Custom software development from Dakar: SaaS products, AI integration and automation, web and mobile applications, websites and ongoing support.',
       hero: {
         eyebrow: 'Services',
         title: 'Software services built around business outcomes',
-        lead: 'Six ways we work with startups, growing SMEs and enterprise teams. Each starts from the problem, not the technology.',
+        lead: 'Custom software development for startups, growing SMEs and established organisations: six ways to work with us, each starting from the problem, not the technology.',
       },
       jump: 'Jump to a service',
       labels: { problem: 'The problem', deliver: 'What we deliver', uses: 'Typical uses', outcome: 'The outcome' },
@@ -151,7 +162,7 @@ export default {
           problem: 'A product idea or an internal tool needs to become software customers pay for, without a rewrite at the first sign of growth.',
           deliver: ['Multi-tenant architecture with secure accounts and roles', 'Subscriptions, billing integration and admin tools', 'A focused first version, then a roadmap'],
           uses: ['An MVP for a funded startup', 'Turning an internal tool into a product', 'Multi-site platforms for clinics, schools or agencies'],
-          outcome: 'A product in customers’ hands, on foundations that support the next releases. A focused MVP is typically scoped for 4–8 weeks once the scope is agreed.',
+          outcome: 'A product in customers’ hands, on foundations that support the next releases. Delivery timelines depend on scope, integrations, technical complexity and readiness: we set milestones and a realistic delivery plan during discovery.',
           cta: 'Discuss your SaaS project',
         },
         {
@@ -159,7 +170,7 @@ export default {
           headline: 'Put AI to work inside your real workflows.',
           problem: 'Teams lose hours to repetitive reading, typing and sorting, and generic AI tools do not fit their data, language or approval rules.',
           deliver: ['Models connected to your documents, data and tools', 'Structured extraction and drafting with review steps', 'Quality testing, cost controls and audit trails'],
-          uses: ['Turning dictation and documents into structured records', 'Drafting replies and reports for your team to review', 'Searching internal knowledge in French and English'],
+          uses: ['Turning dictation and documents into structured records', 'Drafting replies and reports for your team to review', 'Searching internal knowledge in French and English', 'Automating repetitive back-office steps, with a review where it matters'],
           outcome: 'Time saved on a specific, measured process, with people keeping the final say.',
           cta: 'Discuss your AI project',
           more: { label: 'How we engineer AI', link: { page: 'ai-engineering' } },
@@ -169,7 +180,7 @@ export default {
           headline: 'Replace spreadsheets and manual steps with one reliable system.',
           problem: 'Operations run on spreadsheets, email threads and re-typing, so nobody has a reliable, current picture.',
           deliver: ['Portals, dashboards and back-office tools', 'Integrations with the systems you already use', 'Payments and messaging such as Wave, Orange Money or WhatsApp'],
-          uses: ['Operations dashboards and reporting', 'Client, partner and staff portals', 'Approval and booking workflows'],
+          uses: ['Operations dashboards and reporting', 'Client, partner and staff portals', 'Approval and booking workflows', 'Modernising a legacy system one workflow at a time'],
           outcome: 'One source of truth, fewer manual steps and real-time visibility for your team.',
           cta: 'Discuss your web application',
         },
@@ -177,7 +188,7 @@ export default {
           id: 'mobile-apps', service: 'mobile', name: 'Mobile applications',
           headline: 'Put your service in your customers’ pocket.',
           problem: 'Customers and field teams need to act from their phones, but the platform was not designed for it.',
-          deliver: ['iOS and Android apps for customers or field teams', 'Sign-up, payments and notifications', 'The same backend as your web platform'],
+          deliver: ['Installable mobile apps (PWA) for customers or field teams, on iOS and Android', 'Sign-up, payments and notifications', 'The same backend as your web platform'],
           uses: ['Customer apps for bookings, orders and payments', 'Field apps for data collection and reporting', 'A companion app for an existing SaaS'],
           outcome: 'A mobile experience that shares data and rules with the rest of your product.',
           cta: 'Discuss your mobile app',
@@ -205,18 +216,18 @@ export default {
     },
 
     'ai-engineering': {
-      title: 'AI Engineering — practical AI for real workflows | Teranga',
-      description: 'How we integrate AI into business workflows: document processing, AI-assisted reporting, human approval, evaluation, data protection and cost control.',
+      title: 'AI integration and process automation for businesses | Teranga',
+      description: 'AI integrated into real business workflows: document processing, assisted reporting and process automation, with human approval, evaluation and cost control.',
       hero: {
         eyebrow: 'AI Engineering',
         title: 'Practical AI, engineered for real workflows',
         lead: 'We treat AI as a component to design, test and monitor, not a demo. Where it saves time or improves decisions, we build it in. Where a simpler solution works better, we say so.',
       },
-      tags: { shipped: 'In production: Radiora Medical', both: 'In production: Radiora Medical and EduSen', offered: 'Service we build', method: 'How we work' },
+      tags: { shipped: 'Live in Radiora Medical', both: 'Built into Radiora Medical and ScolaTech', offered: 'Service we build', method: 'How we work' },
       capabilities: {
         eyebrow: 'What we build',
         title: 'AI capabilities for your business',
-        intro: 'Services we design and build for clients. Where a capability already runs in one of our own products, it says so.',
+        intro: 'Services we design and build for clients. Where a capability already runs in a product we built, the label says so.',
         items: [
           { title: 'AI workflow integration', text: 'Language models connected to the tools your team already uses, at the step where they save the most time.', tag: 'offered' },
           { title: 'Document processing and structured extraction', text: 'PDFs, scans, forms and dictation turned into structured, validated data your systems can use.', tag: 'offered' },
@@ -259,8 +270,8 @@ export default {
     },
 
     work: {
-      title: 'Our Work — Radiora Medical, EduSen and more | Teranga',
-      description: 'Case studies of products we designed and built: Radiora Medical, AI-assisted radiology reporting, and EduSen, school management SaaS for Senegal.',
+      title: 'Our work — software and AI case studies | Teranga Technologies',
+      description: 'Software we designed and built: Radiora Medical, AI-assisted radiology reporting, and ScolaTech (formerly EduSen), school management SaaS for Senegal.',
       hero: {
         eyebrow: 'Our work',
         title: 'Products we designed and built',
@@ -270,7 +281,7 @@ export default {
         context: 'Context',
         problem: 'The problem',
         solution: 'What we built',
-        results: 'Results',
+        results: 'Status and results',
         visit: 'Visit the product',
         discuss: 'Discuss a similar project',
       },
@@ -296,12 +307,12 @@ export default {
           ],
           safeguardTitle: 'Human oversight',
           safeguard: 'The AI never diagnoses and never signs. The radiologist reviews, edits, validates and signs every report.',
-          results: 'Quantitative outcomes are not yet published. We share current figures on a discovery call.',
+          results: 'A live product with a public 30-day free trial. Quantitative outcomes are not yet published; we share current figures on a discovery call.',
         },
         {
           key: 'edusen', id: 'edusen', service: 'saas',
           sector: 'Education SaaS · Senegal',
-          name: 'EduSen',
+          name: 'ScolaTech (formerly EduSen)',
           summary: 'School management SaaS designed for private schools in Senegal.',
           context: 'Private schools manage enrolment, attendance, tuition and report cards, often across paper registers and spreadsheets.',
           problem: 'Re-entering the same information in several places makes records hard to keep current and term report cards slow to produce.',
@@ -327,7 +338,7 @@ export default {
         eyebrow: 'Also built by Teranga',
         title: 'More products we designed and built',
         items: [
-          { key: 'xp', name: 'XP Client Academy', text: 'Customer-experience learning platform with courses, quizzes, certificates and corporate training.', linkLabel: 'Visit the site' },
+          { key: 'xp', name: 'XP Client Academy', text: 'Designed and built for XP Client Consulting: a customer-experience learning platform with courses, quizzes, certificates and training for individuals and companies.', linkLabel: 'Visit the site' },
           { key: 'sunu', name: 'SunuPermis', text: 'Driving-licence administration: driving schools, exam sessions, appointments and oversight.', linkLabel: 'Open the product (sign-in page)' },
           { key: 'clinic', name: 'Clinic Management System', text: 'Patient records, appointments, consultations, billing and documents in one system.', linkLabel: 'Open the product (sign-in page)' },
         ],
@@ -335,7 +346,7 @@ export default {
     },
 
     about: {
-      title: 'About Teranga Technologies — engineering partner in Dakar',
+      title: 'About Teranga Technologies — software engineering partner in Dakar',
       description: 'A software engineering company in Dakar, Senegal, building SaaS, AI and web products in French and English for clients in Africa and beyond.',
       hero: {
         eyebrow: 'About',
@@ -432,7 +443,7 @@ export default {
         title: 'Questions clients ask before starting',
         items: [
           { q: 'How much does a project cost?', a: 'It depends on scope, integrations and the level of polish you need at launch. After the discovery call, we send a written estimate tied to clear milestones. For larger products we often recommend a phased plan, so you invest in the first release before committing to the full roadmap.' },
-          { q: 'How long does an MVP take?', a: 'A focused first version is typically scoped for 4–8 weeks. We confirm the timeline once the scope is agreed, and we tell you early if anything puts it at risk.' },
+          { q: 'How long does an MVP take?', a: 'It depends on the product’s scope, integrations, technical complexity and how ready the project is to start. We define milestones and a realistic delivery plan during discovery, confirm it in writing, and tell you early if anything puts it at risk.' },
           { q: 'Do you work with clients outside Senegal?', a: 'Yes. We work remotely with clients in Senegal and internationally, in French or English. Dakar is on UTC+0 all year, which makes collaboration with Europe straightforward and leaves a good daily overlap with North America.' },
           { q: 'How do you use AI responsibly?', a: 'We start from a specific workflow, test output quality on real cases before launch, keep people in charge of high-stakes decisions and control who can access what data. In Radiora Medical, for example, the AI structures reports but only a radiologist can validate and sign them.' },
           { q: 'Can you work on our existing product or with our team?', a: 'Yes. We can extend an existing codebase, integrate with your current systems, or add AI features to a product already in use. We start by reviewing what exists so recommendations are grounded in your actual code and constraints.' },
