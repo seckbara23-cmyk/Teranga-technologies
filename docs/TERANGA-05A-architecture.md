@@ -100,7 +100,8 @@ All attribution is untrusted input:
 | Resend refused (bad key, unverified domain, quota) | 502 | Error + pre-filled email/WhatsApp | `lead_submit_failure` `server` | No: not recorded anywhere; the visitor is asked to use email/WhatsApp. Visible in Vercel logs (`Lead email failed`) |
 | Resend timed out twice (4 s each) | 502 | Same | `server` | No (Resend may still deliver late: the idempotency key prevents a duplicate on retry) |
 | Resend not configured | 503 | Same | `server` | No (`Lead email not configured: missing …` in logs) |
-| Invalid input / honeypot | 400 | Field message or the generic error | `rejected` | No |
+| Invalid input (since TERANGA-05C: the answer names the field) | 400 `{message, field}` | That field marked with its message and focused; "check the highlighted field" | `rejected` | No (log `Lead rejected` with the check that failed, never the values) |
+| Honeypot filled | 400 `{message}` (no field) | Generic error + pre-filled email/WhatsApp | `rejected` | No (log `Lead rejected` `honeypot`) |
 | Too large (> 32 KB) | 413 | Generic error | `rejected` | No |
 | Rate limited (6th request in 10 min from one IP on one instance) | 429 | Generic error | `rate_limited` | No |
 

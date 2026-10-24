@@ -126,8 +126,8 @@ function leadRef(now = new Date()) {
 function validate(body) {
   body = body && typeof body === 'object' ? body : {};
 
-  // Honeypot: a filled "website" field means a bot.
-  if (clean(body.website, 200)) return { ok: false, status: 400, message: 'Invalid submission.' };
+  // Honeypot: a filled "website" field means a bot. Not reported as a field: nothing to correct.
+  if (clean(body.website, 200)) return { ok: false, status: 400, message: 'Invalid submission.', reason: 'honeypot' };
 
   const data = {
     name:     oneLine(body.name, LIMITS.name),
@@ -143,26 +143,26 @@ function validate(body) {
   };
 
   if (data.name.length < 2)
-    return { ok: false, status: 400, message: 'Name is required (minimum 2 characters).' };
+    return { ok: false, status: 400, message: 'Name is required (minimum 2 characters).', field: 'name' };
   if (!isValidEmail(data.email))
-    return { ok: false, status: 400, message: 'A valid email address is required.' };
+    return { ok: false, status: 400, message: 'A valid email address is required.', field: 'email' };
 
   if (SERVICES[data.service]) data.serviceLabel = SERVICES[data.service];
   else if (LEGACY_SERVICES.has(data.service)) data.serviceLabel = data.service;
-  else return { ok: false, status: 400, message: 'Please select a valid service.' };
+  else return { ok: false, status: 400, message: 'Please select a valid service.', field: 'service' };
 
   const type = oneLine(body.type, 20);
   if (type && !INQUIRY_TYPES[type])
-    return { ok: false, status: 400, message: 'Invalid inquiry type.' };
+    return { ok: false, status: 400, message: 'Invalid inquiry type.', reason: 'type' };
   data.type = type || (LEGACY_SERVICES.has(data.service) ? 'contact' : 'discovery');
   data.typeLabel = INQUIRY_TYPES[data.type];
 
   if (data.timeline && !TIMELINES[data.timeline])
-    return { ok: false, status: 400, message: 'Please select a valid timeline.' };
+    return { ok: false, status: 400, message: 'Please select a valid timeline.', field: 'timeline' };
   data.timelineLabel = data.timeline ? TIMELINES[data.timeline] : '';
 
   if (data.message.length < 10)
-    return { ok: false, status: 400, message: 'Message is required (minimum 10 characters).' };
+    return { ok: false, status: 400, message: 'Message is required (minimum 10 characters).', field: 'message' };
 
   return { ok: true, status: 200, data };
 }
@@ -451,7 +451,12 @@ function contentKey(d) {
 /** Validate and send. Returns { status, body }. Never throws. */
 async function handleSubmission(body, env = process.env, deps = {}) {
   const v = validate(body);
-  if (!v.ok) return { status: v.status, body: { message: v.message } };
+  if (!v.ok) {
+    // Category only (which check failed), never the submitted values: lets the owner see why
+    // visitors are turned away without logging personal data.
+    console.log('[Teranga] Lead rejected', JSON.stringify({ reason: v.reason || v.field, lang: body && body.lang === 'fr' ? 'fr' : 'en', deployment: deploymentOf(env) }));
+    return { status: v.status, body: v.field ? { message: v.message, field: v.field } : { message: v.message } };
+  }
 
   const cfg = mailConfig(env);
   if (cfg.problem) {

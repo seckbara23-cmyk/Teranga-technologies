@@ -115,5 +115,21 @@ test('error answers are generic and never echo the input', async () => {
   const res = await call({ body: { ...VALID, email: '<script>x</script>' } });
   assert.equal(res.statusCode, 400);
   assert.doesNotMatch(JSON.stringify(res.body), /script/);
-  assert.deepEqual(Object.keys(res.body), ['message']);
+  // The answer names the field (a fixed identifier) so the page can show it; it never echoes the value.
+  assert.deepEqual(res.body, { message: 'A valid email address is required.', field: 'email' });
+});
+
+test('every validation answer names a field from a fixed list, except the honeypot', async () => {
+  const cases = [
+    [{ name: 'A' }, 'name'], [{ email: 'a@b' }, 'email'], [{ email: 'x@y.com,' }, 'email'], [{ service: 'crypto' }, 'service'],
+    [{ timeline: 'tomorrow' }, 'timeline'], [{ message: 'short' }, 'message'],
+  ];
+  for (const [i, [patch, field]] of cases.entries()) {
+    // One address per case: the rate limit (5 per window per IP) stays in force.
+    const res = await call({ body: { ...VALID, ...patch }, ip: `198.51.100.${i + 1}` });
+    assert.equal(res.statusCode, 400, JSON.stringify(patch));
+    assert.equal(res.body.field, field, JSON.stringify(patch));
+  }
+  const bot = await call({ body: { ...VALID, website: 'http://spam.test' } });
+  assert.deepEqual(bot.body, { message: 'Invalid submission.' }, 'no hint for bots');
 });

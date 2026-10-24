@@ -31,6 +31,7 @@
       vEmail:   'Enter a valid email address, like name@company.com.',
       vService: 'Choose the service closest to your need.',
       vMessage: 'Tell us in a few words what you want to achieve (at least 10 characters).',
+      vCheck:   'Please check the highlighted field, then send again.',
       error:   'We couldn’t send your request, but your message is not lost. Send it to <a href="mailto:seckbara23@gmail.com" data-fallback="email">seckbara23@gmail.com</a> or on <a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-fallback="whatsapp">WhatsApp</a>: both open with your message already filled in.'
     },
     fr: {
@@ -44,6 +45,7 @@
       vEmail:   'Indiquez une adresse e-mail valide, par exemple nom@entreprise.com.',
       vService: 'Choisissez le service le plus proche de votre besoin.',
       vMessage: 'Décrivez en quelques mots ce que vous voulez obtenir (10' + NB + 'caractères minimum).',
+      vCheck:   'Vérifiez le champ signalé, puis envoyez à nouveau.',
       error:   'Votre demande n’a pas pu être envoyée, mais votre message n’est pas perdu. Envoyez-le à <a href="mailto:seckbara23@gmail.com" data-fallback="email">seckbara23@gmail.com</a> ou sur <a href="https://wa.me/221707157070" target="_blank" rel="noopener noreferrer" data-fallback="whatsapp">WhatsApp</a>' + NB + ': les deux s’ouvrent avec votre message déjà rempli.'
     }
   };
@@ -370,7 +372,7 @@
     service: form.querySelector('#f-service'),
     timeline:form.querySelector('#f-timeline'),
     message: form.querySelector('#f-message'),
-    website: form.querySelector('#f-website')
+    website: form.querySelector('#f-hp')
   } : null;
   var DRAFT_FIELDS = ['name', 'email', 'company', 'service', 'timeline', 'message'];
 
@@ -428,7 +430,10 @@
       }
     }
 
-    function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); }
+    // The server's rule (api/_lib/contact.js isValidEmail), so an address is never accepted here and
+    // refused there.
+    function isEmail(v) { return /^[^\s@<>"',]+@[^\s@<>"',]+\.[^\s@<>"',]{2,}$/.test(v); }
+    var FIELD_MESSAGES = { name: 'vName', email: 'vEmail', service: 'vService', message: 'vMessage' };
 
     function validate() {
       var problems = [];
@@ -498,10 +503,13 @@
     }
 
     // Shown only after /api/contact has answered 2xx, i.e. the notification was accepted for delivery.
-    function showConfirmation(ref) {
+    // The reply address is shown back so a mistyped email can be noticed and the request resent.
+    function showConfirmation(ref, email) {
       var box = document.getElementById('f-confirm-ref-box');
       document.getElementById('f-confirm-ref').textContent = ref || '';
       box.hidden = !ref;
+      document.getElementById('f-confirm-email').textContent = email || '';
+      document.getElementById('f-confirm-to').hidden = !email;
       form.hidden = true;
       confirm.hidden = false;
       document.getElementById('f-confirm-title').focus();
@@ -537,6 +545,7 @@
       sending = true;
       setLoading(true);
       var service = fields.service.value;
+      var email = fields.email.value.trim();
       var status = 0;
       var controller = ('AbortController' in window) ? new AbortController() : null;
       var timeout = setTimeout(function () { if (controller) controller.abort(); }, 15000);
@@ -561,8 +570,12 @@
       })
         .then(function (res) {
           status = res.status;
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return res.json().catch(function () { return {}; });
+          return res.json().catch(function () { return {}; }).then(function (body) {
+            if (res.ok) return body;
+            var failure = new Error('HTTP ' + res.status);
+            failure.body = body;
+            throw failure;
+          });
         })
         .then(function (body) {
           var ref = body && typeof body.ref === 'string' && /^TT-\d{8}-[0-9A-F]{4}$/.test(body.ref) ? body.ref : '';
@@ -571,10 +584,19 @@
           if (ref) counted[ref] = true;
           form.reset();
           started = false;
-          showConfirmation(ref);
+          showConfirmation(ref, email);
         }, function (err) {
-          show('error', M.error);
-          prefillFallback();
+          // A field the server refused (e.g. an address it considers invalid) is shown on that field,
+          // so the visitor can correct it; anything else gets the email/WhatsApp fallback.
+          var field = status === 400 && err && err.body && FIELD_MESSAGES[err.body.field] ? err.body.field : '';
+          if (field) {
+            setError(field, M[FIELD_MESSAGES[field]]);
+            show('error', M.vCheck);
+            fields[field].focus();
+          } else {
+            show('error', M.error);
+            prefillFallback();
+          }
           emit('lead_submit_failure', { reason: failureReason(err, status), service: service });
           feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         })

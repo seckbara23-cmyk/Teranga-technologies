@@ -1,0 +1,42 @@
+{
+  "synthetic": true,
+  "note": "SYNTHETIC SAMPLE: fictional figures for the documentation; not real traffic.",
+  "period": {
+    "from": "2026-09-01",
+    "to": "2026-10-31"
+  },
+  "environment": "production",
+  "pageviews": 5200,
+  "visitors": 1840,
+  "topPages": [],
+  "languages": {
+    "en": 3100,
+    "fr": 2100
+  },
+  "referrers": [],
+  "devices": [],
+  "campaigns": null,
+  "events": {
+    "service_cta_click": 210,
+    "case_study_click": 95,
+    "contact_form_start": 64,
+    "contact_form_validation_error": 18,
+    "lead_submit_success": 11,
+    "lead_submit_failure": 2,
+    "whatsapp_click": 14,
+    "email_click": 9
+  },
+  "ctaByService": [],
+  "ctaByLocation": [],
+  "caseStudies": [],
+  "validationFields": [],
+  "failureReasons": [
+    {
+      "name": "network",
+      "count": 2
+    }
+  ],
+  "unavailable": [
+    "campaigns (utmSource; needs Web Analytics Plus)"
+  ]
+}

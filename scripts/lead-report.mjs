@@ -88,8 +88,75 @@ function breakdown(leads, key) {
   return [...groups.entries()].map(([name, g]) => ({ name, ...g })).sort((a, b) => b.leads - a.leads || a.name.localeCompare(b.name));
 }
 
+export const OPEN = ['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL'];
+const DAY = 86400000;
+const startOfDay = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+
+/**
+ * The pipeline as it stands at `now`, over every valid row (not only the period): what needs a
+ * reply, which next steps are overdue or missing, what has gone quiet, and who holds what.
+ * The owner's stages map onto the tracker without new statuses (docs/TERANGA-05C-lead-operations.md).
+ */
+export function operations(rows, now = new Date()) {
+  const today = startOfDay(now);
+  const seen = new Set();
+  const valid = [];
+  for (const raw of rows) {
+    const r = { ...raw, Status: (raw.Status || '').toUpperCase() };
+    const at = parseUtc(r['Submitted (UTC)']);
+    if (!at || !STATUSES.includes(r.Status) || seen.has(r.Reference)) continue;
+    seen.add(r.Reference);
+    valid.push({ ...r, at });
+  }
+  const open = valid.filter((r) => OPEN.includes(r.Status));
+  const hours = (d) => Math.round(((now - d) / 3600000) * 10) / 10;
+  const awaitingReply = open
+    .filter((r) => r.Status === 'NEW' && !parseUtc(r['First reply (UTC)']))
+    .map((r) => ({ ref: r.Reference, hours: hours(r.at), overdue: now - r.at > DAY }))
+    .sort((a, b) => b.hours - a.hours);
+  const overdueActions = open
+    .filter((r) => { const d = parseUtc(r['Next action date']); return d && d < today; })
+    .map((r) => ({ ref: r.Reference, due: r['Next action date'], action: r['Next action'] || '' }))
+    .sort((a, b) => a.due.localeCompare(b.due));
+  const missingNextStep = open
+    .filter((r) => r.Status !== 'NEW' && !parseUtc(r['Next action date']))
+    .map((r) => r.Reference);
+  const stale = open
+    .map((r) => ({ r, last: [parseUtc(r['Last contact (UTC)']), parseUtc(r['First reply (UTC)']), r.at].filter(Boolean).reduce((a, b) => (b > a ? b : a)) }))
+    .filter(({ last }) => now - last > 14 * DAY)
+    .map(({ r, last }) => ({ ref: r.Reference, days: Math.floor((now - last) / DAY) }));
+  const discoveryScheduled = valid.filter((r) => { const d = parseUtc(r['Discovery date']); return d && d >= today && OPEN.includes(r.Status); }).length;
+  const owners = new Map();
+  for (const r of open) owners.set(r.Owner || '(unassigned)', (owners.get(r.Owner || '(unassigned)') || 0) + 1);
+  const count = (fn) => valid.filter(fn).length;
+  return {
+    asOf: now.toISOString().slice(0, 16).replace('T', ' ') + ' UTC',
+    stages: [
+      ['New inquiry (NEW, no reply yet)', awaitingReply.length],
+      ['Needs review (CONTACTED, waiting for details)', count((r) => r.Status === 'CONTACTED')],
+      ['Qualified (QUALIFIED, no call scheduled)', count((r) => r.Status === 'QUALIFIED' && !(parseUtc(r['Discovery date']) >= today))],
+      ['Discovery scheduled (Discovery date today or later)', discoveryScheduled],
+      ['Proposal sent (PROPOSAL)', count((r) => r.Status === 'PROPOSAL')],
+      ['Won', count((r) => r.Status === 'WON')],
+      ['Lost', count((r) => r.Status === 'LOST')],
+      ['Closed as spam or irrelevant (SPAM)', count((r) => r.Status === 'SPAM')],
+    ],
+    open: open.length,
+    awaitingReply,
+    overdueActions,
+    missingNextStep,
+    stale,
+    byOwner: [...owners.entries()].map(([owner, n]) => ({ owner, open: n })).sort((a, b) => b.open - a.open || a.owner.localeCompare(b.owner)),
+  };
+}
+
 /** Figures for the rows submitted between from and to (inclusive, UTC dates). */
-export function summarize(rows, { from, to, visitors, formStarts } = {}) {
+export function summarize(rows, { from, to, visitors, formStarts, now, analytics } = {}) {
+  // Weekly analytics (scripts/analytics-report.mjs --json) fill in what the command line did not give.
+  if (analytics) {
+    if (visitors === undefined && analytics.visitors > 0) visitors = analytics.visitors;
+    if (formStarts === undefined && analytics.events && analytics.events.contact_form_start > 0) formStarts = analytics.events.contact_form_start;
+  }
   const lo = from ? parseUtc(from) : null;
   const hi = to ? new Date(parseUtc(to).getTime() + 86400000) : null;
   const problems = [];
@@ -124,6 +191,7 @@ export function summarize(rows, { from, to, visitors, formStarts } = {}) {
     months.set(m, (months.get(m) || 0) + 1);
   }
 
+  const asOf = now ? new Date(now) : new Date();
   const v = Number(visitors);
   const fs0 = Number(formStarts);
   const per100 = (n, d) => (d > 0 ? Math.round((n / d) * 10000) / 100 : null);
@@ -140,6 +208,7 @@ export function summarize(rows, { from, to, visitors, formStarts } = {}) {
     response: {
       measured: replyHours.length,
       medianHours: replyHours.length ? Math.round(median(replyHours) * 10) / 10 : null,
+      meanHours: replyHours.length ? Math.round((replyHours.reduce((a, b) => a + b, 0) / replyHours.length) * 10) / 10 : null,
       within24h: pct(replyHours.filter((h) => h <= 24).length, replyHours.length),
     },
     byChannel: breakdown(leads, 'Channel'),
@@ -155,6 +224,10 @@ export function summarize(rows, { from, to, visitors, formStarts } = {}) {
     qualifiedRate: per100(reached[2], v),
     formStartRate: v > 0 && fs0 > 0 ? pct(fs0, v) : null,
     formCompletion: fs0 > 0 ? pct(leads.length, fs0) : null,
+    // Held = a discovery date in the period that is already past (a future date is only scheduled).
+    discoveryHeld: leads.filter((r) => { const d = parseUtc(r['Discovery date']); return d && d < asOf && (!lo || d >= lo) && (!hi || d < hi); }).length,
+    operations: operations(rows, asOf),
+    analytics: analytics ? { period: analytics.period, pageviews: analytics.pageviews, events: analytics.events, failureReasons: analytics.failureReasons || [], unavailable: analytics.unavailable || [] } : null,
     problems,
   };
 }
@@ -166,6 +239,46 @@ function table(head, rows) {
 }
 
 const cellText = (s) => String(s).replace(/\|/g, '\\|');
+
+function renderOperations(o, discoveryHeld) {
+  const refs = (list) => (list.length ? list.join(', ') : 'none');
+  return [
+    `## Actions this week (pipeline as of ${o.asOf})`,
+    '',
+    table(['Stage', 'Leads now'], o.stages),
+    '',
+    `- **Awaiting a first reply:** ${o.awaitingReply.length ? o.awaitingReply.map((a) => `${a.ref} (${a.hours} h${a.overdue ? ', over the one-business-day target' : ''})`).join(', ') : 'none'}`,
+    `- **Overdue next actions:** ${o.overdueActions.length ? o.overdueActions.map((a) => `${a.ref} (due ${a.due}${a.action ? `: ${cellText(a.action)}` : ''})`).join(', ') : 'none'}`,
+    `- **Open leads without a next action date:** ${refs(o.missingNextStep)}`,
+    `- **No activity for 14+ days:** ${o.stale.length ? o.stale.map((a) => `${a.ref} (${a.days} d)`).join(', ') : 'none'}`,
+    `- **Discovery calls held in the period:** ${discoveryHeld} (from "Discovery date")`,
+    `- **Open leads by owner:** ${o.byOwner.length ? o.byOwner.map((b) => `${cellText(b.owner)} ${b.open}`).join(', ') : 'none'}`,
+    '',
+  ];
+}
+
+function renderEngagement(a) {
+  const ev = a.events || {};
+  const n = (k) => (a.events ? ev[k] || 0 : '—');
+  return [
+    `## Website engagement (Vercel Web Analytics, ${a.period ? `${a.period.from} → ${a.period.to}` : 'period of the analytics file'})`,
+    '',
+    'Interactions recorded by the page, not leads. A success event means the server accepted a request; the tracker is still the count of leads.',
+    '',
+    table(['Measure', 'Count'], [
+      ['Page views', a.pageviews == null ? '—' : a.pageviews],
+      ['Service CTA clicks', n('service_cta_click')],
+      ['Case-study clicks', n('case_study_click')],
+      ['Contact form starts', n('contact_form_start')],
+      ['Form fields flagged by the page', n('contact_form_validation_error')],
+      ['Requests accepted (lead_submit_success)', n('lead_submit_success')],
+      ['Requests that failed (lead_submit_failure)', `${n('lead_submit_failure')}${a.failureReasons.length ? ` (${a.failureReasons.map((f) => `${f.name} ${f.count}`).join(', ')})` : ''}`],
+      ['WhatsApp / email link clicks', `${n('whatsapp_click')} / ${n('email_click')}`],
+    ]),
+    '',
+    ...(a.unavailable.length ? [`Unavailable: ${a.unavailable.map(cellText).join('; ')}.`, ''] : []),
+  ];
+}
 
 /** Markdown report. */
 export function render(s) {
@@ -187,9 +300,10 @@ export function render(s) {
       ['Lost', s.byStatus.LOST, 'Tracker'],
       ['Win rate of decided leads (WON ÷ (WON + LOST))', fmt(s.winRateOfDecided), 'Tracker'],
       ['First reply, median', s.response.medianHours == null ? '— (fill "First reply (UTC)")' : `${s.response.medianHours} h over ${s.response.measured} lead(s)`, 'Tracker'],
+      ['First reply, average', s.response.meanHours == null ? '—' : `${s.response.meanHours} h`, 'Tracker'],
       ['First reply within 24 h', fmt(s.response.within24h), 'Tracker'],
-      ['Visitors (--visitors)', s.visitors == null ? '— not provided' : s.visitors, 'Vercel Web Analytics'],
-      ['Contact form starts (--form-starts)', s.formStarts == null ? '— not provided' : s.formStarts, 'Vercel events (Pro)'],
+      ['Visitors (--analytics or --visitors)', s.visitors == null ? '— not provided' : s.visitors, 'Vercel Web Analytics'],
+      ['Contact form starts (--analytics or --form-starts)', s.formStarts == null ? '— not provided' : s.formStarts, 'Vercel events'],
       ['Leads per 100 visitors', s.leadRate == null ? '—' : s.leadRate, 'Tracker ÷ Vercel, not joined'],
       ['Qualified leads per 100 visitors', s.qualifiedRate == null ? '—' : s.qualifiedRate, 'Tracker ÷ Vercel, not joined'],
       ['Form-start rate (starts ÷ visitors)', fmt(s.formStartRate), 'Vercel'],
@@ -198,6 +312,8 @@ export function render(s) {
     '',
     'Rates that divide tracker counts by Vercel counts compare two systems for the same period; they are indicative (ad blockers hide some visits and events from Vercel, never leads from the tracker).',
     '',
+    ...renderOperations(s.operations, s.discoveryHeld),
+    ...(s.analytics ? renderEngagement(s.analytics) : []),
     '## Funnel (leads that reached each stage)',
     '',
     table(['Stage', 'Reached', 'Share of leads'], s.funnel.map((f) => [f.stage, f.reached, fmt(f.rate)])),
@@ -233,10 +349,13 @@ function args(argv) {
     if (a === '--json') o.json = true;
     else if (['--from', '--to', '--visitors'].includes(a)) o[a.slice(2)] = argv[++i];
     else if (a === '--form-starts') o.formStarts = argv[++i];
+    else if (a === '--now') o.now = argv[++i];
+    else if (a === '--analytics') o.analytics = JSON.parse(fs.readFileSync(argv[++i], 'utf8'));
     else if (!a.startsWith('--')) o.file = a;
     else throw new Error(`Unknown option ${a}`);
   }
   for (const k of ['from', 'to']) if (o[k] && !parseUtc(o[k])) throw new Error(`--${k} must be a date like 2026-10-01`);
+  if (o.now !== undefined && Number.isNaN(new Date(o.now).getTime())) throw new Error('--now must be a date or ISO time');
   if (o.visitors !== undefined && !(Number(o.visitors) > 0)) throw new Error('--visitors must be a positive number');
   if (o.formStarts !== undefined && !(Number(o.formStarts) > 0)) throw new Error('--form-starts must be a positive number');
   return o;
@@ -245,7 +364,7 @@ function args(argv) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const o = args(process.argv.slice(2));
-    if (!o.file) throw new Error('Usage: node scripts/lead-report.mjs tracker.csv [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--visitors N] [--form-starts N] [--json]');
+    if (!o.file) throw new Error('Usage: node scripts/lead-report.mjs tracker.csv [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--analytics week.json] [--visitors N] [--form-starts N] [--now ISO] [--json]');
     const s = summarize(parseTable(fs.readFileSync(o.file, 'utf8')), o);
     process.stdout.write(o.json ? `${JSON.stringify(s, null, 2)}\n` : render(s));
   } catch (err) {

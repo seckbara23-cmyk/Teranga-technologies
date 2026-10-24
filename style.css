@@ -922,6 +922,8 @@ p { text-wrap: pretty; }
 .form-confirm h2:focus { outline: none; }
 .form-confirm h2:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; border-radius: 4px; }
 .form-confirm-text { font-size: var(--fs-lead); line-height: 1.55; color: var(--text); max-width: 40ch; }
+.form-confirm-to { font-size: var(--fs-small); color: var(--muted); overflow-wrap: anywhere; }
+.form-confirm-to strong { color: var(--navy-900); font-weight: 600; }
 .form-confirm-ref { width: 100%; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--paper); }
 .form-confirm-ref[hidden] { display: none; }
 .form-confirm-label { font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
