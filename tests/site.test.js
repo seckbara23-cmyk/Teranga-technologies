@@ -270,7 +270,12 @@ test('production stays indexable; previews keep Vercel\'s protection; duplicates
   assert.doesNotMatch(JSON.stringify(v.headers), /x-robots-tag/i);
   assert.equal(v.trailingSlash, false, '/services/ redirects to /services');
   const host = v.redirects.find((r) => r.has && r.has.some((h) => h.type === 'host'));
-  assert.deepEqual(host, { source: '/:path*', has: [{ type: 'host', value: 'teranga-technologies.vercel.app' }], destination: 'https://teranga-tech.com/:path*', permanent: true });
+  // "/(.*)" (not "/:path*", which Vercel did not apply to the bare root "/" in production on 2026-10-24).
+  assert.deepEqual(host, { source: '/(.*)', has: [{ type: 'host', value: 'teranga-technologies.vercel.app' }], destination: 'https://teranga-tech.com/$1', permanent: true });
+  const re = new RegExp(`^${host.source}$`);
+  for (const p of ['/', '/work', '/fr/services', '/favicon.ico']) assert.equal(`https://teranga-tech.com/${re.exec(p)[1]}`, `https://teranga-tech.com${p}`, p);
+  // The site's own catch-all headers rule uses the same pattern and is observed on "/" in production.
+  assert.ok(v.headers.some((h) => h.source === '/(.*)'));
   for (const p of pages) assert.doesNotMatch(p.html, /<meta name="robots"/, `${p.file} is indexable`);
   assert.match(read('404.html'), /<meta name="robots" content="noindex">/);
   const robots = read('robots.txt');
@@ -447,12 +452,15 @@ test('the confirmation panel is hidden until the server accepts, and is accessib
     assert.doesNotMatch(t, /booked|réservé|confirmed call|appel confirmé/i, 'no booking claim');
   }
   const js = read('main.js');
-  // Success is shown and counted only in the branch reached after res.ok.
-  const okAt = js.indexOf("if (!res.ok) throw new Error('HTTP ' + res.status);");
+  // Success is shown and counted only in the branch reached after res.ok; every other answer throws.
+  const okAt = js.indexOf('if (res.ok) return body;');
   assert.ok(okAt > 0);
+  assert.match(js.slice(okAt, okAt + 200), /var failure = new Error\('HTTP ' \+ res\.status\);[\s\S]*throw failure;/);
   assert.ok(js.indexOf("emit('lead_submit_success'") > okAt);
-  assert.ok(js.indexOf('showConfirmation(ref)', okAt) > okAt);
+  assert.ok(js.indexOf('showConfirmation(ref, email)', okAt) > okAt);
   assert.equal((js.match(/showConfirmation\(/g) || []).length, 2, 'defined once, called once');
+  // The reply address is shown back from the visitor's own input (never sent anywhere else).
+  for (const p of pages.filter((q) => q.page === 'contact')) assert.match(p.html, /<p class="form-confirm-to" id="f-confirm-to" hidden>[^<]+<strong id="f-confirm-email"><\/strong><\/p>/, p.file);
 });
 
 test('the event schema is the documented taxonomy and carries no personal data', () => {
@@ -513,6 +521,36 @@ test('every lead goes to the API: no console-only quote wizard remains', () => {
   assert.match(js, /fetch\('\/api\/contact'/);
   const type = /type:\s+'([a-z]+)'/.exec(js)[1];
   assert.ok(INQUIRY_TYPES[type], `form sends unknown inquiry type ${type}`);
+});
+
+test('the browser accepts exactly the email addresses the server accepts', () => {
+  // TERANGA-05C: production recorded 3 server rejections that the page could not explain; a looser
+  // browser rule was one way to get there. Both rules must agree on every sample.
+  const js = read('main.js');
+  const browserRule = new RegExp(/function isEmail\(v\) \{ return \/(.+)\/\.test\(v\); \}/.exec(js)[1]);
+  const { validate } = require('../api/_lib/contact');
+  const server = (email) => validate({ name: 'Sample Name', email, service: 'ai', message: 'A sample request text.' }).ok;
+  for (const email of ['awa@example.com', 'a.b-c+d@sub.example.sn', 'awa@example.com,', 'o\'brien@example.com', '"q"@example.com', 'awa@example', 'a@b.c', '<x>@example.com', 'a b@example.com', 'awa@@example.com', 'x@y.co']) {
+    assert.equal(browserRule.test(email), server(email), email);
+  }
+});
+
+test('the honeypot is not a field autofill would recognise, and still reaches the server as "website"', () => {
+  for (const p of pages.filter((q) => q.page === 'contact')) {
+    const hp = attr(p.html, /(<div class="hp-field"[\s\S]*?<\/div>)/);
+    assert.match(hp, /<input type="text" id="f-hp" name="tt_hp" tabindex="-1" autocomplete="off" data-lpignore="true" data-1p-ignore>/, p.file);
+    assert.doesNotMatch(hp, /website|url|homepage/i, `${p.file}: no autofill-prone name or label`);
+  }
+  const js = read('main.js');
+  assert.match(js, /website: form\.querySelector\('#f-hp'\)/);
+  assert.match(js, /website:\s+fields\.website \? fields\.website\.value : ''/, 'payload key unchanged for the API');
+});
+
+test('a field the server refuses is shown on that field, not as a dead-end error', () => {
+  const js = read('main.js');
+  assert.match(js, /var FIELD_MESSAGES = \{ name: 'vName', email: 'vEmail', service: 'vService', message: 'vMessage' \};/);
+  assert.match(js, /status === 400 && err && err\.body && FIELD_MESSAGES\[err\.body\.field\]/);
+  assert.match(js, /setError\(field, M\[FIELD_MESSAGES\[field\]\]\);\s*show\('error', M\.vCheck\);\s*fields\[field\]\.focus\(\);/);
 });
 
 test('form and menu messages exist in both languages with the same keys', async () => {

@@ -327,8 +327,8 @@ export function contactForm(ctx) {
         <p class="field-err" id="f-message-err"></p>
       </div>
       <div class="hp-field" aria-hidden="true">
-        <label for="f-website">Website</label>
-        <input type="text" id="f-website" name="website" tabindex="-1" autocomplete="off">
+        <label for="f-hp">Leave this field empty</label>
+        <input type="text" id="f-hp" name="tt_hp" tabindex="-1" autocomplete="off" data-lpignore="true" data-1p-ignore>
       </div>
       <div id="f-feedback" class="form-feedback" role="status" aria-live="polite"></div>
       <button type="submit" class="btn btn-amber btn-lg btn-block" id="f-submit">
@@ -341,6 +341,7 @@ export function contactForm(ctx) {
       <svg class="form-confirm-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="m7 12.5 3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <h2 id="f-confirm-title" tabindex="-1">${f.confirmTitle}</h2>
       <p class="form-confirm-text">${f.confirmText}</p>
+      <p class="form-confirm-to" id="f-confirm-to" hidden>${f.confirmTo} <strong id="f-confirm-email"></strong></p>
       <div class="form-confirm-ref" id="f-confirm-ref-box" hidden>
         <p class="form-confirm-label">${f.confirmRef}</p>
         <p class="form-confirm-value" id="f-confirm-ref"></p>

@@ -33,7 +33,7 @@
   <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
   <link rel="preload" href="/assets/fonts/bricolage-grotesque-latin-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/style.css?v=f15565a270">
+  <link rel="stylesheet" href="/style.css?v=5444fa8885">
   <script type="application/ld+json">{
   "@context": "https://schema.org",
   "@graph": [
@@ -198,12 +198,12 @@
       <div class="field">
         <label for="f-message">Quel résultat cherchez-vous à obtenir ? <span class="req" aria-hidden="true">*</span></label>
         <textarea id="f-message" name="message" rows="5" required maxlength="5000" aria-describedby="f-message-hint f-message-err"></textarea>
-        <p class="field-hint" id="f-message-hint">Quelques phrases suffisent : le problème, pour qui, et l’échéance éventuelle.</p>
+        <p class="field-hint" id="f-message-hint">Quelques phrases suffisent : le problème, pour qui, l’échéance éventuelle et, si vous en avez une, une fourchette de budget.</p>
         <p class="field-err" id="f-message-err"></p>
       </div>
       <div class="hp-field" aria-hidden="true">
-        <label for="f-website">Website</label>
-        <input type="text" id="f-website" name="website" tabindex="-1" autocomplete="off">
+        <label for="f-hp">Leave this field empty</label>
+        <input type="text" id="f-hp" name="tt_hp" tabindex="-1" autocomplete="off" data-lpignore="true" data-1p-ignore>
       </div>
       <div id="f-feedback" class="form-feedback" role="status" aria-live="polite"></div>
       <button type="submit" class="btn btn-amber btn-lg btn-block" id="f-submit">
@@ -216,6 +216,7 @@
       <svg class="form-confirm-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="m7 12.5 3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <h2 id="f-confirm-title" tabindex="-1">Merci.</h2>
       <p class="form-confirm-text">Nous avons bien reçu votre demande. Nous nous efforçons de vous répondre sous un jour ouvré.</p>
+      <p class="form-confirm-to" id="f-confirm-to" hidden>Nous vous répondrons à <strong id="f-confirm-email"></strong></p>
       <div class="form-confirm-ref" id="f-confirm-ref-box" hidden>
         <p class="form-confirm-label">Votre référence</p>
         <p class="form-confirm-value" id="f-confirm-ref"></p>
@@ -275,6 +276,6 @@
     </div>
     </div>
   </footer>
-  <script src="/main.js?v=c1ec78b6e9"></script>
+  <script src="/main.js?v=9a488f4cd9"></script>
 </body>
 </html>

@@ -454,6 +454,30 @@ test('preview and local submissions are marked as tests; production ones are not
   }
 });
 
+test('rejected submissions are logged by category, never with what the visitor typed', async () => {
+  const client = fakeClient(ACCEPTED);
+  await captureLogs(async (lines) => {
+    const cases = [
+      [{ email: 'awa@example.com,' }, 'email'], [{ message: 'too short' }, 'message'], [{ website: 'http://x.test' }, 'honeypot'],
+      [{ name: 'A' }, 'name'], [{ type: 'quote' }, 'type'], [{ service: 'crypto' }, 'service'], [{ timeline: 'soon' }, 'timeline'],
+    ];
+    for (const [patch, reason] of cases) {
+      const r = await contact.handleSubmission({ ...VALID, ...patch }, ENV, deps(client));
+      assert.equal(r.status, 400);
+      const line = lines[lines.length - 1];
+      assert.match(line, new RegExp(`^\\[Teranga\\] Lead rejected \\{"reason":"${reason}","lang":"en","deployment":"production"\\}$`), JSON.stringify(patch));
+    }
+    assert.doesNotMatch(lines.join('\n'), /Awa|Ndiaye|example\.com|Acme|booking|spam\.test|x\.test/);
+    assert.equal(client.calls.length, 0, 'nothing sent');
+  });
+});
+
+test('validation answers name the field (fixed identifiers) except for the honeypot', () => {
+  assert.equal(contact.validate({ ...VALID, email: 'bad' }).field, 'email');
+  assert.equal(contact.validate({ ...VALID, website: 'x' }).field, undefined);
+  assert.equal(contact.validate({ ...VALID, website: 'x' }).reason, 'honeypot');
+});
+
 test('the HTML notification is a complete branded document with a hidden preview line', () => {
   const v = contact.validate({ ...VALID, message: 'Line one\nLine <two>' });
   const mail = contact.buildEmail(v.data, { ref: 'TT-20261022-ABCD', received: new Date('2026-10-22T09:05:00Z'), deployment: 'production' });

@@ -10,14 +10,14 @@
   },
   "redirects": [
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "has": [
         {
           "type": "host",
           "value": "teranga-technologies.vercel.app"
         }
       ],
-      "destination": "https://teranga-tech.com/:path*",
+      "destination": "https://teranga-tech.com/$1",
       "permanent": true
     },
     {
